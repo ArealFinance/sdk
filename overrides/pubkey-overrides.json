@@ -1,0 +1,39 @@
+{
+  "native-dex": {
+    "DexConfig": {
+      "rebalancer": "publicKey"
+    },
+    "PoolState": {
+      "vault_a": "publicKey",
+      "vault_b": "publicKey"
+    },
+    "LpPosition": {
+      "pool": "publicKey"
+    },
+    "BinArray": {
+      "pool": "publicKey"
+    }
+  },
+  "ownership-token": {
+    "OtConfig": {
+      "name": "bytes32"
+    }
+  },
+  "rwt-engine": {
+    "RwtVault": {
+      "capital_accumulator_ata": "publicKey",
+      "manager": "publicKey"
+    }
+  },
+  "yield-distribution": {
+    "MerkleDistributor": {
+      "reward_vault": "publicKey",
+      "accumulator": "publicKey"
+    },
+    "ClaimStatus": {
+      "claimant": "publicKey",
+      "distributor": "publicKey"
+    }
+  },
+  "futarchy": {}
+}

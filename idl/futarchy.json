@@ -1,0 +1,713 @@
+{
+  "version": "0.1.0",
+  "name": "futarchy",
+  "metadata": {
+    "address": "FUTsbsdyJmEWa5LSYHWXMr9hQFyVsrJ1agGvRQGR1ARL"
+  },
+  "instructions": [
+    {
+      "name": "initialize_futarchy",
+      "accounts": [
+        {
+          "name": "deployer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_proposal",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "proposal_type",
+          "type": "u8"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "approve_proposal",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "cancel_proposal",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "execute_proposal",
+      "accounts": [
+        {
+          "name": "executor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "proposal",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "claim_ot_governance",
+      "accounts": [
+        {
+          "name": "executor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "propose_authority_transfer",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "accept_authority_transfer",
+      "accounts": [
+        {
+          "name": "new_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "FutarchyConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "has_pending",
+            "type": "bool"
+          },
+          {
+            "name": "next_proposal_id",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Proposal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal_id",
+            "type": "u64"
+          },
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "proposer",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "proposal_type",
+            "type": "u8"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "destination",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "token_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "params_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "type": "u8"
+          },
+          {
+            "name": "created_ts",
+            "type": "i64"
+          },
+          {
+            "name": "executed_ts",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [],
+  "events": [
+    {
+      "name": "FutarchyInitialized",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "ProposalCreated",
+      "fields": [
+        {
+          "name": "proposal_id",
+          "type": "u64"
+        },
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "proposer",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "proposal_type",
+          "type": "u8"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "ProposalApproved",
+      "fields": [
+        {
+          "name": "proposal_id",
+          "type": "u64"
+        },
+        {
+          "name": "approver",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "ProposalCancelled",
+      "fields": [
+        {
+          "name": "proposal_id",
+          "type": "u64"
+        },
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "ProposalExecuted",
+      "fields": [
+        {
+          "name": "proposal_id",
+          "type": "u64"
+        },
+        {
+          "name": "proposal_type",
+          "type": "u8"
+        },
+        {
+          "name": "executor",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "OtGovernanceClaimed",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "futarchy_config",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the authority"
+    },
+    {
+      "code": 6001,
+      "name": "GovernancePaused",
+      "msg": "Governance is not active"
+    },
+    {
+      "code": 6002,
+      "name": "ProposalNotActive",
+      "msg": "Proposal status is not Active"
+    },
+    {
+      "code": 6003,
+      "name": "ProposalNotApproved",
+      "msg": "Proposal status is not Approved"
+    },
+    {
+      "code": 6004,
+      "name": "AlreadyExecuted",
+      "msg": "Proposal has already been executed"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidProposalType",
+      "msg": "Unknown proposal type"
+    },
+    {
+      "code": 6006,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6007,
+      "name": "SelfTransfer",
+      "msg": "Cannot transfer authority to yourself"
+    },
+    {
+      "code": 6008,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not the pending authority"
+    },
+    {
+      "code": 6010,
+      "name": "ZeroAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6011,
+      "name": "ZeroDestination",
+      "msg": "Destination cannot be zero address"
+    },
+    {
+      "code": 6012,
+      "name": "EmptyParamsHash",
+      "msg": "Params hash cannot be all zeros"
+    },
+    {
+      "code": 6013,
+      "name": "ParamsHashMismatch",
+      "msg": "Hash mismatch"
+    },
+    {
+      "code": 6014,
+      "name": "DestinationMismatch",
+      "msg": "Executor account mismatch"
+    },
+    {
+      "code": 6015,
+      "name": "TokenMintMismatch",
+      "msg": "Token mint mismatch"
+    },
+    {
+      "code": 6016,
+      "name": "GovernanceClaimMismatch",
+      "msg": "OT governance pending_authority mismatch"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidOtProgram",
+      "msg": "OT program account mismatch"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidOtGovernance",
+      "msg": "OT governance PDA mismatch"
+    },
+    {
+      "code": 6019,
+      "name": "ProposalConfigMismatch",
+      "msg": "Proposal does not belong to this config"
+    },
+    {
+      "code": 6020,
+      "name": "OtMintMismatch",
+      "msg": "OT mint account mismatch"
+    }
+  ]
+}

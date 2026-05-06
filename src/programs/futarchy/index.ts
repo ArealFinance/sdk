@@ -1,2 +1,5 @@
-// Placeholder — populated by Phase 3 Steps E/F/G/H/D
-export {};
+// Re-exports from generated codegen output.
+// Files are produced by `npm run codegen` (scripts/codegen.mjs).
+export * from './accounts.generated.js';
+export * from './instructions.generated.js';
+export * from './errors.generated.js';

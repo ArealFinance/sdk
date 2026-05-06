@@ -1,0 +1,759 @@
+{
+  "version": "0.1.0",
+  "name": "yield_distribution",
+  "declare_id": "YDisT7m1epqXqQ9HexkqjqNBv5FauqYksRLfmeTpLbX",
+  "metadata": {
+    "address": "YLD9EBikcTmVCnVzdx6vuNajrDkp8tyCAgZrqTwmMXF"
+  },
+  "instructions": [
+    {
+      "name": "initialize_config",
+      "accounts": [
+        {
+          "name": "deployer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "areal_fee_destination_account",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "publish_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "protocol_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_distribution_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "create_distributor",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "accumulator",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdc_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "accumulator_usdc_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ata_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "vesting_period_secs",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "fund_distributor",
+      "accounts": [
+        {
+          "name": "depositor",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositor_token",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "fee_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "publish_root",
+      "accounts": [
+        {
+          "name": "publish_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "merkle_root",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "max_total_claim",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "claim",
+      "accounts": [
+        {
+          "name": "claimant",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "claim_status",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "claimant_token",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "cumulative_amount",
+          "type": "u64"
+        },
+        {
+          "name": "proof",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "close_distributor",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "unclaimed_destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "protocol_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_distribution_amount",
+          "type": "u64"
+        },
+        {
+          "name": "is_active",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_publish_authority",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_publish_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_authority_transfer",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "accept_authority_transfer",
+      "accounts": [
+        {
+          "name": "new_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "DistributionConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "has_pending",
+            "type": "bool"
+          },
+          {
+            "name": "publish_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "min_distribution_amount",
+            "type": "u64"
+          },
+          {
+            "name": "areal_fee_destination",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MerkleDistributor",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reward_vault",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "accumulator",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "merkle_root",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "max_total_claim",
+            "type": "u64"
+          },
+          {
+            "name": "total_claimed",
+            "type": "u64"
+          },
+          {
+            "name": "total_funded",
+            "type": "u64"
+          },
+          {
+            "name": "locked_vested",
+            "type": "u64"
+          },
+          {
+            "name": "last_fund_ts",
+            "type": "i64"
+          },
+          {
+            "name": "vesting_period_secs",
+            "type": "i64"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Accumulator",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClaimStatus",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "claimant",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "distributor",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "claimed_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the authority"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedPublisher",
+      "msg": "Signer is not the publish authority"
+    },
+    {
+      "code": 6002,
+      "name": "SystemPaused",
+      "msg": "YD system is paused"
+    },
+    {
+      "code": 6003,
+      "name": "DistributorNotActive",
+      "msg": "Distributor is not active"
+    },
+    {
+      "code": 6004,
+      "name": "RootNotPublished",
+      "msg": "Root not yet published (epoch == 0)"
+    },
+    {
+      "code": 6005,
+      "name": "ProofTooLong",
+      "msg": "Merkle proof too long (max 20)"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidProof",
+      "msg": "Merkle proof verification failed"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidMaxClaim",
+      "msg": "max_total_claim must equal total_funded"
+    },
+    {
+      "code": 6008,
+      "name": "ZeroMaxClaim",
+      "msg": "max_total_claim must be > 0"
+    },
+    {
+      "code": 6009,
+      "name": "MaxClaimBelowClaimed",
+      "msg": "max_total_claim below total_claimed"
+    },
+    {
+      "code": 6010,
+      "name": "ExceedsMaxClaim",
+      "msg": "Total claimed would exceed max_total_claim"
+    },
+    {
+      "code": 6011,
+      "name": "ZeroAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6012,
+      "name": "BelowMinDistribution",
+      "msg": "Amount below minimum distribution"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidVestingPeriod",
+      "msg": "Vesting period must be > 0"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account or mint mismatch"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidFeeBps",
+      "msg": "protocol_fee_bps must be <= 10_000"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidOtMint",
+      "msg": "ot_mint does not match distributor's expected ot_mint"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidRewardVault",
+      "msg": "reward_vault does not match distributor.reward_vault"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidFeeAccount",
+      "msg": "fee_account does not match config.areal_fee_destination"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidClaimStatus",
+      "msg": "ClaimStatus claimant/distributor mismatch (replay guard)"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidClaimantTokenOwner",
+      "msg": "claimant_token owner does not match claimant signer"
+    },
+    {
+      "code": 6021,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6022,
+      "name": "SelfTransfer",
+      "msg": "Cannot transfer authority to yourself"
+    },
+    {
+      "code": 6023,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not the pending authority"
+    },
+    {
+      "code": 6025,
+      "name": "ZeroDestination",
+      "msg": "Destination address cannot be zero"
+    }
+  ]
+}

@@ -1,0 +1,1027 @@
+{
+  "version": "0.1.0",
+  "name": "ownership_token",
+  "metadata": {
+    "address": "oWnqbNwmEdjNS5KVbxz8xeuGNjKMd1aiNF89d7qdARL"
+  },
+  "instructions": [
+    {
+      "name": "initialize_ot",
+      "accounts": [
+        {
+          "name": "deployer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "usdc_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_token_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_treasury",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "areal_fee_destination_account",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ata_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "symbol",
+          "type": {
+            "array": [
+              "u8",
+              10
+            ]
+          }
+        },
+        {
+          "name": "uri",
+          "type": {
+            "array": [
+              "u8",
+              200
+            ]
+          }
+        },
+        {
+          "name": "initial_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mint_ot",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipient_token_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "recipient",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "payer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ata_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "distribute_revenue",
+      "accounts": [
+        {
+          "name": "crank",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_token_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "areal_fee_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "spend_treasury",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury_token_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "destination_token_account",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "batch_update_destinations",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "revenue_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "destinations",
+          "type": {
+            "vec": {
+              "defined": "BatchDestination"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_authority_transfer",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "accept_authority_transfer",
+      "accounts": [
+        {
+          "name": "new_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_governance",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "OtConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "name",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "symbol",
+            "type": {
+              "array": [
+                "u8",
+                10
+              ]
+            }
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "total_minted",
+            "type": "u64"
+          },
+          {
+            "name": "uri",
+            "type": {
+              "array": [
+                "u8",
+                200
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevenueAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "total_distributed",
+            "type": "u64"
+          },
+          {
+            "name": "distribution_count",
+            "type": "u64"
+          },
+          {
+            "name": "last_distribution_ts",
+            "type": "i64"
+          },
+          {
+            "name": "min_distribution_amount",
+            "type": "u64"
+          },
+          {
+            "name": "is_distributing",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RevenueConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "destinations",
+            "type": {
+              "array": [
+                {
+                  "defined": "RevenueDestination"
+                },
+                10
+              ]
+            }
+          },
+          {
+            "name": "active_count",
+            "type": "u8"
+          },
+          {
+            "name": "config_version",
+            "type": "u64"
+          },
+          {
+            "name": "areal_fee_destination",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OtGovernance",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "has_pending",
+            "type": "bool"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OtTreasury",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "RevenueDestination",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "allocation_bps",
+            "type": "u16"
+          },
+          {
+            "name": "label",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "BatchDestination",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "address",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "allocation_bps",
+            "type": "u16"
+          },
+          {
+            "name": "label",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "events": [
+    {
+      "name": "OtInitialized",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "decimals",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "OtMinted",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "new_total_minted",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "RevenueDistributed",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "total_amount",
+          "type": "u64"
+        },
+        {
+          "name": "protocol_fee",
+          "type": "u64"
+        },
+        {
+          "name": "distribution_count",
+          "type": "u64"
+        },
+        {
+          "name": "num_destinations",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "DestinationConfigUpdated",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "config_version",
+          "type": "u64"
+        },
+        {
+          "name": "active_count",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "TreasurySpent",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "token_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the governance authority"
+    },
+    {
+      "code": 6001,
+      "name": "ZeroAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidBpsTotal",
+      "msg": "Destination allocations don't sum to 10,000"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidAllocationBps",
+      "msg": "BPS not in range 1-10,000"
+    },
+    {
+      "code": 6004,
+      "name": "DuplicateDestination",
+      "msg": "Same address used twice in destinations"
+    },
+    {
+      "code": 6005,
+      "name": "EmptyDestinationList",
+      "msg": "Destination list is empty"
+    },
+    {
+      "code": 6006,
+      "name": "TooManyDestinations",
+      "msg": "More than 10 destinations"
+    },
+    {
+      "code": 6007,
+      "name": "BelowMinDistribution",
+      "msg": "ATA balance < minimum distribution amount"
+    },
+    {
+      "code": 6008,
+      "name": "DistributionCooldown",
+      "msg": "Less than 7 days since last distribution"
+    },
+    {
+      "code": 6009,
+      "name": "DistributionInProgress",
+      "msg": "Distribution already in progress (reentrancy)"
+    },
+    {
+      "code": 6010,
+      "name": "InsufficientRemainingAccounts",
+      "msg": "Not enough remaining accounts for all destinations"
+    },
+    {
+      "code": 6011,
+      "name": "DestinationAccountMismatch",
+      "msg": "Remaining account doesn't match destination address"
+    },
+    {
+      "code": 6012,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidMintSupply",
+      "msg": "Mint supply must be 0 (fresh mint)"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidMintAuthority",
+      "msg": "Mint authority must be deployer"
+    },
+    {
+      "code": 6015,
+      "name": "FreezeAuthoritySet",
+      "msg": "Freeze authority must be None"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidName",
+      "msg": "Token name is empty"
+    },
+    {
+      "code": 6017,
+      "name": "InvalidSymbol",
+      "msg": "Token symbol is empty"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidDecimals",
+      "msg": "Decimals must be 1-9"
+    },
+    {
+      "code": 6019,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not the pending authority"
+    },
+    {
+      "code": 6021,
+      "name": "AuthorityTransferToSelf",
+      "msg": "Cannot transfer authority to yourself"
+    },
+    {
+      "code": 6022,
+      "name": "FeeDestinationCollision",
+      "msg": "Destination address cannot be the fee destination"
+    },
+    {
+      "code": 6023,
+      "name": "ZeroDestinationAddress",
+      "msg": "Destination address cannot be zero"
+    },
+    {
+      "code": 6024,
+      "name": "ActiveBpsSumMismatch",
+      "msg": "Active destinations BPS sum must be 10,000"
+    },
+    {
+      "code": 6025,
+      "name": "GovernanceInactive",
+      "msg": "Governance is inactive"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidTokenAccountOwner",
+      "msg": "Token account not owned by SPL Token Program"
+    },
+    {
+      "code": 6027,
+      "name": "TokenMintMismatch",
+      "msg": "Token account mint mismatch"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidFeeAccount",
+      "msg": "Areal fee account does not match revenue config"
+    },
+    {
+      "code": 6029,
+      "name": "InvalidInitialAuthority",
+      "msg": "Initial authority cannot be zero address"
+    }
+  ]
+}
