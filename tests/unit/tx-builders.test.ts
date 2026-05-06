@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 import { Keypair, PublicKey } from '@solana/web3.js';
 
 import {
+  buildConvertToRwtIx,
   buildDexCompoundIx,
   buildOtTreasuryClaimIx,
   buildRwtClaimYieldIx,
@@ -384,5 +385,109 @@ describe('buildOtTreasuryClaimIx', () => {
     const data = Buffer.from(ix.data);
     expect(data.length).toBe(8 + 12);
     expect(data.readUInt32LE(16)).toBe(0);
+  });
+});
+
+// ─────────────────────── convert_to_rwt ───────────────────────
+
+describe('buildConvertToRwtIx', () => {
+  const baseArgs = () => ({
+    ydProgramId: YIELD_DISTRIBUTION_PROGRAM_ID,
+    dexProgramId: NATIVE_DEX_PROGRAM_ID,
+    rwtEngineProgramId: RWT_ENGINE_PROGRAM_ID,
+    crank: k(),
+    config: k(),
+    distributor: k(),
+    otMint: k(),
+    accumulator: k(),
+    accumulatorUsdcAta: k(),
+    accumulatorRwtAta: k(),
+    feeAccount: k(),
+    rewardVault: k(),
+    rwtMint: k(),
+    dexConfig: k(),
+    poolState: k(),
+    dexPoolVaultIn: k(),
+    dexPoolVaultOut: k(),
+    dexArealFeeAccount: k(),
+    rwtVault: k(),
+    rwtCapitalAcc: k(),
+    rwtDaoFeeAccount: k(),
+    usdcAmount: 1_000_000n,
+    minRwtOut: 999_000n,
+    swapFirst: true,
+  });
+
+  it('discriminator = sha256("global:convert_to_rwt")[..8]', () => {
+    const ix = buildConvertToRwtIx(baseArgs());
+    expect(
+      Buffer.from(ix.data).subarray(0, 8).equals(discFromName('convert_to_rwt')),
+    ).toBe(true);
+  });
+
+  it('args layout = [u64 LE | u64 LE | u8] = 25 bytes total', () => {
+    const ix = buildConvertToRwtIx({
+      ...baseArgs(),
+      usdcAmount: 1_234_567n,
+      minRwtOut: 999_999n,
+      swapFirst: false,
+    });
+    const data = Buffer.from(ix.data);
+    expect(data.length).toBe(8 + 8 + 8 + 1);
+    expect(data.readBigUInt64LE(8)).toBe(1_234_567n);
+    expect(data.readBigUInt64LE(16)).toBe(999_999n);
+    expect(data.readUInt8(24)).toBe(0);
+  });
+
+  it('swapFirst toggle flips byte 24', () => {
+    const ixA = buildConvertToRwtIx({ ...baseArgs(), swapFirst: true });
+    const ixB = buildConvertToRwtIx({ ...baseArgs(), swapFirst: false });
+    expect(Buffer.from(ixA.data).readUInt8(24)).toBe(1);
+    expect(Buffer.from(ixB.data).readUInt8(24)).toBe(0);
+  });
+
+  it('account list: 22 keys, programId = ydProgramId', () => {
+    const args = baseArgs();
+    const ix = buildConvertToRwtIx(args);
+    expect(ix.keys.length).toBe(22);
+    expect(ix.programId.equals(YIELD_DISTRIBUTION_PROGRAM_ID)).toBe(true);
+    // crank: signer + writable
+    expect(ix.keys[0]!.pubkey.equals(args.crank)).toBe(true);
+    expect(ix.keys[0]!.isSigner).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(true);
+    // config: read
+    expect(ix.keys[1]!.isWritable).toBe(false);
+    // distributor: mut
+    expect(ix.keys[2]!.isWritable).toBe(true);
+    // ot_mint: read
+    expect(ix.keys[3]!.isWritable).toBe(false);
+    // accumulator: read PDA (signs internally via seeds)
+    expect(ix.keys[4]!.isWritable).toBe(false);
+  });
+
+  it('R-2: rwt_mint (slot 9) MUST be writable for CPI escalation', () => {
+    const ix = buildConvertToRwtIx(baseArgs());
+    expect(ix.keys[9]!.isWritable).toBe(true);
+  });
+
+  it('trailing program slots: dex_program, rwt_engine_program, token_program, system_program', () => {
+    const args = baseArgs();
+    const ix = buildConvertToRwtIx(args);
+    expect(ix.keys[18]!.pubkey.equals(NATIVE_DEX_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[19]!.pubkey.equals(RWT_ENGINE_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[20]!.pubkey.equals(SPL_TOKEN_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[21]!.pubkey.equals(SYSTEM_PROGRAM_ID)).toBe(true);
+  });
+
+  it('throws on usdcAmount > u64::MAX', () => {
+    expect(() =>
+      buildConvertToRwtIx({ ...baseArgs(), usdcAmount: 1n << 64n }),
+    ).toThrow(/usdc_amount/);
+  });
+
+  it('throws on minRwtOut > u64::MAX', () => {
+    expect(() =>
+      buildConvertToRwtIx({ ...baseArgs(), minRwtOut: 1n << 64n }),
+    ).toThrow(/min_rwt_out/);
   });
 });
