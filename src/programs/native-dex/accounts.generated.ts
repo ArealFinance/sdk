@@ -14,6 +14,7 @@ import {
   parseDiscriminator,
   remapWireToTs,
 } from '@arlex/client/codegen-runtime';
+import { Buffer } from 'buffer';
 
 /** Defined struct from IDL: Bin */
 export interface Bin {

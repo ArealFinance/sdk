@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.2 — 2026-05-06
+
+- **fix(packaging)**: stop relying on the ambient `Buffer` global. Every
+  source file that uses `Buffer` now does an explicit
+  `import { Buffer } from 'buffer'`. Without this, a downstream Vite
+  consumer using `vite-plugin-node-polyfills` (e.g. the dashboard) would
+  inject `import 'vite-plugin-node-polyfills/shims/buffer'` into the SDK's
+  `dist/*.mjs` at build time, producing:
+
+      Rollup failed to resolve import 'vite-plugin-node-polyfills/shims/buffer'
+      from sdk/dist/pda/index.mjs
+
+  The polyfill's `@rollup/plugin-inject` step rewrote bare `Buffer`
+  references inside the SDK; with an explicit import in scope the rewrite
+  no longer fires, and `'buffer'` resolves either to the consumer's
+  polyfill or the Node built-in. No runtime API change.
+
+  Files touched: 11 hand-written (`src/pda/*.ts`, `src/tx/**/*.ts`,
+  `src/tx/_internal/discriminator.ts`) + 10 auto-generated
+  (`src/programs/*/instructions.generated.ts`,
+  `src/programs/*/accounts.generated.ts`). The codegen template in
+  `@arlex/client` should be updated to emit the same import so the
+  next codegen run does not regress this fix.
+
 ## 0.1.1 — 2026-05-06
 
 - **fix(packaging)**: align tsup output extensions with package.json exports map.

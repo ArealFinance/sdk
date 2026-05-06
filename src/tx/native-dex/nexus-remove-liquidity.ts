@@ -23,6 +23,7 @@ import {
   Transaction,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { Buffer } from 'buffer';
 
 import { SPL_TOKEN_PROGRAM_ID } from '../../network/constants.js';
 import { NEXUS_REMOVE_LIQUIDITY_DISCRIMINATOR } from '../../programs/native-dex/instructions.generated.js';

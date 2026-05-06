@@ -1,5 +1,6 @@
 // RWT Engine program PDAs. RWT is global — both PDAs are singletons.
 
+import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
 /** `["rwt_vault"]` singleton — backing collateral vault. */

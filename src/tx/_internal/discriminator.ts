@@ -7,6 +7,7 @@
 // CPI entrypoints called by the YD claim crank. For those we mirror the
 // bot's approach and compute `sha256("global:<name>")[..8]` once per name.
 
+import { Buffer } from 'buffer';
 import { createHash } from 'node:crypto';
 
 const cache = new Map<string, Buffer>();

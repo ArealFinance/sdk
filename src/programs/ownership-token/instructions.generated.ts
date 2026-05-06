@@ -13,6 +13,7 @@ import {
   instructionDiscriminator,
   remapTsToWire,
 } from '@arlex/client/codegen-runtime';
+import { Buffer } from 'buffer';
 
 /** Defined struct from IDL: BatchDestination */
 export interface BatchDestination {

@@ -1,5 +1,6 @@
 // Futarchy program PDAs — proposal markets per OT.
 
+import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
 /** `["futarchy_config", ot_mint]` per-OT futarchy config. */

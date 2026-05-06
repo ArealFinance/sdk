@@ -7,6 +7,7 @@ import {
   SystemProgram,
   TransactionInstruction,
 } from '@solana/web3.js';
+import { Buffer } from 'buffer';
 
 import { SPL_TOKEN_PROGRAM_ID } from '../../network/constants.js';
 import { encodeClaimArgsBody, ixDiscriminator } from '../_internal/discriminator.js';
