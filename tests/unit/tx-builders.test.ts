@@ -13,10 +13,12 @@ import {
   buildConvertToRwtIx,
   buildDexCompoundIx,
   buildOtTreasuryClaimIx,
+  buildPublishRootIx,
   buildRwtClaimYieldIx,
 } from '../../src/tx/yield-distribution/index.js';
 import { buildDistributeRevenueIx } from '../../src/tx/ownership-token/index.js';
 import { DISTRIBUTE_REVENUE_DISCRIMINATOR } from '../../src/programs/ownership-token/instructions.generated.js';
+import { PUBLISH_ROOT_DISCRIMINATOR } from '../../src/programs/yield-distribution/instructions.generated.js';
 import {
   buildNexusAddLiquidityIx,
   buildNexusRemoveLiquidityIx,
@@ -572,5 +574,77 @@ describe('buildDistributeRevenueIx', () => {
     expect(() =>
       buildDistributeRevenueIx({ ...baseArgs(), destinations: [] }),
     ).toThrow(/destination/);
+  });
+});
+
+// ────────────────────────── publish_root ──────────────────────
+
+describe('buildPublishRootIx', () => {
+  const root32 = (b: number) => new Uint8Array(32).fill(b);
+  const baseArgs = () => ({
+    ydProgramId: YIELD_DISTRIBUTION_PROGRAM_ID,
+    publishAuthority: k(),
+    config: k(),
+    otMint: k(),
+    distributor: k(),
+    merkleRoot: root32(0xab),
+    maxTotalClaim: 1_000_000n,
+  });
+
+  it('discriminator = codegen PUBLISH_ROOT_DISCRIMINATOR', () => {
+    const ix = buildPublishRootIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(Buffer.from(PUBLISH_ROOT_DISCRIMINATOR)),
+    ).toBe(true);
+  });
+
+  it('discriminator also matches sha256("global:publish_root")[..8]', () => {
+    const ix = buildPublishRootIx(baseArgs());
+    expect(
+      Buffer.from(ix.data).subarray(0, 8).equals(discFromName('publish_root')),
+    ).toBe(true);
+  });
+
+  it('data layout: [disc(8) | merkle_root(32) | max_total_claim(u64 LE)] = 48 bytes', () => {
+    const ix = buildPublishRootIx({
+      ...baseArgs(),
+      merkleRoot: root32(0xcd),
+      maxTotalClaim: 0xdeadbeefn,
+    });
+    const data = Buffer.from(ix.data);
+    expect(data.length).toBe(48);
+    // root bytes
+    for (let i = 0; i < 32; i++) {
+      expect(data[8 + i]).toBe(0xcd);
+    }
+    // u64 LE max_total_claim at offset 40
+    expect(data.readBigUInt64LE(40)).toBe(0xdeadbeefn);
+  });
+
+  it('account list: 4 keys, programId = ydProgramId, publish_authority signer (read-only)', () => {
+    const args = baseArgs();
+    const ix = buildPublishRootIx(args);
+    expect(ix.keys.length).toBe(4);
+    expect(ix.programId.equals(YIELD_DISTRIBUTION_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[0]!.pubkey.equals(args.publishAuthority)).toBe(true);
+    expect(ix.keys[0]!.isSigner).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(false);
+    expect(ix.keys[1]!.isWritable).toBe(false); // config
+    expect(ix.keys[2]!.isWritable).toBe(false); // ot_mint
+    expect(ix.keys[3]!.isWritable).toBe(true); // distributor mut
+  });
+
+  it('throws when merkleRoot is not 32 bytes', () => {
+    expect(() =>
+      buildPublishRootIx({ ...baseArgs(), merkleRoot: new Uint8Array(31) }),
+    ).toThrow(/32 bytes/);
+  });
+
+  it('throws when maxTotalClaim > u64::MAX', () => {
+    expect(() =>
+      buildPublishRootIx({ ...baseArgs(), maxTotalClaim: 1n << 64n }),
+    ).toThrow(/max_total_claim/);
   });
 });
