@@ -5,6 +5,7 @@
 // the convention `(...payload, programId)` — `programId` is always last so
 // the call site reads naturally.
 
+import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
 /** `["dex_config"]` singleton. */

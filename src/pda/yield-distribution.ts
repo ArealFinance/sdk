@@ -1,5 +1,6 @@
 // Yield Distribution program PDAs.
 
+import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
 /** `["dist_config"]` singleton — global YD config. */

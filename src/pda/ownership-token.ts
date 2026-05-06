@@ -3,6 +3,7 @@
 // All seeds keyed by the OT mint — there is one OtConfig / Revenue /
 // Treasury per OT mint.
 
+import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
 /** `["ot_config", ot_mint]` OtConfig PDA. */
