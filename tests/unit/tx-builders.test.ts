@@ -15,6 +15,8 @@ import {
   buildOtTreasuryClaimIx,
   buildRwtClaimYieldIx,
 } from '../../src/tx/yield-distribution/index.js';
+import { buildDistributeRevenueIx } from '../../src/tx/ownership-token/index.js';
+import { DISTRIBUTE_REVENUE_DISCRIMINATOR } from '../../src/programs/ownership-token/instructions.generated.js';
 import {
   buildNexusAddLiquidityIx,
   buildNexusRemoveLiquidityIx,
@@ -489,5 +491,86 @@ describe('buildConvertToRwtIx', () => {
     expect(() =>
       buildConvertToRwtIx({ ...baseArgs(), minRwtOut: 1n << 64n }),
     ).toThrow(/min_rwt_out/);
+  });
+});
+
+// ────────────────────── distribute_revenue ────────────────────
+
+describe('buildDistributeRevenueIx', () => {
+  const baseArgs = () => ({
+    otProgramId: OWNERSHIP_TOKEN_PROGRAM_ID,
+    crank: k(),
+    otMint: k(),
+    revenueAccount: k(),
+    revenueTokenAccount: k(),
+    revenueConfig: k(),
+    arealFeeDestination: k(),
+    destinations: [k(), k(), k()],
+  });
+
+  it('discriminator = codegen DISTRIBUTE_REVENUE_DISCRIMINATOR', () => {
+    const ix = buildDistributeRevenueIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(Buffer.from(DISTRIBUTE_REVENUE_DISCRIMINATOR)),
+    ).toBe(true);
+  });
+
+  it('discriminator also matches sha256("global:distribute_revenue")[..8]', () => {
+    // Defense-in-depth: codegen should mirror the on-chain Anchor naming.
+    const ix = buildDistributeRevenueIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(discFromName('distribute_revenue')),
+    ).toBe(true);
+  });
+
+  it('data is exactly 8 bytes (no args)', () => {
+    const ix = buildDistributeRevenueIx(baseArgs());
+    expect(Buffer.from(ix.data).length).toBe(8);
+  });
+
+  it('account list: 7 fixed + N destinations, programId = otProgramId', () => {
+    const args = baseArgs();
+    const ix = buildDistributeRevenueIx(args);
+    expect(ix.keys.length).toBe(7 + args.destinations.length);
+    expect(ix.programId.equals(OWNERSHIP_TOKEN_PROGRAM_ID)).toBe(true);
+    // Slot 0: crank — signer + writable
+    expect(ix.keys[0]!.pubkey.equals(args.crank)).toBe(true);
+    expect(ix.keys[0]!.isSigner).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(true);
+    // Slot 1: ot_mint — read
+    expect(ix.keys[1]!.pubkey.equals(args.otMint)).toBe(true);
+    expect(ix.keys[1]!.isWritable).toBe(false);
+    // Slot 2: revenue_account — mut
+    expect(ix.keys[2]!.isWritable).toBe(true);
+    // Slot 3: revenue_token_account — mut
+    expect(ix.keys[3]!.isWritable).toBe(true);
+    // Slot 4: revenue_config — read
+    expect(ix.keys[4]!.isWritable).toBe(false);
+    // Slot 5: areal_fee_account — mut
+    expect(ix.keys[5]!.isWritable).toBe(true);
+    // Slot 6: token_program — read
+    expect(ix.keys[6]!.pubkey.equals(SPL_TOKEN_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[6]!.isWritable).toBe(false);
+  });
+
+  it('remaining_accounts: each destination ATA is writable, in input order', () => {
+    const args = baseArgs();
+    const ix = buildDistributeRevenueIx(args);
+    for (let i = 0; i < args.destinations.length; i++) {
+      const slot = 7 + i;
+      expect(ix.keys[slot]!.pubkey.equals(args.destinations[i]!)).toBe(true);
+      expect(ix.keys[slot]!.isSigner).toBe(false);
+      expect(ix.keys[slot]!.isWritable).toBe(true);
+    }
+  });
+
+  it('throws when destinations is empty', () => {
+    expect(() =>
+      buildDistributeRevenueIx({ ...baseArgs(), destinations: [] }),
+    ).toThrow(/destination/);
   });
 });
