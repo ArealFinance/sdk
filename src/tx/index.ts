@@ -1,2 +1,2 @@
-// Placeholder — populated by Phase 3 Steps E/F/G/H/D
-export {};
+export * from './native-dex/index.js';
+export * from './yield-distribution/index.js';
