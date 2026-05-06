@@ -329,6 +329,20 @@ describe('buildDexCompoundIx', () => {
     expect(ix.keys[9]!.pubkey.equals(SPL_TOKEN_PROGRAM_ID)).toBe(true);
     expect(ix.keys[10]!.pubkey.equals(SYSTEM_PROGRAM_ID)).toBe(true);
   });
+
+  it('args encode proof with multiple nodes [u64 LE | u32 LE proof_len | 32*N proof]', () => {
+    const args = {
+      ...baseArgs(),
+      cumulativeAmount: 75_000n,
+      proof: [Buffer.alloc(32, 11), Buffer.alloc(32, 22)],
+    };
+    const ix = buildDexCompoundIx(args);
+    const data = Buffer.from(ix.data);
+    expect(data.length).toBe(8 + 8 + 4 + 32 * 2);
+    expect(data.readBigUInt64LE(8)).toBe(75_000n);
+    expect(data.readUInt32LE(16)).toBe(2); // proof_len
+    expect(data.subarray(20, 52).every((b, i) => b === (i < 32 ? 11 : 22))).toBe(true);
+  });
 });
 
 describe('buildOtTreasuryClaimIx', () => {
