@@ -12,6 +12,7 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 
 import {
   applySlippage,
+  applySlippageU128,
   quoteSwap,
 } from '../../src/programs/native-dex/quote.js';
 import type {
@@ -380,6 +381,47 @@ describe('applySlippage — QM-13: bounds', () => {
 
   it('throws on negative expectedOut', () => {
     expect(() => applySlippage(-1n, 50)).toThrow(/expectedOut/);
+  });
+});
+
+// applySlippageU128 — same arithmetic as applySlippage, but the input is
+// allowed to exceed u64::MAX (LP `min_shares` is u128). Range here is
+// [0, 10000] bps because `add_liquidity` accepts a 100% slippage
+// (i.e. `min_shares == 0`) when the caller knows nothing about the
+// pool's invariant ratio yet.
+describe('applySlippageU128', () => {
+  it('50 bps = 0.5% slippage off 1000 = 995', () => {
+    expect(applySlippageU128(1_000n, 50)).toBe(995n);
+  });
+
+  it('slippage 0 returns expectedShares unchanged', () => {
+    expect(applySlippageU128(123_456_789n, 0)).toBe(123_456_789n);
+  });
+
+  it('slippage 10000 (100%) returns 0 (caller accepts any non-negative output)', () => {
+    expect(applySlippageU128(123_456_789n, 10_000)).toBe(0n);
+  });
+
+  it('input above u64::MAX is allowed (u128 boundary)', () => {
+    const u64Max = (1n << 64n) - 1n;
+    const huge = u64Max + 1_000_000n;
+    expect(applySlippageU128(huge, 50)).toBe((huge * 9_950n) / 10_000n);
+  });
+
+  it('throws on slippageBps > 10000', () => {
+    expect(() => applySlippageU128(1_000n, 10_001)).toThrow(/in \[0, 10000\]/);
+  });
+
+  it('throws on negative slippageBps', () => {
+    expect(() => applySlippageU128(1_000n, -1)).toThrow(/in \[0, 10000\]/);
+  });
+
+  it('throws on non-integer slippageBps', () => {
+    expect(() => applySlippageU128(1_000n, 12.5)).toThrow(/in \[0, 10000\]/);
+  });
+
+  it('throws on negative expectedShares', () => {
+    expect(() => applySlippageU128(-1n, 50)).toThrow(/expectedShares/);
   });
 });
 

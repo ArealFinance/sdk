@@ -287,6 +287,35 @@ export function applySlippage(expectedOut: bigint, slippageBps: number): bigint 
   return (expectedOut * (10_000n - BigInt(slippageBps))) / 10_000n;
 }
 
+/**
+ * U128 variant of `applySlippage` for use against LP-share quotes
+ * (`add_liquidity` / `zap_liquidity` `min_shares` is a u128, not u64).
+ * Same arithmetic; no u64 boundary check because the result is allowed
+ * to exceed u64::MAX. Slippage range is `[0, 10000]` here (0%—100%) to
+ * match the contract's `min_shares` semantics — a caller that tolerates
+ * any number of shares (including zero) passes `slippageBps == 10_000`.
+ */
+export function applySlippageU128(
+  expectedShares: bigint,
+  slippageBps: number,
+): bigint {
+  if (
+    !Number.isInteger(slippageBps) ||
+    slippageBps < 0 ||
+    slippageBps > 10_000
+  ) {
+    throw new Error(
+      `applySlippageU128: slippageBps must be an integer in [0, 10000] (got ${slippageBps})`,
+    );
+  }
+  if (expectedShares < 0n) {
+    throw new Error(
+      `applySlippageU128: expectedShares must be >= 0 (got ${expectedShares})`,
+    );
+  }
+  return (expectedShares * (10_000n - BigInt(slippageBps))) / 10_000n;
+}
+
 // ───────────────────────── internal math helpers ──────────────────────────
 
 /**

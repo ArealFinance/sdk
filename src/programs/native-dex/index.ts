@@ -9,6 +9,7 @@ export * from './errors.generated.js';
 export {
   quoteSwap,
   applySlippage,
+  applySlippageU128,
   type QuoteResult,
   type QuoteOutcome,
   type QuoteError,
