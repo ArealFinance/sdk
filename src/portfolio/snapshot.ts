@@ -161,11 +161,22 @@ export async function getHolderPortfolio(
           distributor,
           holder,
         );
-        if (proof) {
-          try {
-            cumulativeAmount = BigInt(proof.cumulativeAmount);
-          } catch {
-            cumulativeAmount = null;
+        if (proof !== null) {
+          // Wire spec says `cumulativeAmount` is a decimal string. Strict
+          // `/^\d+$/` rejects empty string, hex (`0x...`), leading
+          // whitespace, sign chars, decimals, and scientific notation —
+          // any of which `BigInt()` would silently coerce (e.g. `BigInt("")
+          // === 0n`). On any non-decimal input we fall back to `null`
+          // (claimable unknown) rather than report a wrong number.
+          // The try/catch is belt-and-suspenders: the regex already
+          // guarantees `BigInt` will succeed.
+          const raw = proof.cumulativeAmount;
+          if (typeof raw === 'string' && /^\d+$/.test(raw)) {
+            try {
+              cumulativeAmount = BigInt(raw);
+            } catch {
+              cumulativeAmount = null;
+            }
           }
         }
       }

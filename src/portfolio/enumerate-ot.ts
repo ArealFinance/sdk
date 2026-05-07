@@ -14,6 +14,18 @@ import {
   type OtConfig,
 } from '../programs/ownership-token/accounts.generated.js';
 
+/**
+ * Fixed on-chain size of an OtConfig account, derived from the IDL layout:
+ *   8 (disc) + 32 (ot_mint) + 32 (name) + 10 (symbol) + 1 (decimals)
+ *   + 8 (total_minted) + 200 (uri) + 1 (bump) = 292 bytes
+ *
+ * Used as a `dataSize` filter alongside the discriminator memcmp so the
+ * RPC only returns accounts of exactly this type. Discriminator memcmp
+ * alone is already collision-resistant; `dataSize` adds a minor bandwidth
+ * saving and locks the contract to "this account type and only this".
+ */
+export const OTCONFIG_SIZE = 292;
+
 export interface EnumeratedOt {
   configAddress: PublicKey;
   config: OtConfig;
@@ -32,6 +44,7 @@ export async function enumerateOtConfigs(
   const accounts = await conn.getProgramAccounts(programId, {
     commitment: 'confirmed',
     filters: [
+      { dataSize: OTCONFIG_SIZE },
       {
         memcmp: {
           offset: 0,

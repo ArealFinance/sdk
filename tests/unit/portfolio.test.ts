@@ -6,7 +6,7 @@
 // codegen parsers do their actual work — this catches discriminator drift
 // at the same time as the orchestration logic.
 //
-// The 14 test cases in PM brief order:
+// The 19 test cases in PM brief order:
 //   1. Empty `rows` when no OT configs.
 //   2. Single OT, no ATA → balance: 0n, claimedAmount: 0n.
 //   3. Single OT, ATA exists → balance = mocked amount.
@@ -21,6 +21,11 @@
 //  12. metadata.name/symbol null-byte trimmed.
 //  13. metadata.decimals flows through unmodified.
 //  14. ataAddress matches deterministic ATA PDA.
+//  15. proof.cumulativeAmount === "" → null (rejects empty string).
+//  16. proof.cumulativeAmount === "not-a-number" → null.
+//  17. proof.cumulativeAmount === "0x10" (hex) → null.
+//  18. proof.cumulativeAmount === "  42" (whitespace) → null.
+//  19. proof.cumulativeAmount === "-1" (negative) → null.
 
 import { Buffer } from 'buffer';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -476,5 +481,119 @@ describe('getHolderPortfolio', () => {
     const snap = await getHolderPortfolio(conn as any, HOLDER, baseOpts);
     const [expectedAta] = findAssociatedTokenAddressPda(HOLDER, OT_MINT_B);
     expect(snap.rows[0]!.ataAddress.equals(expectedAta)).toBe(true);
+  });
+
+  // ──────────────────── malformed cumulativeAmount ────────────────────
+  //
+  // The wire spec says `cumulativeAmount` is a decimal string. Anything
+  // else (empty string, hex, leading whitespace, sign chars, words,
+  // negatives, decimals, scientific notation) MUST fall back to
+  // `cumulativeAmount: null` / `claimableNow: null` rather than silently
+  // produce a wrong number — `BigInt("")` would otherwise yield `0n`.
+  //
+  // Cases 15–19 lock that contract.
+
+  /**
+   * Build a connection + fetch mock that returns a single OT with a
+   * distributor present and the given `cumulativeAmount` string in the
+   * proof response. Returns the snapshot for assertion.
+   */
+  async function snapshotWithCumulative(rawCumulative: unknown) {
+    const conn = makeMockConnection();
+    conn.getProgramAccounts.mockResolvedValueOnce(
+      singleOtAccountsResponse(OT_MINT_A),
+    );
+    const [distributorPda] = findMerkleDistributorPda(
+      OT_MINT_A,
+      YIELD_DISTRIBUTION_PROGRAM_ID,
+    );
+    const [claimStatusPda] = findClaimStatusPda(
+      distributorPda,
+      HOLDER,
+      YIELD_DISTRIBUTION_PROGRAM_ID,
+    );
+
+    conn.getAccountInfo.mockImplementation(async (key: PublicKey) => {
+      conn.callOrder.push('getAccountInfo');
+      if (key.equals(distributorPda)) {
+        return {
+          data: buildDistributorBytes(OT_MINT_A),
+          executable: false,
+          lamports: 0,
+          owner: YIELD_DISTRIBUTION_PROGRAM_ID,
+          rentEpoch: 0,
+        };
+      }
+      if (key.equals(claimStatusPda)) {
+        return {
+          data: buildClaimStatusBytes({
+            claimant: HOLDER,
+            distributor: distributorPda,
+            claimedAmount: 100n,
+          }),
+          executable: false,
+          lamports: 0,
+          owner: YIELD_DISTRIBUTION_PROGRAM_ID,
+          rentEpoch: 0,
+        };
+      }
+      return null;
+    });
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => ({
+        ok: true,
+        json: async () => ({
+          distributor: distributorPda.toBase58(),
+          epoch: 1,
+          holder: HOLDER.toBase58(),
+          cumulativeAmount: rawCumulative,
+          proof: [],
+          merkleRoot: '00',
+          publishedAt: Date.now(),
+        }),
+      })),
+    );
+
+    return getHolderPortfolio(conn as any, HOLDER, {
+      ...baseOpts,
+      proofStoreUrl: 'https://proofs.example.test',
+    });
+  }
+
+  // Case 15 — empty string
+  it('proof.cumulativeAmount === "" → cumulativeAmount/claimableNow null', async () => {
+    const snap = await snapshotWithCumulative('');
+    expect(snap.rows[0]!.cumulativeAmount).toBeNull();
+    expect(snap.rows[0]!.claimableNow).toBeNull();
+  });
+
+  // Case 16 — non-numeric word
+  it('proof.cumulativeAmount === "not-a-number" → cumulativeAmount/claimableNow null', async () => {
+    const snap = await snapshotWithCumulative('not-a-number');
+    expect(snap.rows[0]!.cumulativeAmount).toBeNull();
+    expect(snap.rows[0]!.claimableNow).toBeNull();
+  });
+
+  // Case 17 — hex (BigInt would happily accept this)
+  it('proof.cumulativeAmount === "0x10" (hex) → cumulativeAmount null', async () => {
+    const snap = await snapshotWithCumulative('0x10');
+    expect(snap.rows[0]!.cumulativeAmount).toBeNull();
+    expect(snap.rows[0]!.claimableNow).toBeNull();
+  });
+
+  // Case 18 — leading whitespace (BigInt would trim and accept)
+  it('proof.cumulativeAmount === "  42" (whitespace) → cumulativeAmount null', async () => {
+    const snap = await snapshotWithCumulative('  42');
+    expect(snap.rows[0]!.cumulativeAmount).toBeNull();
+    expect(snap.rows[0]!.claimableNow).toBeNull();
+  });
+
+  // Case 19 — negative (cumulative must always be >= 0)
+  it('proof.cumulativeAmount === "-1" (negative) → cumulativeAmount null', async () => {
+    const snap = await snapshotWithCumulative('-1');
+    expect(snap.rows[0]!.cumulativeAmount).toBeNull();
+    expect(snap.rows[0]!.claimableNow).toBeNull();
   });
 });
