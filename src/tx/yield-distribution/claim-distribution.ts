@@ -29,10 +29,22 @@
 // We reject longer proofs in the builder to fail fast with a friendlier
 // error than `ProofTooLong` from a simulated tx.
 
-import { PublicKey, SystemProgram, TransactionInstruction } from '@solana/web3.js';
-import { Buffer } from 'buffer';
+import {
+  Connection,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+  TransactionInstruction,
+} from '@solana/web3.js';
+import { createAssociatedTokenAccountIdempotentInstruction } from '@solana/spl-token';
 
 import { SPL_TOKEN_PROGRAM_ID } from '../../network/constants.js';
+import {
+  findAssociatedTokenAddressPda,
+  findClaimStatusPda,
+  findMerkleDistributorPda,
+  findYdConfigPda,
+} from '../../pda/index.js';
 import { encodeClaimArgs } from '../../programs/yield-distribution/instructions.generated.js';
 
 /** Mirror of `contracts/yield-distribution/src/constants.rs::MAX_PROOF_LEN`. */
@@ -118,4 +130,135 @@ export function buildClaimDistributionIx(
     ],
     data,
   });
+}
+
+// ────────────────────── buildClaimTx convenience ──────────────────────
+
+export interface BuildClaimTxArgs {
+  /** RPC connection — used only when `ensureAta=true` to look up the ATA. */
+  connection: Connection;
+
+  /** YD program id (per cluster). */
+  ydProgramId: PublicKey;
+  /** OT mint the holder is claiming against. */
+  otMint: PublicKey;
+  /** RWT mint (per cluster — see `RWT_MINTS`). */
+  rwtMint: PublicKey;
+  /** Holder wallet — signer + claimant. */
+  claimant: PublicKey;
+  /** Distributor's reward vault (RWT). Read from on-chain MerkleDistributor. */
+  rewardVault: PublicKey;
+
+  /** Total RWT entitlement at the active root (cumulative, not delta). */
+  cumulativeAmount: bigint;
+  /**
+   * Merkle proof nodes as hex strings (one per node, optional `0x` prefix,
+   * 64 hex chars each). Most proof-store responses already serialize nodes
+   * as hex; we decode here so callers don't have to.
+   */
+  proofHex: string[];
+
+  /**
+   * Optional alternate payer for the ClaimStatus rent. Defaults to
+   * `claimant`. The payer is always a signer.
+   */
+  payer?: PublicKey;
+
+  /**
+   * When true, look up the holder's RWT ATA and prepend a
+   * createAssociatedTokenAccountIdempotent ix if it does not exist yet.
+   * Skipping this saves one RPC roundtrip when the caller already knows
+   * the ATA is initialised. Defaults to false.
+   */
+  ensureAta?: boolean;
+}
+
+const HEX_RE = /^[0-9a-fA-F]+$/;
+
+function decodeProofHex(proofHex: string[]): Uint8Array[] {
+  const out: Uint8Array[] = new Array(proofHex.length);
+  for (let i = 0; i < proofHex.length; i++) {
+    let s = proofHex[i]!;
+    if (s.startsWith('0x') || s.startsWith('0X')) s = s.slice(2);
+    if (s.length !== 64) {
+      throw new Error(
+        `proof[${i}]: hex string has length ${s.length}, expected 64 (32 bytes)`,
+      );
+    }
+    if (!HEX_RE.test(s)) {
+      throw new Error(`proof[${i}]: not a hex string`);
+    }
+    const bytes = new Uint8Array(32);
+    for (let j = 0; j < 32; j++) {
+      bytes[j] = parseInt(s.slice(j * 2, j * 2 + 2), 16);
+    }
+    out[i] = bytes;
+  }
+  return out;
+}
+
+/**
+ * Build a complete legacy `Transaction` for the holder claim flow.
+ *
+ * Steps:
+ *   1. Decode hex-encoded proof nodes into `Uint8Array[]`.
+ *   2. Derive the YD config / distributor / claim_status / claimant ATA PDAs.
+ *   3. If `ensureAta=true`, RPC-check the claimant ATA; if missing, prepend
+ *      a `createAssociatedTokenAccountIdempotent` ix.
+ *   4. Append the `buildClaimDistributionIx` output.
+ *
+ * Returns a legacy `Transaction` (NOT versioned) — caller is responsible
+ * for setting `recentBlockhash`, `feePayer`, signing, and submission.
+ */
+export async function buildClaimTx(
+  args: BuildClaimTxArgs,
+): Promise<Transaction> {
+  const proof = decodeProofHex(args.proofHex);
+  const payer = args.payer ?? args.claimant;
+
+  const [config] = findYdConfigPda(args.ydProgramId);
+  const [distributor] = findMerkleDistributorPda(args.otMint, args.ydProgramId);
+  const [claimStatus] = findClaimStatusPda(
+    distributor,
+    args.claimant,
+    args.ydProgramId,
+  );
+  const [claimantToken] = findAssociatedTokenAddressPda(
+    args.claimant,
+    args.rwtMint,
+  );
+
+  const tx = new Transaction();
+
+  if (args.ensureAta) {
+    const ataInfo = await args.connection.getAccountInfo(claimantToken);
+    if (ataInfo === null) {
+      tx.add(
+        createAssociatedTokenAccountIdempotentInstruction(
+          payer,
+          claimantToken,
+          args.claimant,
+          args.rwtMint,
+        ),
+      );
+    }
+  }
+
+  tx.add(
+    buildClaimDistributionIx({
+      ydProgramId: args.ydProgramId,
+      claimant: args.claimant,
+      payer,
+      config,
+      otMint: args.otMint,
+      distributor,
+      claimStatus,
+      rewardVault: args.rewardVault,
+      claimantToken,
+      cumulativeAmount: args.cumulativeAmount,
+      proof,
+    }),
+  );
+
+  return tx;
 }

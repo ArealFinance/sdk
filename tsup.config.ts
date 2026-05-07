@@ -20,7 +20,7 @@ export default defineConfig({
   sourcemap: false,
   clean: true,
   treeshake: true,
-  external: ['@arlex/client', '@solana/web3.js'],
+  external: ['@arlex/client', '@solana/web3.js', '@solana/spl-token'],
   outExtension: ({ format }) => ({
     js: format === 'esm' ? '.mjs' : '.cjs',
   }),
