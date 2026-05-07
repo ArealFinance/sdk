@@ -39,7 +39,20 @@ export interface PortfolioSnapshot {
   slot: number;
 }
 
-/** Wire shape from merkle-publisher proof-store. */
+/**
+ * Wire shape from merkle-publisher proof-store.
+ *
+ * NOTE (Phase 6): the SDK does NOT verify this proof against the on-chain
+ * MerkleDistributor root before surfacing `cumulativeAmount` to the UI —
+ * it trusts the proof-store as a read-side cache. Holders cannot lose funds
+ * from a wrong proof because the actual `claim` instruction is verified
+ * on-chain at execution time against the distributor's root: a bad proof
+ * simply fails the transaction. The worst-case impact of a bogus proof
+ * here is a UI showing a `claimableNow` value that the user cannot actually
+ * claim. Phase 7+ may add client-side proof verification (recompute the
+ * root from `proof[]` and compare against the on-chain `merkle_root`) to
+ * close that UI-display gap.
+ */
 export interface MerkleProof {
   distributor: string;
   epoch: number;

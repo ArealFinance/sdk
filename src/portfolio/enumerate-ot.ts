@@ -26,6 +26,19 @@ import {
  */
 export const OTCONFIG_SIZE = 292;
 
+/**
+ * Result of enumerating one OtConfig PDA on-chain.
+ *
+ * `configAddress` is the PDA address of the OtConfig account itself. It is
+ * exposed for callers that want to derive related PDAs (e.g. metadata or
+ * authority PDAs seeded by the config address) or subscribe directly to
+ * OtConfig changes via `connection.onAccountChange(configAddress, ...)`.
+ *
+ * `getHolderPortfolio` itself does not consume `configAddress` — it only
+ * reads `config.otMint` to find balances and distributors — but the field
+ * is part of the public enumeration contract so consumers do not have to
+ * re-walk PDA seeds to subscribe to the same accounts they just enumerated.
+ */
 export interface EnumeratedOt {
   configAddress: PublicKey;
   config: OtConfig;
