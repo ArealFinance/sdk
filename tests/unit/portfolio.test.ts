@@ -32,6 +32,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Keypair, PublicKey } from '@solana/web3.js';
 
 import { getHolderPortfolio } from '../../src/portfolio/snapshot.js';
+import { fetchMerkleProof } from '../../src/portfolio/proof-fetcher.js';
 import {
   CLAIMSTATUS_DISCRIMINATOR,
 } from '../../src/programs/yield-distribution/accounts.generated.js';
@@ -595,5 +596,23 @@ describe('getHolderPortfolio', () => {
     const snap = await snapshotWithCumulative('-1');
     expect(snap.rows[0]!.cumulativeAmount).toBeNull();
     expect(snap.rows[0]!.claimableNow).toBeNull();
+  });
+});
+
+// ─────────────────────── fetchMerkleProof URL validation ───────────────────────
+
+describe('fetchMerkleProof', () => {
+  it('returns null without calling fetch when proofStoreUrl is malformed', async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal('fetch', fetchSpy);
+
+    const result = await fetchMerkleProof(
+      'not a url',
+      new PublicKey('So11111111111111111111111111111111111111112'),
+      new PublicKey('11111111111111111111111111111111'),
+    );
+
+    expect(result).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

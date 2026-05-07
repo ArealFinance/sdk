@@ -21,6 +21,16 @@ export async function fetchMerkleProof(
   distributor: PublicKey,
   holder: PublicKey,
 ): Promise<MerkleProof | null> {
+  // Validate the base URL up-front so a misconfigured `proofStoreUrl`
+  // (typo, missing protocol, etc.) fails fast with the same null contract
+  // as a network error, instead of producing a confusing fetch-time
+  // exception or a request to a relative path.
+  try {
+    new URL(proofStoreUrl);
+  } catch {
+    return null;
+  }
+
   try {
     const base = proofStoreUrl.replace(/\/$/, '');
     const res = await fetch(
