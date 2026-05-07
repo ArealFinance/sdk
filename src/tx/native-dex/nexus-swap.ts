@@ -56,7 +56,7 @@ export function buildNexusSwapIx(args: BuildNexusSwapArgs): TransactionInstructi
   const nexusTokenOut = aToB ? ctx.nexusRwtAta : ctx.nexusUsdcAta;
 
   const keys = [
-    { pubkey: ctx.manager, isSigner: true, isWritable: true },
+    { pubkey: ctx.manager, isSigner: true, isWritable: false },
     { pubkey: ctx.dexConfig, isSigner: false, isWritable: false },
     { pubkey: ctx.liquidityNexus, isSigner: false, isWritable: true },
     { pubkey: pool.pool, isSigner: false, isWritable: true },
