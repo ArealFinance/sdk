@@ -1,6 +1,6 @@
 {
   "name": "@areal/sdk",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Areal Finance product SDK (TypeScript) — typed bindings for the 5 on-chain programs, built on @arlex/client",
   "license": "Apache-2.0",
   "type": "module",
@@ -19,6 +19,7 @@
     "./tx": { "types": "./dist/tx/index.d.ts", "import": "./dist/tx/index.mjs", "require": "./dist/tx/index.cjs" },
     "./network": { "types": "./dist/network/index.d.ts", "import": "./dist/network/index.mjs", "require": "./dist/network/index.cjs" },
     "./errors": { "types": "./dist/errors/index.d.ts", "import": "./dist/errors/index.mjs", "require": "./dist/errors/index.cjs" },
+    "./portfolio": { "types": "./dist/portfolio/index.d.ts", "import": "./dist/portfolio/index.mjs", "require": "./dist/portfolio/index.cjs" },
     "./idl/*.json": "./idl/*.json"
   },
   "scripts": {
@@ -31,6 +32,9 @@
   "peerDependencies": {
     "@arlex/client": "^0.3.0",
     "@solana/web3.js": "^1.95.0"
+  },
+  "dependencies": {
+    "bs58": "^6.0.0"
   },
   "devDependencies": {
     "@arlex/client": "file:../vendor/arlex-client-0.3.1.tgz",

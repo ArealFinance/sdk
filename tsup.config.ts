@@ -12,6 +12,7 @@ export default defineConfig({
     'src/tx/index.ts',
     'src/network/index.ts',
     'src/errors/index.ts',
+    'src/portfolio/index.ts',
   ],
   format: ['cjs', 'esm'],
   dts: true,
