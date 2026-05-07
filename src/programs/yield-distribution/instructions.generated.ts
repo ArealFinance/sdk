@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: yield_distribution v0.1.0
+// IDL: yield-distribution v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -13,10 +15,9 @@ import {
   instructionDiscriminator,
   remapTsToWire,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Type registry shared across all instruction encoders in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([] as any, [{"name":"DistributionConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"publish_authority","type":{"array":["u8",32]}},{"name":"protocol_fee_bps","type":"u16"},{"name":"min_distribution_amount","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"MerkleDistributor","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"reward_vault","type":{"array":["u8",32]}},{"name":"accumulator","type":{"array":["u8",32]}},{"name":"merkle_root","type":{"array":["u8",32]}},{"name":"max_total_claim","type":"u64"},{"name":"total_claimed","type":"u64"},{"name":"total_funded","type":"u64"},{"name":"locked_vested","type":"u64"},{"name":"last_fund_ts","type":"i64"},{"name":"vesting_period_secs","type":"i64"},{"name":"epoch","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"Accumulator","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"ClaimStatus","type":{"kind":"struct","fields":[{"name":"claimant","type":{"array":["u8",32]}},{"name":"distributor","type":{"array":["u8",32]}},{"name":"claimed_amount","type":"u64"},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([] as any, [{"name":"DistributionConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"publish_authority","type":{"array":["u8",32]}},{"name":"protocol_fee_bps","type":"u16"},{"name":"min_distribution_amount","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"MerkleDistributor","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"reward_vault","type":{"array":["u8",32]}},{"name":"accumulator","type":{"array":["u8",32]}},{"name":"merkle_root","type":{"array":["u8",32]}},{"name":"max_total_claim","type":"u64"},{"name":"total_claimed","type":"u64"},{"name":"total_funded","type":"u64"},{"name":"locked_vested","type":"u64"},{"name":"last_fund_ts","type":"i64"},{"name":"vesting_period_secs","type":"i64"},{"name":"epoch","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"Accumulator","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"ClaimStatus","type":{"kind":"struct","fields":[{"name":"claimant","type":{"array":["u8",32]}},{"name":"distributor","type":{"array":["u8",32]}},{"name":"claimed_amount","type":"u64"},{"name":"bump","type":"u8"}]}},{"name":"LiquidityHolding","type":{"kind":"struct","fields":[{"name":"bump","type":"u8"},{"name":"initialized","type":"bool"},{"name":"total_received","type":"u64"},{"name":"total_withdrawn","type":"u64"},{"name":"last_funded_slot","type":"u64"},{"name":"last_withdrawn_slot","type":"u64"},{"name":"last_withdrawn_amount","type":"u64"},{"name":"_reserved","type":{"array":["u8",16]}}]}}] as any);
 
 // ============================================================
 // Instruction: initialize_config
@@ -27,7 +28,7 @@ export const INITIALIZE_CONFIG_DISCRIMINATOR: Uint8Array = new Uint8Array([0xd0,
 export interface InitializeConfigAccounts {
   /** signer, writable */
   deployer: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   config: PublicKey;
   /** readonly */
   arealFeeDestinationAccount: PublicKey;
@@ -93,9 +94,9 @@ export interface CreateDistributorAccounts {
   config: PublicKey;
   /** readonly */
   otMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   distributor: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   accumulator: PublicKey;
   /** readonly */
   rwtMint: PublicKey;
@@ -152,10 +153,10 @@ export interface FundDistributorAccounts {
   depositor: PublicKey;
   /** readonly */
   config: PublicKey;
-  /** readonly, writable */
-  distributor: PublicKey;
   /** readonly */
   otMint: PublicKey;
+  /** readonly */
+  distributor: PublicKey;
   /** readonly, writable */
   depositorToken: PublicKey;
   /** readonly, writable */
@@ -205,10 +206,10 @@ export interface PublishRootAccounts {
   publishAuthority: PublicKey;
   /** readonly */
   config: PublicKey;
-  /** readonly, writable */
-  distributor: PublicKey;
   /** readonly */
   otMint: PublicKey;
+  /** readonly */
+  distributor: PublicKey;
 }
 
 export interface PublishRootArgs {
@@ -263,11 +264,11 @@ export interface ClaimAccounts {
   payer: PublicKey;
   /** readonly */
   config: PublicKey;
-  /** readonly, writable */
-  distributor: PublicKey;
   /** readonly */
   otMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
+  distributor: PublicKey;
+  /** readonly */
   claimStatus: PublicKey;
   /** readonly, writable */
   rewardVault: PublicKey;
@@ -331,10 +332,10 @@ export interface CloseDistributorAccounts {
   authority: PublicKey;
   /** readonly */
   config: PublicKey;
-  /** readonly, writable */
-  distributor: PublicKey;
   /** readonly */
   otMint: PublicKey;
+  /** readonly */
+  distributor: PublicKey;
   /** readonly, writable */
   rewardVault: PublicKey;
   /** readonly, writable */
@@ -357,7 +358,7 @@ export const UPDATE_CONFIG_DISCRIMINATOR: Uint8Array = new Uint8Array([0x1d, 0x9
 export interface UpdateConfigAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   config: PublicKey;
 }
 
@@ -410,7 +411,7 @@ export const UPDATE_PUBLISH_AUTHORITY_DISCRIMINATOR: Uint8Array = new Uint8Array
 export interface UpdatePublishAuthorityAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   config: PublicKey;
 }
 
@@ -456,7 +457,7 @@ export const PROPOSE_AUTHORITY_TRANSFER_DISCRIMINATOR: Uint8Array = new Uint8Arr
 export interface ProposeAuthorityTransferAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   config: PublicKey;
 }
 
@@ -509,4 +510,180 @@ export interface AcceptAuthorityTransferAccounts {
 /** Encode (no args) for the `accept_authority_transfer` instruction — discriminator only. */
 export function encodeAcceptAuthorityTransferArgs(): Buffer {
   return Buffer.from(ACCEPT_AUTHORITY_TRANSFER_DISCRIMINATOR);
+}
+
+// ============================================================
+// Instruction: initialize_liquidity_holding
+// ============================================================
+
+export const INITIALIZE_LIQUIDITY_HOLDING_DISCRIMINATOR: Uint8Array = new Uint8Array([0xbe, 0xce, 0x60, 0xa6, 0x31, 0x95, 0x5b, 0xb0]);
+
+export interface InitializeLiquidityHoldingAccounts {
+  /** signer, writable */
+  payer: PublicKey;
+  /** readonly */
+  liquidityHolding: PublicKey;
+  /** readonly */
+  rwtMint: PublicKey;
+  /** readonly, writable */
+  liquidityHoldingAta: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+  /** readonly */
+  ataProgram: PublicKey;
+}
+
+/** Encode (no args) for the `initialize_liquidity_holding` instruction — discriminator only. */
+export function encodeInitializeLiquidityHoldingArgs(): Buffer {
+  return Buffer.from(INITIALIZE_LIQUIDITY_HOLDING_DISCRIMINATOR);
+}
+
+// ============================================================
+// Instruction: withdraw_liquidity_holding
+// ============================================================
+
+export const WITHDRAW_LIQUIDITY_HOLDING_DISCRIMINATOR: Uint8Array = new Uint8Array([0x07, 0x14, 0x13, 0x12, 0xe4, 0x2e, 0xb3, 0x36]);
+
+export interface WithdrawLiquidityHoldingAccounts {
+  /** signer */
+  authority: PublicKey;
+  /** readonly */
+  config: PublicKey;
+  /** readonly, writable */
+  liquidityHolding: PublicKey;
+  /** readonly, writable */
+  liquidityHoldingAta: PublicKey;
+  /** readonly, writable */
+  nexusTokenAta: PublicKey;
+  /** readonly, writable */
+  liquidityNexus: PublicKey;
+  /** readonly */
+  dexProgram: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+}
+
+export interface WithdrawLiquidityHoldingArgs {
+  amount: bigint;
+}
+
+const IDL_WITHDRAW_LIQUIDITY_HOLDING_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "amount",
+    "type": "u64"
+  }
+];
+
+export const WIRE_WITHDRAW_LIQUIDITY_HOLDING_ARG_FIELDS: WireFieldMap = {
+  "amount": "amount",
+};
+
+/**
+ * Encode arguments for the `withdraw_liquidity_holding` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeWithdrawLiquidityHoldingArgs(args: WithdrawLiquidityHoldingArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_WITHDRAW_LIQUIDITY_HOLDING_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_WITHDRAW_LIQUIDITY_HOLDING_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(WITHDRAW_LIQUIDITY_HOLDING_DISCRIMINATOR), argBuf]);
+}
+
+// ============================================================
+// Instruction: convert_to_rwt
+// ============================================================
+
+export const CONVERT_TO_RWT_DISCRIMINATOR: Uint8Array = new Uint8Array([0x1e, 0x72, 0x49, 0x6e, 0x4c, 0x4d, 0x7f, 0x8d]);
+
+export interface ConvertToRwtAccounts {
+  /** signer, writable */
+  crank: PublicKey;
+  /** readonly */
+  config: PublicKey;
+  /** readonly, writable */
+  distributor: PublicKey;
+  /** readonly */
+  otMint: PublicKey;
+  /** readonly */
+  accumulator: PublicKey;
+  /** readonly, writable */
+  accumulatorUsdcAta: PublicKey;
+  /** readonly, writable */
+  accumulatorRwtAta: PublicKey;
+  /** readonly, writable */
+  feeAccount: PublicKey;
+  /** readonly, writable */
+  rewardVault: PublicKey;
+  /** readonly */
+  rwtMint: PublicKey;
+  /** readonly */
+  dexConfig: PublicKey;
+  /** readonly, writable */
+  poolState: PublicKey;
+  /** readonly, writable */
+  dexPoolVaultIn: PublicKey;
+  /** readonly, writable */
+  dexPoolVaultOut: PublicKey;
+  /** readonly, writable */
+  dexArealFeeAccount: PublicKey;
+  /** readonly, writable */
+  rwtVault: PublicKey;
+  /** readonly, writable */
+  rwtCapitalAcc: PublicKey;
+  /** readonly, writable */
+  rwtDaoFeeAccount: PublicKey;
+  /** readonly */
+  dexProgram: PublicKey;
+  /** readonly */
+  rwtEngineProgram: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+}
+
+export interface ConvertToRwtArgs {
+  usdcAmount: bigint;
+  minRwtOut: bigint;
+  swapFirst: boolean;
+}
+
+const IDL_CONVERT_TO_RWT_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "usdc_amount",
+    "type": "u64"
+  },
+  {
+    "name": "min_rwt_out",
+    "type": "u64"
+  },
+  {
+    "name": "swap_first",
+    "type": "bool"
+  }
+];
+
+export const WIRE_CONVERT_TO_RWT_ARG_FIELDS: WireFieldMap = {
+  "usdc_amount": "usdcAmount",
+  "min_rwt_out": "minRwtOut",
+  "swap_first": "swapFirst",
+};
+
+/**
+ * Encode arguments for the `convert_to_rwt` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeConvertToRwtArgs(args: ConvertToRwtArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_CONVERT_TO_RWT_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_CONVERT_TO_RWT_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(CONVERT_TO_RWT_DISCRIMINATOR), argBuf]);
 }

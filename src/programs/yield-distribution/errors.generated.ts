@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: yield_distribution v0.1.0
+// IDL: yield-distribution v0.1.0
 // Generator: @arlex/client codegen v1
 
 import {
@@ -66,6 +66,30 @@ export enum ProgramErrorCode {
   InvalidPendingAuthority = 6024,
   /** Destination address cannot be zero */
   ZeroDestination = 6025,
+  /** LiquidityHolding PDA already initialized */
+  LiquidityHoldingAlreadyInitialized = 6026,
+  /** LiquidityHolding PDA not yet initialized */
+  LiquidityHoldingNotInitialized = 6027,
+  /** LiquidityHolding withdraw is paused (is_active == false) */
+  LiquidityHoldingNotActive = 6028,
+  /** liquidity_holding_ata mint or owner mismatch */
+  InvalidLiquidityHoldingAta = 6029,
+  /** Insufficient LiquidityHolding ATA balance for the requested withdraw amount */
+  InsufficientLiquidityHoldingBalance = 6030,
+  /** dex_program does not match pinned NEXUS_HOSTING_PROGRAM_ID */
+  InvalidNexusHostingProgram = 6031,
+  /** Legacy: Layer 9 Nexus not initialized — superseded by R20 (kept for ABI stability) */
+  NexusNotInitialized = 6032,
+  /** dex_program does not match pinned DEX_PROGRAM_ID */
+  InvalidDexProgram = 6033,
+  /** rwt_engine_program does not match pinned RWT_ENGINE_PROGRAM_ID */
+  InvalidRwtProgram = 6034,
+  /** Accumulator USDC/RWT ATA owner or mint mismatch */
+  InvalidAccumulatorAta = 6035,
+  /** rwt_acquired below caller-specified min_rwt_out */
+  ConversionSlippage = 6036,
+  /** No USDC available to convert (or zero RWT acquired) */
+  NoUsdcToConvert = 6037,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -96,6 +120,18 @@ export const ProgramErrors: IdlError[] = [
   { code: 6023, name: "NoPendingAuthority", msg: "No pending authority transfer" },
   { code: 6024, name: "InvalidPendingAuthority", msg: "Signer is not the pending authority" },
   { code: 6025, name: "ZeroDestination", msg: "Destination address cannot be zero" },
+  { code: 6026, name: "LiquidityHoldingAlreadyInitialized", msg: "LiquidityHolding PDA already initialized" },
+  { code: 6027, name: "LiquidityHoldingNotInitialized", msg: "LiquidityHolding PDA not yet initialized" },
+  { code: 6028, name: "LiquidityHoldingNotActive", msg: "LiquidityHolding withdraw is paused (is_active == false)" },
+  { code: 6029, name: "InvalidLiquidityHoldingAta", msg: "liquidity_holding_ata mint or owner mismatch" },
+  { code: 6030, name: "InsufficientLiquidityHoldingBalance", msg: "Insufficient LiquidityHolding ATA balance for the requested withdraw amount" },
+  { code: 6031, name: "InvalidNexusHostingProgram", msg: "dex_program does not match pinned NEXUS_HOSTING_PROGRAM_ID" },
+  { code: 6032, name: "NexusNotInitialized", msg: "Legacy: Layer 9 Nexus not initialized — superseded by R20 (kept for ABI stability)" },
+  { code: 6033, name: "InvalidDexProgram", msg: "dex_program does not match pinned DEX_PROGRAM_ID" },
+  { code: 6034, name: "InvalidRwtProgram", msg: "rwt_engine_program does not match pinned RWT_ENGINE_PROGRAM_ID" },
+  { code: 6035, name: "InvalidAccumulatorAta", msg: "Accumulator USDC/RWT ATA owner or mint mismatch" },
+  { code: 6036, name: "ConversionSlippage", msg: "rwt_acquired below caller-specified min_rwt_out" },
+  { code: 6037, name: "NoUsdcToConvert", msg: "No USDC available to convert (or zero RWT acquired)" },
 ];
 
 /**

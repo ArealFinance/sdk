@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: native_dex v0.1.0
+// IDL: native-dex v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -14,7 +16,6 @@ import {
   parseDiscriminator,
   remapWireToTs,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Defined struct from IDL: Bin */
 export interface Bin {
@@ -40,7 +41,7 @@ export const IDL_BIN_FIELDS: IdlField[] = [
 ];
 
 /** Type registry shared across all account parsers in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"Bin","type":{"kind":"struct","fields":[{"name":"liquidity_a","type":"u64"},{"name":"liquidity_b","type":"u64"}]}}] as any, [{"name":"DexConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"pause_authority","type":{"array":["u8",32]}},{"name":"base_fee_bps","type":"u16"},{"name":"lp_fee_share_bps","type":"u16"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"rebalancer","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolState","type":{"kind":"struct","fields":[{"name":"pool_type","type":"u8"},{"name":"token_a_mint","type":{"array":["u8",32]}},{"name":"token_b_mint","type":{"array":["u8",32]}},{"name":"vault_a","type":{"array":["u8",32]}},{"name":"vault_b","type":{"array":["u8",32]}},{"name":"reserve_a","type":"u64"},{"name":"reserve_b","type":"u64"},{"name":"total_lp_shares","type":"u128"},{"name":"fee_bps","type":"u16"},{"name":"is_active","type":"bool"},{"name":"total_fees_accumulated","type":"u64"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"ot_treasury_fee_destination","type":{"array":["u8",32]}},{"name":"has_ot_treasury","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolCreators","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"creators","type":{"array":[{"array":["u8",32]},10]}},{"name":"active_count","type":"u8"},{"name":"bump","type":"u8"}]}},{"name":"LpPosition","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"owner","type":{"array":["u8",32]}},{"name":"shares","type":"u128"},{"name":"last_update_ts","type":"i64"},{"name":"bump","type":"u8"}]}},{"name":"BinArray","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"bins","type":{"array":[{"defined":"Bin"},70]}},{"name":"lower_bin_id","type":"i32"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"FeeBreakdown","type":{"kind":"struct","fields":[{"name":"fee_total","type":"u64"},{"name":"fee_lp","type":"u64"},{"name":"fee_protocol","type":"u64"},{"name":"ot_treasury_fee","type":"u64"}]}},{"name":"Bin","type":{"kind":"struct","fields":[{"name":"liquidity_a","type":"u64"},{"name":"liquidity_b","type":"u64"}]}}] as any, [{"name":"DexConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"pause_authority","type":{"array":["u8",32]}},{"name":"base_fee_bps","type":"u16"},{"name":"lp_fee_share_bps","type":"u16"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"rebalancer","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolState","type":{"kind":"struct","fields":[{"name":"pool_type","type":"u8"},{"name":"token_a_mint","type":{"array":["u8",32]}},{"name":"token_b_mint","type":{"array":["u8",32]}},{"name":"vault_a","type":{"array":["u8",32]}},{"name":"vault_b","type":{"array":["u8",32]}},{"name":"reserve_a","type":"u64"},{"name":"reserve_b","type":"u64"},{"name":"total_lp_shares","type":"u128"},{"name":"fee_bps","type":"u16"},{"name":"is_active","type":"bool"},{"name":"total_fees_accumulated","type":"u64"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"ot_treasury_fee_destination","type":{"array":["u8",32]}},{"name":"has_ot_treasury","type":"bool"},{"name":"bump","type":"u8"},{"name":"cumulative_fees_per_share_a","type":"u128"},{"name":"cumulative_fees_per_share_b","type":"u128"}]}},{"name":"PoolCreators","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"creators","type":{"array":[{"array":["u8",32]},10]}},{"name":"active_count","type":"u8"},{"name":"bump","type":"u8"}]}},{"name":"LpPosition","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"owner","type":{"array":["u8",32]}},{"name":"shares","type":"u128"},{"name":"last_update_ts","type":"i64"},{"name":"bump","type":"u8"},{"name":"fees_claimed_per_share_a","type":"u128"},{"name":"fees_claimed_per_share_b","type":"u128"}]}},{"name":"BinArray","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"bins","type":{"array":[{"defined":"Bin"},70]}},{"name":"lower_bin_id","type":"i32"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"bump","type":"u8"}]}},{"name":"LiquidityNexus","type":{"kind":"struct","fields":[{"name":"manager","type":{"array":["u8",32]}},{"name":"total_deposited_usdc","type":"u64"},{"name":"total_deposited_rwt","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}}] as any);
 
 // ============================================================
 // Account: DexConfig
@@ -177,6 +178,8 @@ export interface PoolState {
   otTreasuryFeeDestination: PublicKey;
   hasOtTreasury: boolean;
   bump: number;
+  cumulativeFeesPerShareA: bigint;
+  cumulativeFeesPerShareB: bigint;
 }
 
 export const POOLSTATE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xf7, 0xed, 0xe3, 0xf5, 0xd7, 0xc3, 0xde, 0x46]);
@@ -198,6 +201,8 @@ export const WIRE_POOLSTATE_FIELDS: WireFieldMap = {
   "ot_treasury_fee_destination": "otTreasuryFeeDestination",
   "has_ot_treasury": "hasOtTreasury",
   "bump": "bump",
+  "cumulative_fees_per_share_a": "cumulativeFeesPerShareA",
+  "cumulative_fees_per_share_b": "cumulativeFeesPerShareB",
 };
 
 const IDL_POOLSTATE_FIELDS: IdlField[] = [
@@ -289,6 +294,14 @@ const IDL_POOLSTATE_FIELDS: IdlField[] = [
   {
     "name": "bump",
     "type": "u8"
+  },
+  {
+    "name": "cumulative_fees_per_share_a",
+    "type": "u128"
+  },
+  {
+    "name": "cumulative_fees_per_share_b",
+    "type": "u128"
   }
 ];
 
@@ -384,6 +397,8 @@ export interface LpPosition {
   shares: bigint;
   lastUpdateTs: bigint;
   bump: number;
+  feesClaimedPerShareA: bigint;
+  feesClaimedPerShareB: bigint;
 }
 
 export const LPPOSITION_DISCRIMINATOR: Uint8Array = new Uint8Array([0x69, 0xf1, 0x25, 0xc8, 0xe0, 0x02, 0xfc, 0x5a]);
@@ -394,6 +409,8 @@ export const WIRE_LPPOSITION_FIELDS: WireFieldMap = {
   "shares": "shares",
   "last_update_ts": "lastUpdateTs",
   "bump": "bump",
+  "fees_claimed_per_share_a": "feesClaimedPerShareA",
+  "fees_claimed_per_share_b": "feesClaimedPerShareB",
 };
 
 const IDL_LPPOSITION_FIELDS: IdlField[] = [
@@ -426,6 +443,14 @@ const IDL_LPPOSITION_FIELDS: IdlField[] = [
   {
     "name": "bump",
     "type": "u8"
+  },
+  {
+    "name": "fees_claimed_per_share_a",
+    "type": "u128"
+  },
+  {
+    "name": "fees_claimed_per_share_b",
+    "type": "u128"
   }
 ];
 
@@ -520,4 +545,68 @@ export function parseBinArray(data: Buffer | Uint8Array): BinArray {
   "bins": WIRE_BIN_FIELDS,
 },
   }) as unknown as BinArray;
+}
+
+// ============================================================
+// Account: LiquidityNexus
+// ============================================================
+
+export interface LiquidityNexus {
+  manager: PublicKey;
+  totalDepositedUsdc: bigint;
+  totalDepositedRwt: bigint;
+  isActive: boolean;
+  bump: number;
+}
+
+export const LIQUIDITYNEXUS_DISCRIMINATOR: Uint8Array = new Uint8Array([0x24, 0x37, 0xa8, 0xc2, 0xb0, 0x0b, 0xa3, 0x60]);
+
+export const WIRE_LIQUIDITYNEXUS_FIELDS: WireFieldMap = {
+  "manager": "manager",
+  "total_deposited_usdc": "totalDepositedUsdc",
+  "total_deposited_rwt": "totalDepositedRwt",
+  "is_active": "isActive",
+  "bump": "bump",
+};
+
+const IDL_LIQUIDITYNEXUS_FIELDS: IdlField[] = [
+  {
+    "name": "manager",
+    "type": {
+      "array": [
+        "u8",
+        32
+      ]
+    }
+  },
+  {
+    "name": "total_deposited_usdc",
+    "type": "u64"
+  },
+  {
+    "name": "total_deposited_rwt",
+    "type": "u64"
+  },
+  {
+    "name": "is_active",
+    "type": "bool"
+  },
+  {
+    "name": "bump",
+    "type": "u8"
+  }
+];
+
+/**
+ * Parse a LiquidityNexus account from raw bytes (including 8-byte discriminator).
+ * Throws if the discriminator does not match.
+ */
+export function parseLiquidityNexus(data: Buffer | Uint8Array): LiquidityNexus {
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  parseDiscriminator(buf, LIQUIDITYNEXUS_DISCRIMINATOR, "LiquidityNexus");
+  const raw = deserializeAccount(IDL_LIQUIDITYNEXUS_FIELDS, buf, TYPE_REGISTRY);
+  return remapWireToTs(raw, WIRE_LIQUIDITYNEXUS_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  }) as unknown as LiquidityNexus;
 }

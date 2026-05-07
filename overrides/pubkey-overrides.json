@@ -12,11 +12,17 @@
     },
     "BinArray": {
       "pool": "publicKey"
+    },
+    "LiquidityNexus": {
+      "manager": "publicKey"
     }
   },
   "ownership-token": {
     "OtConfig": {
       "name": "bytes32"
+    },
+    "RevenueAccount": {
+      "revenue_token_account": "publicKey"
     }
   },
   "rwt-engine": {

@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: yield_distribution v0.1.0
+// IDL: yield-distribution v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -14,10 +16,9 @@ import {
   parseDiscriminator,
   remapWireToTs,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Type registry shared across all account parsers in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([] as any, [{"name":"DistributionConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"publish_authority","type":{"array":["u8",32]}},{"name":"protocol_fee_bps","type":"u16"},{"name":"min_distribution_amount","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"MerkleDistributor","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"reward_vault","type":{"array":["u8",32]}},{"name":"accumulator","type":{"array":["u8",32]}},{"name":"merkle_root","type":{"array":["u8",32]}},{"name":"max_total_claim","type":"u64"},{"name":"total_claimed","type":"u64"},{"name":"total_funded","type":"u64"},{"name":"locked_vested","type":"u64"},{"name":"last_fund_ts","type":"i64"},{"name":"vesting_period_secs","type":"i64"},{"name":"epoch","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"Accumulator","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"ClaimStatus","type":{"kind":"struct","fields":[{"name":"claimant","type":{"array":["u8",32]}},{"name":"distributor","type":{"array":["u8",32]}},{"name":"claimed_amount","type":"u64"},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([] as any, [{"name":"DistributionConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"publish_authority","type":{"array":["u8",32]}},{"name":"protocol_fee_bps","type":"u16"},{"name":"min_distribution_amount","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"MerkleDistributor","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"reward_vault","type":{"array":["u8",32]}},{"name":"accumulator","type":{"array":["u8",32]}},{"name":"merkle_root","type":{"array":["u8",32]}},{"name":"max_total_claim","type":"u64"},{"name":"total_claimed","type":"u64"},{"name":"total_funded","type":"u64"},{"name":"locked_vested","type":"u64"},{"name":"last_fund_ts","type":"i64"},{"name":"vesting_period_secs","type":"i64"},{"name":"epoch","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"Accumulator","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"ClaimStatus","type":{"kind":"struct","fields":[{"name":"claimant","type":{"array":["u8",32]}},{"name":"distributor","type":{"array":["u8",32]}},{"name":"claimed_amount","type":"u64"},{"name":"bump","type":"u8"}]}},{"name":"LiquidityHolding","type":{"kind":"struct","fields":[{"name":"bump","type":"u8"},{"name":"initialized","type":"bool"},{"name":"total_received","type":"u64"},{"name":"total_withdrawn","type":"u64"},{"name":"last_funded_slot","type":"u64"},{"name":"last_withdrawn_slot","type":"u64"},{"name":"last_withdrawn_amount","type":"u64"},{"name":"_reserved","type":{"array":["u8",16]}}]}}] as any);
 
 // ============================================================
 // Account: DistributionConfig
@@ -356,4 +357,86 @@ export function parseClaimStatus(data: Buffer | Uint8Array): ClaimStatus {
     nestedMaps: {},
     arrayMaps: {},
   }) as unknown as ClaimStatus;
+}
+
+// ============================================================
+// Account: LiquidityHolding
+// ============================================================
+
+export interface LiquidityHolding {
+  bump: number;
+  initialized: boolean;
+  totalReceived: bigint;
+  totalWithdrawn: bigint;
+  lastFundedSlot: bigint;
+  lastWithdrawnSlot: bigint;
+  lastWithdrawnAmount: bigint;
+  _reserved: Uint8Array;
+}
+
+export const LIQUIDITYHOLDING_DISCRIMINATOR: Uint8Array = new Uint8Array([0x42, 0xcb, 0x9c, 0x40, 0x14, 0x8c, 0x72, 0x8d]);
+
+export const WIRE_LIQUIDITYHOLDING_FIELDS: WireFieldMap = {
+  "bump": "bump",
+  "initialized": "initialized",
+  "total_received": "totalReceived",
+  "total_withdrawn": "totalWithdrawn",
+  "last_funded_slot": "lastFundedSlot",
+  "last_withdrawn_slot": "lastWithdrawnSlot",
+  "last_withdrawn_amount": "lastWithdrawnAmount",
+  "_reserved": "_reserved",
+};
+
+const IDL_LIQUIDITYHOLDING_FIELDS: IdlField[] = [
+  {
+    "name": "bump",
+    "type": "u8"
+  },
+  {
+    "name": "initialized",
+    "type": "bool"
+  },
+  {
+    "name": "total_received",
+    "type": "u64"
+  },
+  {
+    "name": "total_withdrawn",
+    "type": "u64"
+  },
+  {
+    "name": "last_funded_slot",
+    "type": "u64"
+  },
+  {
+    "name": "last_withdrawn_slot",
+    "type": "u64"
+  },
+  {
+    "name": "last_withdrawn_amount",
+    "type": "u64"
+  },
+  {
+    "name": "_reserved",
+    "type": {
+      "array": [
+        "u8",
+        16
+      ]
+    }
+  }
+];
+
+/**
+ * Parse a LiquidityHolding account from raw bytes (including 8-byte discriminator).
+ * Throws if the discriminator does not match.
+ */
+export function parseLiquidityHolding(data: Buffer | Uint8Array): LiquidityHolding {
+  const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+  parseDiscriminator(buf, LIQUIDITYHOLDING_DISCRIMINATOR, "LiquidityHolding");
+  const raw = deserializeAccount(IDL_LIQUIDITYHOLDING_FIELDS, buf, TYPE_REGISTRY);
+  return remapWireToTs(raw, WIRE_LIQUIDITYHOLDING_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  }) as unknown as LiquidityHolding;
 }

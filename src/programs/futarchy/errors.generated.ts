@@ -40,22 +40,28 @@ export enum ProgramErrorCode {
   ZeroDestination = 6011,
   /** Params hash cannot be all zeros */
   EmptyParamsHash = 6012,
-  /** Hash mismatch */
+  /** Hash of provided destinations does not match proposal params_hash */
   ParamsHashMismatch = 6013,
-  /** Executor account mismatch */
+  /** Executor account does not match proposal destination */
   DestinationMismatch = 6014,
-  /** Token mint mismatch */
+  /** Token mint does not match proposal token_mint */
   TokenMintMismatch = 6015,
-  /** OT governance pending_authority mismatch */
+  /** OT governance pending_authority does not match this Futarchy config */
   GovernanceClaimMismatch = 6016,
-  /** OT program account mismatch */
+  /** OT program account does not match OT_PROGRAM_ID */
   InvalidOtProgram = 6017,
-  /** OT governance PDA mismatch */
+  /** OT governance PDA derivation mismatch */
   InvalidOtGovernance = 6018,
-  /** Proposal does not belong to this config */
+  /** Proposal does not belong to this Futarchy config */
   ProposalConfigMismatch = 6019,
-  /** OT mint account mismatch */
+  /** OT mint account does not match config ot_mint */
   OtMintMismatch = 6020,
+  /** Futarchy config PDA seeds do not match */
+  InvalidFutarchyConfig = 6021,
+  /** Proposal PDA seeds do not match */
+  InvalidProposal = 6022,
+  /** New authority cannot be zero address */
+  ZeroAuthority = 6023,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -73,14 +79,17 @@ export const ProgramErrors: IdlError[] = [
   { code: 6010, name: "ZeroAmount", msg: "Amount must be > 0" },
   { code: 6011, name: "ZeroDestination", msg: "Destination cannot be zero address" },
   { code: 6012, name: "EmptyParamsHash", msg: "Params hash cannot be all zeros" },
-  { code: 6013, name: "ParamsHashMismatch", msg: "Hash mismatch" },
-  { code: 6014, name: "DestinationMismatch", msg: "Executor account mismatch" },
-  { code: 6015, name: "TokenMintMismatch", msg: "Token mint mismatch" },
-  { code: 6016, name: "GovernanceClaimMismatch", msg: "OT governance pending_authority mismatch" },
-  { code: 6017, name: "InvalidOtProgram", msg: "OT program account mismatch" },
-  { code: 6018, name: "InvalidOtGovernance", msg: "OT governance PDA mismatch" },
-  { code: 6019, name: "ProposalConfigMismatch", msg: "Proposal does not belong to this config" },
-  { code: 6020, name: "OtMintMismatch", msg: "OT mint account mismatch" },
+  { code: 6013, name: "ParamsHashMismatch", msg: "Hash of provided destinations does not match proposal params_hash" },
+  { code: 6014, name: "DestinationMismatch", msg: "Executor account does not match proposal destination" },
+  { code: 6015, name: "TokenMintMismatch", msg: "Token mint does not match proposal token_mint" },
+  { code: 6016, name: "GovernanceClaimMismatch", msg: "OT governance pending_authority does not match this Futarchy config" },
+  { code: 6017, name: "InvalidOtProgram", msg: "OT program account does not match OT_PROGRAM_ID" },
+  { code: 6018, name: "InvalidOtGovernance", msg: "OT governance PDA derivation mismatch" },
+  { code: 6019, name: "ProposalConfigMismatch", msg: "Proposal does not belong to this Futarchy config" },
+  { code: 6020, name: "OtMintMismatch", msg: "OT mint account does not match config ot_mint" },
+  { code: 6021, name: "InvalidFutarchyConfig", msg: "Futarchy config PDA seeds do not match" },
+  { code: 6022, name: "InvalidProposal", msg: "Proposal PDA seeds do not match" },
+  { code: 6023, name: "ZeroAuthority", msg: "New authority cannot be zero address" },
 ];
 
 /**

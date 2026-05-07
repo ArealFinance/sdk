@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: rwt_engine v0.1.0
+// IDL: rwt-engine v0.1.0
 // Generator: @arlex/client codegen v1
 
 import {
@@ -62,6 +62,14 @@ export enum ProgramErrorCode {
   ManagerDisabled = 6022,
   /** Input and output token accounts must be different */
   SameTokenAccount = 6023,
+  /** yd_program account does not match pinned YD_PROGRAM_ID */
+  InvalidYdProgram = 6024,
+  /** rwt_claim_ata owner is not the RwtVault PDA, or mint is not RWT_MINT */
+  InvalidRwtClaimAta = 6025,
+  /** liquidity_dest does not match dist_config.liquidity_destination */
+  InvalidLiquidityDest = 6026,
+  /** protocol_revenue_dest does not match dist_config.protocol_revenue_destination */
+  InvalidProtocolRevenueDest = 6027,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -90,6 +98,10 @@ export const ProgramErrors: IdlError[] = [
   { code: 6021, name: "InvalidVaultTokenOwner", msg: "Vault token account not owned by vault PDA" },
   { code: 6022, name: "ManagerDisabled", msg: "Manager wallet not set (zero address)" },
   { code: 6023, name: "SameTokenAccount", msg: "Input and output token accounts must be different" },
+  { code: 6024, name: "InvalidYdProgram", msg: "yd_program account does not match pinned YD_PROGRAM_ID" },
+  { code: 6025, name: "InvalidRwtClaimAta", msg: "rwt_claim_ata owner is not the RwtVault PDA, or mint is not RWT_MINT" },
+  { code: 6026, name: "InvalidLiquidityDest", msg: "liquidity_dest does not match dist_config.liquidity_destination" },
+  { code: 6027, name: "InvalidProtocolRevenueDest", msg: "protocol_revenue_dest does not match dist_config.protocol_revenue_destination" },
 ];
 
 /**

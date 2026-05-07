@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "name": "native_dex",
+  "name": "native-dex",
   "metadata": {
     "address": "DEX8LmvJpjefPS1cGS9zWB9ybxN24vNjTTrusBeqyARL"
   },
@@ -15,12 +15,12 @@
         },
         {
           "name": "dex_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "pool_creators",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -114,6 +114,76 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "create_concentrated_pool",
+      "accounts": [
+        {
+          "name": "creator",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "dex_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool_creators",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool_state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bin_array",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_a_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token_b_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "vault_a",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "vault_b",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bin_step_bps",
+          "type": "u16"
+        },
+        {
+          "name": "initial_active_bin",
+          "type": "i32"
+        }
+      ]
     },
     {
       "name": "add_liquidity",
@@ -273,7 +343,7 @@
       "accounts": [
         {
           "name": "provider",
-          "isMut": true,
+          "isMut": false,
           "isSigner": true
         },
         {
@@ -384,6 +454,41 @@
       ]
     },
     {
+      "name": "shift_liquidity",
+      "accounts": [
+        {
+          "name": "rebalancer",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "dex_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "pool_state",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "bin_array",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nav_bin",
+          "type": "i32"
+        },
+        {
+          "name": "target_bin_count",
+          "type": "u16"
+        }
+      ]
+    },
+    {
       "name": "update_dex_config",
       "accounts": [
         {
@@ -393,7 +498,7 @@
         },
         {
           "name": "dex_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -436,7 +541,7 @@
         },
         {
           "name": "pool_creators",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -508,7 +613,7 @@
         },
         {
           "name": "dex_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -546,22 +651,12 @@
       "args": []
     },
     {
-      "name": "create_concentrated_pool",
+      "name": "compound_yield",
       "accounts": [
         {
-          "name": "creator",
+          "name": "crank",
           "isMut": true,
           "isSigner": true
-        },
-        {
-          "name": "dex_config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool_creators",
-          "isMut": false,
-          "isSigner": false
         },
         {
           "name": "pool_state",
@@ -569,29 +664,39 @@
           "isSigner": false
         },
         {
-          "name": "bin_array",
+          "name": "target_vault",
           "isMut": true,
           "isSigner": false
         },
         {
-          "name": "token_a_mint",
+          "name": "yd_config",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "token_b_mint",
+          "name": "ot_mint",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "vault_a",
+          "name": "yd_distributor",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
         },
         {
-          "name": "vault_b",
+          "name": "yd_claim_status",
           "isMut": true,
-          "isSigner": true
+          "isSigner": false
+        },
+        {
+          "name": "yd_reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_program",
+          "isMut": false,
+          "isSigner": false
         },
         {
           "name": "token_program",
@@ -606,47 +711,19 @@
       ],
       "args": [
         {
-          "name": "bin_step_bps",
-          "type": "u16"
+          "name": "cumulative_amount",
+          "type": "u64"
         },
         {
-          "name": "initial_active_bin",
-          "type": "i32"
-        }
-      ]
-    },
-    {
-      "name": "shift_liquidity",
-      "accounts": [
-        {
-          "name": "rebalancer",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "dex_config",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "pool_state",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "bin_array",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "nav_bin",
-          "type": "i32"
-        },
-        {
-          "name": "target_bin_count",
-          "type": "u16"
+          "name": "proof",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
         }
       ]
     },
@@ -665,7 +742,7 @@
         },
         {
           "name": "liquidity_nexus",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -701,7 +778,7 @@
         },
         {
           "name": "liquidity_nexus",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -1281,6 +1358,14 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "cumulative_fees_per_share_a",
+            "type": "u128"
+          },
+          {
+            "name": "cumulative_fees_per_share_b",
+            "type": "u128"
           }
         ]
       }
@@ -1358,6 +1443,14 @@
           {
             "name": "bump",
             "type": "u8"
+          },
+          {
+            "name": "fees_claimed_per_share_a",
+            "type": "u128"
+          },
+          {
+            "name": "fees_claimed_per_share_b",
+            "type": "u128"
           }
         ]
       }
@@ -1405,13 +1498,69 @@
           }
         ]
       }
+    },
+    {
+      "name": "LiquidityNexus",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "manager",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "total_deposited_usdc",
+            "type": "u64"
+          },
+          {
+            "name": "total_deposited_rwt",
+            "type": "u64"
+          },
+          {
+            "name": "is_active",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
     }
   ],
   "types": [
     {
+      "name": "FeeBreakdown",
+      "type": {
+        "fields": [
+          {
+            "name": "fee_total",
+            "type": "u64"
+          },
+          {
+            "name": "fee_lp",
+            "type": "u64"
+          },
+          {
+            "name": "fee_protocol",
+            "type": "u64"
+          },
+          {
+            "name": "ot_treasury_fee",
+            "type": "u64"
+          }
+        ],
+        "kind": "struct"
+      }
+    },
+    {
       "name": "Bin",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "liquidity_a",
@@ -1421,8 +1570,930 @@
             "name": "liquidity_b",
             "type": "u64"
           }
-        ]
+        ],
+        "kind": "struct"
       }
+    }
+  ],
+  "events": [
+    {
+      "name": "DexInitialized",
+      "fields": [
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "base_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "PoolCreated",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "token_a_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "token_b_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pool_type",
+          "type": "u8"
+        },
+        {
+          "name": "creator",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "ot_treasury_fee_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "LiquidityAdded",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "provider",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "shares_minted",
+          "type": "u128"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "ZapLiquidityExecuted",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "provider",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "input_a",
+          "type": "u64"
+        },
+        {
+          "name": "input_b",
+          "type": "u64"
+        },
+        {
+          "name": "swapped_amount",
+          "type": "u64"
+        },
+        {
+          "name": "shares_minted",
+          "type": "u128"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "LiquidityRemoved",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "provider",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount_a",
+          "type": "u64"
+        },
+        {
+          "name": "amount_b",
+          "type": "u64"
+        },
+        {
+          "name": "shares_burned",
+          "type": "u128"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "SwapExecuted",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "user",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "a_to_b",
+          "type": "bool"
+        },
+        {
+          "name": "amount_in",
+          "type": "u64"
+        },
+        {
+          "name": "amount_out",
+          "type": "u64"
+        },
+        {
+          "name": "fee_lp",
+          "type": "u64"
+        },
+        {
+          "name": "fee_protocol",
+          "type": "u64"
+        },
+        {
+          "name": "fee_ot_treasury",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "PoolCreatorsUpdated",
+      "fields": [
+        {
+          "name": "wallet",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "action",
+          "type": "u8"
+        },
+        {
+          "name": "active_count",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "DexConfigUpdated",
+      "fields": [
+        {
+          "name": "base_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "lp_fee_share_bps",
+          "type": "u16"
+        },
+        {
+          "name": "rebalancer",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "is_active",
+          "type": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "PoolPaused",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "PoolUnpaused",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "LiquidityShifted",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rebalancer",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "old_lower",
+          "type": "i32"
+        },
+        {
+          "name": "old_upper",
+          "type": "i32"
+        },
+        {
+          "name": "new_lower",
+          "type": "i32"
+        },
+        {
+          "name": "new_upper",
+          "type": "i32"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "CompoundYieldExecuted",
+      "fields": [
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_claimed",
+          "type": "u64"
+        },
+        {
+          "name": "rwt_side",
+          "type": "u8"
+        },
+        {
+          "name": "reserve_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "NexusInitialized",
+      "fields": [
+        {
+          "name": "manager",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "NexusDeposited",
+      "fields": [
+        {
+          "name": "token_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "new_total_deposited",
+          "type": "u64"
+        },
+        {
+          "name": "source_kind",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "NexusProfitsWithdrawn",
+      "fields": [
+        {
+          "name": "token_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "remaining_profit",
+          "type": "u64"
+        },
+        {
+          "name": "treasury_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "NexusRewardsClaimed",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "treasury_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "NexusManagerUpdated",
+      "fields": [
+        {
+          "name": "old_manager",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_manager",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "LpFeesClaimed",
+      "fields": [
+        {
+          "name": "recipient",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pool",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "claimable_a",
+          "type": "u64"
+        },
+        {
+          "name": "claimable_b",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Not DEX authority"
+    },
+    {
+      "code": 6001,
+      "name": "CreatorNotWhitelisted",
+      "msg": "Not in pool creators whitelist"
+    },
+    {
+      "code": 6002,
+      "name": "DexPaused",
+      "msg": "Global DEX is paused"
+    },
+    {
+      "code": 6003,
+      "name": "PoolNotActive",
+      "msg": "Pool is paused"
+    },
+    {
+      "code": 6004,
+      "name": "WhitelistFull",
+      "msg": "Max 10 creators"
+    },
+    {
+      "code": 6005,
+      "name": "IdenticalMints",
+      "msg": "token_a == token_b"
+    },
+    {
+      "code": 6006,
+      "name": "CreatorNotFound",
+      "msg": "Creator not found in whitelist"
+    },
+    {
+      "code": 6007,
+      "name": "ZeroAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6008,
+      "name": "InsufficientLiquidity",
+      "msg": "Pool reserves empty"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientShares",
+      "msg": "LP has fewer shares than burn amount"
+    },
+    {
+      "code": 6010,
+      "name": "InitialLiquidityTooSmall",
+      "msg": "First LP deposit too small (< MIN_LIQUIDITY)"
+    },
+    {
+      "code": 6011,
+      "name": "SlippageExceeded",
+      "msg": "Output below min_amount_out"
+    },
+    {
+      "code": 6012,
+      "name": "ZeroOutput",
+      "msg": "Swap would produce 0 output"
+    },
+    {
+      "code": 6013,
+      "name": "EmptyReserves",
+      "msg": "Cannot swap with empty reserves"
+    },
+    {
+      "code": 6014,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidFee",
+      "msg": "base_fee_bps exceeds MAX_FEE_BPS"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidFeeShare",
+      "msg": "lp_fee_share_bps exceeds 10,000"
+    },
+    {
+      "code": 6017,
+      "name": "MissingRwtMint",
+      "msg": "Neither token is RWT_MINT"
+    },
+    {
+      "code": 6018,
+      "name": "InvalidMintOrder",
+      "msg": "token_a_mint >= token_b_mint (must be canonical order)"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidVault",
+      "msg": "Vault account does not match pool_state vault"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidOtTreasuryDestination",
+      "msg": "OT Treasury PDA derivation or ownership mismatch"
+    },
+    {
+      "code": 6021,
+      "name": "MissingOtTreasuryAccount",
+      "msg": "Pool has OT fee but ot_treasury_fee_account not provided"
+    },
+    {
+      "code": 6022,
+      "name": "OtTreasuryAccountMismatch",
+      "msg": "OT treasury fee account does not match stored destination"
+    },
+    {
+      "code": 6023,
+      "name": "SelfTransfer",
+      "msg": "Cannot transfer authority to yourself"
+    },
+    {
+      "code": 6024,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not pending authority"
+    },
+    {
+      "code": 6026,
+      "name": "UnauthorizedPause",
+      "msg": "Signer is not pause authority"
+    },
+    {
+      "code": 6027,
+      "name": "CreatorAlreadyExists",
+      "msg": "Creator already in whitelist"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidPauseAuthority",
+      "msg": "Pause authority cannot be zero address"
+    },
+    {
+      "code": 6029,
+      "name": "InvalidFeeDestination",
+      "msg": "Fee destination cannot be zero address"
+    },
+    {
+      "code": 6030,
+      "name": "ZeroAddress",
+      "msg": "Address cannot be zero"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidBinStep",
+      "msg": "bin_step_bps must be > 0 for concentrated pools"
+    },
+    {
+      "code": 6033,
+      "name": "InvalidBinRange",
+      "msg": "Bin range out of BinArray bounds"
+    },
+    {
+      "code": 6034,
+      "name": "InsufficientBinLiquidity",
+      "msg": "No liquidity in bins for swap"
+    },
+    {
+      "code": 6035,
+      "name": "ShiftTooLarge",
+      "msg": "Shift distance exceeds MAX_SHIFT_DISTANCE"
+    },
+    {
+      "code": 6036,
+      "name": "ShiftNoOp",
+      "msg": "New range must differ from current range"
+    },
+    {
+      "code": 6037,
+      "name": "ConservationViolation",
+      "msg": "Conservation invariant violated after shift"
+    },
+    {
+      "code": 6038,
+      "name": "InvalidPoolType",
+      "msg": "Pool type mismatch"
+    },
+    {
+      "code": 6039,
+      "name": "InvalidYdProgram",
+      "msg": "yd_program account does not match pinned YD_PROGRAM_ID"
+    },
+    {
+      "code": 6040,
+      "name": "InvalidPoolPda",
+      "msg": "pool PDA does not match expected derivation"
+    },
+    {
+      "code": 6041,
+      "name": "InvalidTargetVault",
+      "msg": "target_vault does not match pool.vault_a/b on the RWT side"
+    },
+    {
+      "code": 6042,
+      "name": "TargetVaultNotRwt",
+      "msg": "neither token_a_mint nor token_b_mint is RWT_MINT"
+    },
+    {
+      "code": 6043,
+      "name": "InvalidOtMint",
+      "msg": "ot_mint does not match the pool's OT side mint"
+    },
+    {
+      "code": 6044,
+      "name": "NexusNotActive",
+      "msg": "Nexus is_active = false"
+    },
+    {
+      "code": 6045,
+      "name": "InvalidNexusManager",
+      "msg": "Signer is not the Nexus manager"
+    },
+    {
+      "code": 6046,
+      "name": "NexusManagerDisabled",
+      "msg": "Nexus manager is the zero pubkey kill-switch"
+    },
+    {
+      "code": 6047,
+      "name": "InvalidNexusToken",
+      "msg": "nexus_deposit token_mint is not USDC_MINT or RWT_MINT"
+    },
+    {
+      "code": 6048,
+      "name": "InsufficientNexusProfit",
+      "msg": "Withdraw amount exceeds (ATA balance - principal floor) profit"
+    },
+    {
+      "code": 6049,
+      "name": "NexusClaimFailed",
+      "msg": "Nexus PDA not found in merkle tree or proof invalid"
+    },
+    {
+      "code": 6050,
+      "name": "InvalidNexusLpPosition",
+      "msg": "Nexus LP position is missing or owner mismatch"
+    },
+    {
+      "code": 6051,
+      "name": "NexusRecordDepositOnlyFromYd",
+      "msg": "nexus_record_deposit may only be invoked via CPI from Yield Distribution"
+    },
+    {
+      "code": 6052,
+      "name": "InvalidLiquidityHoldingPda",
+      "msg": "LiquidityHolding PDA derivation does not match passed account"
+    },
+    {
+      "code": 6053,
+      "name": "InvalidLpPosition",
+      "msg": "LpPosition.pool does not match the supplied pool_state"
     }
   ]
 }

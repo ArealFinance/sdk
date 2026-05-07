@@ -25,7 +25,8 @@
     "build": "tsup",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
-    "codegen": "node scripts/codegen.mjs"
+    "codegen": "node scripts/codegen.mjs",
+    "idl:verify": "node scripts/idl-verify.mjs"
   },
   "peerDependencies": {
     "@arlex/client": "^0.2.0",
