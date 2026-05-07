@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.0 — 2026-05-07
+
+- **feat(portfolio)**: add portfolio composite reads (`getHolderPortfolio`,
+  `enumerateOtConfigs`, `fetchMerkleProof`). Adds `bs58` runtime
+  dependency. Subpath: `@areal/sdk/portfolio`.
+
+  The composite reader enumerates every OT, then per-OT fetches the
+  holder's ATA balance, the MerkleDistributor existence, the on-chain
+  ClaimStatus and (optionally) the latest Merkle proof from a
+  proof-store. `claimableNow` is clamped to `>= 0n`; `slot` is captured
+  AFTER all reads so a later WS event can be used as an upper bound for
+  staleness.
+
 ## 0.1.2 — 2026-05-06
 
 - **fix(packaging)**: stop relying on the ambient `Buffer` global. Every
