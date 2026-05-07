@@ -28,3 +28,41 @@ export const USDC_MINTS: Record<ClusterName, PublicKey> = {
   devnet: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
   localnet: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
 };
+
+/**
+ * RWT mint per cluster.
+ *
+ * The RWT mint is pinned at compile time inside the Yield Distribution
+ * program (see `contracts/yield-distribution/src/constants.rs::RWT_MINT`).
+ * Devnet and localnet builds carry the R20 placeholder bytes
+ * `"RWT" + 28 * 0x00 + 0x01`, which base58-encode to the address below.
+ *
+ * Mainnet still uses the same placeholder until the production RWT mint
+ * is deployed and the contract is rebuilt. SDK consumers MUST guard
+ * mainnet writes with `isPlaceholderRwtMint` until that happens.
+ */
+export const RWT_MINTS: Record<ClusterName, PublicKey> = {
+  // PLACEHOLDER — replaced at mainnet deploy. Same bytes as devnet/localnet
+  // until the production RWT mint exists; `isPlaceholderRwtMint` flags this.
+  mainnet: new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4'),
+  devnet: new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4'),
+  localnet: new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4'),
+};
+
+/**
+ * Base58 of the on-chain `RWT_MINT` R20 placeholder bytes. Anything that
+ * matches this address is the devnet/localnet placeholder, NOT a real
+ * mainnet RWT mint — see `isPlaceholderRwtMint`.
+ */
+const RWT_PLACEHOLDER_BASE58 = '6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4';
+
+/**
+ * Returns true when `pk` matches the R20 placeholder bytes pinned in the
+ * Yield Distribution program. SDK consumers SHOULD check this before
+ * submitting any RWT-touching transaction on mainnet — submitting a claim
+ * against the placeholder mint will revert on-chain (the contract verifies
+ * `claimant_token.mint == RWT_MINT`).
+ */
+export function isPlaceholderRwtMint(pk: PublicKey): boolean {
+  return pk.toBase58() === RWT_PLACEHOLDER_BASE58;
+}
