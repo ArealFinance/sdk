@@ -1,9 +1,10 @@
 // Unit tests for `sdk/src/programs/rwt-engine/quote.ts`.
 //
-// 14 cases (QM-1 through QM-14) — pin every branch of the on-chain
-// `mint_rwt::handler` math against the source-of-truth contract in
-// `contracts/rwt-engine/src/instructions/mint_rwt.rs` plus the NAV
-// guards in `contracts/rwt-engine/src/nav.rs`. Cases use parsed
+// 20 `it` blocks across cases QM-1..QM-14 (QM-11 is split into 4 sub-cases,
+// QM-12 into 2, and QM-13 is a property test over 1000 random amounts) —
+// pin every branch of the on-chain `mint_rwt::handler` math against the
+// source-of-truth contract in `contracts/rwt-engine/src/instructions/mint_rwt.rs`
+// plus the NAV guards in `contracts/rwt-engine/src/nav.rs`. Cases use parsed
 // `RwtVault` fixtures (built directly as JS objects, not raw bytes)
 // because `quoteMintRwt` consumes the parsed shape — the codegen
 // parser is exercised separately by the e2e suite.

@@ -1,6 +1,6 @@
 // Unit tests for `sdk/src/tx/rwt-engine/mint-rwt.ts`.
 //
-// 11 cases (BM-1 through BM-11):
+// 12 cases (BM-1 through BM-12):
 //   BM-1.  Account list byte-for-byte parity with the contract `MintRwt` struct.
 //   BM-2.  Args encoding via codegen — discriminator + 2x LE u64s.
 //   BM-3.  amount=0 throws.
