@@ -18,3 +18,4 @@ export {
   getMarketsSnapshot,
   type GetMarketsSnapshotOptions,
 } from './snapshot.js';
+export { isMasterPool } from './master-pool.js';
