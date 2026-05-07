@@ -29,11 +29,11 @@
     "idl:verify": "node scripts/idl-verify.mjs"
   },
   "peerDependencies": {
-    "@arlex/client": "^0.2.0",
+    "@arlex/client": "^0.3.0",
     "@solana/web3.js": "^1.95.0"
   },
   "devDependencies": {
-    "@arlex/client": "file:../vendor/arlex-client-0.2.2.tgz",
+    "@arlex/client": "file:../vendor/arlex-client-0.3.0.tgz",
     "@solana/web3.js": "^1.98.0",
     "@types/node": "^20.11.0",
     "tsup": "^8.0.0",
