@@ -7,3 +7,4 @@ export * from './nexus-remove-liquidity.js';
 export * from './shift-liquidity.js';
 export * from './swap.js';
 export * from './add-liquidity.js';
+export * from './zap-liquidity.js';
