@@ -1,5 +1,7 @@
 export * from './_types.js';
+export * from './_swap-types.js';
 export * from './nexus-swap.js';
 export * from './nexus-add-liquidity.js';
 export * from './nexus-remove-liquidity.js';
 export * from './shift-liquidity.js';
+export * from './swap.js';
