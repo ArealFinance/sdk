@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.4.0 — 2026-05-07
+
+- **feat(tx/native-dex)**: add `buildSwapIx` and `buildSwapTx` for the
+  user-facing `native-dex::swap` flow (Phase 8). The pure builder emits
+  the 9-account ix in `swap_internal` order, optionally appending
+  `ot_treasury_fee_destination` at remaining_accounts[0] when the pool
+  has an OT treasury, with wire encoding delegated to codegen
+  `encodeSwapArgs`. The convenience helper applies the mainnet RWT
+  placeholder guard, optionally prepends a
+  `createAssociatedTokenAccountIdempotent` ix when the user's output ATA
+  does not yet exist, and returns a legacy `Transaction`. Distinct from
+  the Layer 9 manager-only `nexus_swap` builder.
+
+- **feat(programs/native-dex)**: add `quoteSwap` pure helper mirroring
+  `contracts/native-dex/src/{instructions/swap.rs::swap_internal,amm.rs}`
+  for StandardCurve pools. Returns a discriminated union with the same
+  error tags as `DexError` (`PoolPaused`, `PoolNotActive`, `ZeroAmount`,
+  `EmptyReserves`, `ZeroOutput`, `MathOverflow`) and a `QuoteResult`
+  carrying `amountOut`, `netInput`, fee breakdown (with the on-chain
+  1-lamport dust floor and protocol-takes-remainder rounding), signed
+  `priceImpactBps`, and pre/post reserves. All math runs in `bigint` —
+  no intermediate `Number` coercion. Add `applySlippage` helper bounded
+  to `[0, 5000]` bps.
+
 ## 0.3.0 — 2026-05-07
 
 - **feat(tx/yield-distribution)**: add `buildClaimDistributionIx` and
