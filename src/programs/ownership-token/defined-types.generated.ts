@@ -24,6 +24,17 @@ export const WIRE_REVENUEDESTINATION_FIELDS: WireFieldMap = {
   "label": "label",
 };
 
+/** Pubkey-classified [u8;32] fields for RevenueDestination (heuristic + overrides). */
+export const PUBKEY_REVENUEDESTINATION_FIELDS = [
+  "address",
+] as const;
+
+/** Nested defined-struct remap targets for RevenueDestination (single, non-array). */
+export const NESTED_MAPS_REVENUEDESTINATION = {} as const;
+
+/** Nested defined-struct remap targets for RevenueDestination (vec/array of struct). */
+export const ARRAY_MAPS_REVENUEDESTINATION = {} as const;
+
 /** Raw IDL field shape for RevenueDestination — used by the runtime serializer. */
 export const IDL_REVENUEDESTINATION_FIELDS: IdlField[] = [
   {
@@ -62,6 +73,17 @@ export const WIRE_BATCHDESTINATION_FIELDS: WireFieldMap = {
   "allocation_bps": "allocationBps",
   "label": "label",
 };
+
+/** Pubkey-classified [u8;32] fields for BatchDestination (heuristic + overrides). */
+export const PUBKEY_BATCHDESTINATION_FIELDS = [
+  "address",
+] as const;
+
+/** Nested defined-struct remap targets for BatchDestination (single, non-array). */
+export const NESTED_MAPS_BATCHDESTINATION = {} as const;
+
+/** Nested defined-struct remap targets for BatchDestination (vec/array of struct). */
+export const ARRAY_MAPS_BATCHDESTINATION = {} as const;
 
 /** Raw IDL field shape for BatchDestination — used by the runtime serializer. */
 export const IDL_BATCHDESTINATION_FIELDS: IdlField[] = [

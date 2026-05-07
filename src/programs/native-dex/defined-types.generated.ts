@@ -22,6 +22,15 @@ export const WIRE_BIN_FIELDS: WireFieldMap = {
   "liquidity_b": "liquidityB",
 };
 
+/** Pubkey-classified [u8;32] fields for Bin (heuristic + overrides). */
+export const PUBKEY_BIN_FIELDS = [] as const;
+
+/** Nested defined-struct remap targets for Bin (single, non-array). */
+export const NESTED_MAPS_BIN = {} as const;
+
+/** Nested defined-struct remap targets for Bin (vec/array of struct). */
+export const ARRAY_MAPS_BIN = {} as const;
+
 /** Raw IDL field shape for Bin — used by the runtime serializer. */
 export const IDL_BIN_FIELDS: IdlField[] = [
   {

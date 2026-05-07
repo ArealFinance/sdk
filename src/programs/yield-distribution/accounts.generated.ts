@@ -49,6 +49,14 @@ export const WIRE_DISTRIBUTIONCONFIG_FIELDS: WireFieldMap = {
   "bump": "bump",
 };
 
+/** Pubkey-classified [u8;32] fields for DistributionConfig (heuristic + overrides). */
+export const PUBKEY_DISTRIBUTIONCONFIG_FIELDS = [
+  "authority",
+  "pendingAuthority",
+  "publishAuthority",
+  "arealFeeDestination",
+] as const;
+
 const IDL_DISTRIBUTIONCONFIG_FIELDS: IdlField[] = [
   {
     "name": "authority",
@@ -119,6 +127,7 @@ export function parseDistributionConfig(data: Buffer | Uint8Array): Distribution
   return remapWireToTs(raw, WIRE_DISTRIBUTIONCONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_DISTRIBUTIONCONFIG_FIELDS,
   }) as unknown as DistributionConfig;
 }
 
@@ -159,6 +168,13 @@ export const WIRE_MERKLEDISTRIBUTOR_FIELDS: WireFieldMap = {
   "is_active": "isActive",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for MerkleDistributor (heuristic + overrides). */
+export const PUBKEY_MERKLEDISTRIBUTOR_FIELDS = [
+  "otMint",
+  "rewardVault",
+  "accumulator",
+] as const;
 
 const IDL_MERKLEDISTRIBUTOR_FIELDS: IdlField[] = [
   {
@@ -246,6 +262,7 @@ export function parseMerkleDistributor(data: Buffer | Uint8Array): MerkleDistrib
   return remapWireToTs(raw, WIRE_MERKLEDISTRIBUTOR_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_MERKLEDISTRIBUTOR_FIELDS,
   }) as unknown as MerkleDistributor;
 }
 
@@ -264,6 +281,11 @@ export const WIRE_ACCUMULATOR_FIELDS: WireFieldMap = {
   "ot_mint": "otMint",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for Accumulator (heuristic + overrides). */
+export const PUBKEY_ACCUMULATOR_FIELDS = [
+  "otMint",
+] as const;
 
 const IDL_ACCUMULATOR_FIELDS: IdlField[] = [
   {
@@ -292,6 +314,7 @@ export function parseAccumulator(data: Buffer | Uint8Array): Accumulator {
   return remapWireToTs(raw, WIRE_ACCUMULATOR_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_ACCUMULATOR_FIELDS,
   }) as unknown as Accumulator;
 }
 
@@ -314,6 +337,12 @@ export const WIRE_CLAIMSTATUS_FIELDS: WireFieldMap = {
   "claimed_amount": "claimedAmount",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for ClaimStatus (heuristic + overrides). */
+export const PUBKEY_CLAIMSTATUS_FIELDS = [
+  "claimant",
+  "distributor",
+] as const;
 
 const IDL_CLAIMSTATUS_FIELDS: IdlField[] = [
   {
@@ -355,6 +384,7 @@ export function parseClaimStatus(data: Buffer | Uint8Array): ClaimStatus {
   return remapWireToTs(raw, WIRE_CLAIMSTATUS_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_CLAIMSTATUS_FIELDS,
   }) as unknown as ClaimStatus;
 }
 
@@ -385,6 +415,9 @@ export const WIRE_LIQUIDITYHOLDING_FIELDS: WireFieldMap = {
   "last_withdrawn_amount": "lastWithdrawnAmount",
   "_reserved": "_reserved",
 };
+
+/** Pubkey-classified [u8;32] fields for LiquidityHolding (heuristic + overrides). */
+export const PUBKEY_LIQUIDITYHOLDING_FIELDS = [] as const;
 
 const IDL_LIQUIDITYHOLDING_FIELDS: IdlField[] = [
   {
@@ -437,5 +470,6 @@ export function parseLiquidityHolding(data: Buffer | Uint8Array): LiquidityHoldi
   return remapWireToTs(raw, WIRE_LIQUIDITYHOLDING_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_LIQUIDITYHOLDING_FIELDS,
   }) as unknown as LiquidityHolding;
 }

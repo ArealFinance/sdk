@@ -16,7 +16,10 @@ import {
 } from '@arlex/client/codegen-runtime';
 
 import {
+  ARRAY_MAPS_REVENUEDESTINATION,
   IDL_REVENUEDESTINATION_FIELDS,
+  NESTED_MAPS_REVENUEDESTINATION,
+  PUBKEY_REVENUEDESTINATION_FIELDS,
   RevenueDestination,
   TYPE_REGISTRY,
   WIRE_REVENUEDESTINATION_FIELDS,
@@ -47,6 +50,11 @@ export const WIRE_OTCONFIG_FIELDS: WireFieldMap = {
   "uri": "uri",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for OtConfig (heuristic + overrides). */
+export const PUBKEY_OTCONFIG_FIELDS = [
+  "otMint",
+] as const;
 
 const IDL_OTCONFIG_FIELDS: IdlField[] = [
   {
@@ -110,6 +118,7 @@ export function parseOtConfig(data: Buffer | Uint8Array): OtConfig {
   return remapWireToTs(raw, WIRE_OTCONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_OTCONFIG_FIELDS,
   }) as unknown as OtConfig;
 }
 
@@ -140,6 +149,12 @@ export const WIRE_REVENUEACCOUNT_FIELDS: WireFieldMap = {
   "is_distributing": "isDistributing",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for RevenueAccount (heuristic + overrides). */
+export const PUBKEY_REVENUEACCOUNT_FIELDS = [
+  "otMint",
+  "revenueTokenAccount",
+] as const;
 
 const IDL_REVENUEACCOUNT_FIELDS: IdlField[] = [
   {
@@ -197,6 +212,7 @@ export function parseRevenueAccount(data: Buffer | Uint8Array): RevenueAccount {
   return remapWireToTs(raw, WIRE_REVENUEACCOUNT_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_REVENUEACCOUNT_FIELDS,
   }) as unknown as RevenueAccount;
 }
 
@@ -223,6 +239,12 @@ export const WIRE_REVENUECONFIG_FIELDS: WireFieldMap = {
   "areal_fee_destination": "arealFeeDestination",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for RevenueConfig (heuristic + overrides). */
+export const PUBKEY_REVENUECONFIG_FIELDS = [
+  "otMint",
+  "arealFeeDestination",
+] as const;
 
 const IDL_REVENUECONFIG_FIELDS: IdlField[] = [
   {
@@ -279,8 +301,9 @@ export function parseRevenueConfig(data: Buffer | Uint8Array): RevenueConfig {
   return remapWireToTs(raw, WIRE_REVENUECONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {
-  "destinations": WIRE_REVENUEDESTINATION_FIELDS,
+  "destinations": { map: WIRE_REVENUEDESTINATION_FIELDS, pubkeyFields: PUBKEY_REVENUEDESTINATION_FIELDS, nestedMaps: NESTED_MAPS_REVENUEDESTINATION, arrayMaps: ARRAY_MAPS_REVENUEDESTINATION },
 },
+    pubkeyFields: PUBKEY_REVENUECONFIG_FIELDS,
   }) as unknown as RevenueConfig;
 }
 
@@ -307,6 +330,13 @@ export const WIRE_OTGOVERNANCE_FIELDS: WireFieldMap = {
   "is_active": "isActive",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for OtGovernance (heuristic + overrides). */
+export const PUBKEY_OTGOVERNANCE_FIELDS = [
+  "otMint",
+  "authority",
+  "pendingAuthority",
+] as const;
 
 const IDL_OTGOVERNANCE_FIELDS: IdlField[] = [
   {
@@ -361,6 +391,7 @@ export function parseOtGovernance(data: Buffer | Uint8Array): OtGovernance {
   return remapWireToTs(raw, WIRE_OTGOVERNANCE_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_OTGOVERNANCE_FIELDS,
   }) as unknown as OtGovernance;
 }
 
@@ -379,6 +410,11 @@ export const WIRE_OTTREASURY_FIELDS: WireFieldMap = {
   "ot_mint": "otMint",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for OtTreasury (heuristic + overrides). */
+export const PUBKEY_OTTREASURY_FIELDS = [
+  "otMint",
+] as const;
 
 const IDL_OTTREASURY_FIELDS: IdlField[] = [
   {
@@ -407,5 +443,6 @@ export function parseOtTreasury(data: Buffer | Uint8Array): OtTreasury {
   return remapWireToTs(raw, WIRE_OTTREASURY_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_OTTREASURY_FIELDS,
   }) as unknown as OtTreasury;
 }
