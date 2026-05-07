@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: rwt_engine v0.1.0
+// IDL: rwt-engine v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -13,7 +15,6 @@ import {
   instructionDiscriminator,
   remapTsToWire,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Type registry shared across all instruction encoders in this module. */
 const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([] as any, [{"name":"RwtVault","type":{"kind":"struct","fields":[{"name":"total_invested_capital","type":"u128"},{"name":"total_rwt_supply","type":"u64"},{"name":"nav_book_value","type":"u64"},{"name":"capital_accumulator_ata","type":{"array":["u8",32]}},{"name":"rwt_mint","type":{"array":["u8",32]}},{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"manager","type":{"array":["u8",32]}},{"name":"pause_authority","type":{"array":["u8",32]}},{"name":"mint_paused","type":"bool"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"RwtDistributionConfig","type":{"kind":"struct","fields":[{"name":"book_value_bps","type":"u16"},{"name":"liquidity_bps","type":"u16"},{"name":"protocol_revenue_bps","type":"u16"},{"name":"liquidity_destination","type":{"array":["u8",32]}},{"name":"protocol_revenue_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}}] as any);
@@ -27,9 +28,9 @@ export const INITIALIZE_VAULT_DISCRIMINATOR: Uint8Array = new Uint8Array([0x30, 
 export interface InitializeVaultAccounts {
   /** signer, writable */
   deployer: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   rwtVault: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   distConfig: PublicKey;
   /** signer, writable */
   rwtMint: PublicKey;
@@ -181,7 +182,7 @@ export const ADMIN_MINT_RWT_DISCRIMINATOR: Uint8Array = new Uint8Array([0x01, 0x
 export interface AdminMintRwtAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   rwtVault: PublicKey;
   /** readonly, writable */
   rwtMint: PublicKey;
@@ -234,7 +235,7 @@ export const ADJUST_CAPITAL_DISCRIMINATOR: Uint8Array = new Uint8Array([0x14, 0x
 export interface AdjustCapitalAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   rwtVault: PublicKey;
 }
 
@@ -275,7 +276,7 @@ export const UPDATE_VAULT_MANAGER_DISCRIMINATOR: Uint8Array = new Uint8Array([0x
 export interface UpdateVaultManagerAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   rwtVault: PublicKey;
 }
 
@@ -434,7 +435,7 @@ export const PROPOSE_AUTHORITY_TRANSFER_DISCRIMINATOR: Uint8Array = new Uint8Arr
 export interface ProposeAuthorityTransferAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   rwtVault: PublicKey;
 }
 
@@ -558,4 +559,82 @@ export function encodeVaultSwapArgs(args: VaultSwapArgs): Buffer {
   });
   const argBuf = serializeArgs(IDL_VAULT_SWAP_ARG_FIELDS, wire, TYPE_REGISTRY);
   return Buffer.concat([Buffer.from(VAULT_SWAP_DISCRIMINATOR), argBuf]);
+}
+
+// ============================================================
+// Instruction: claim_yield
+// ============================================================
+
+export const CLAIM_YIELD_DISCRIMINATOR: Uint8Array = new Uint8Array([0x31, 0x4a, 0x6f, 0x07, 0xba, 0x16, 0x3d, 0xa5]);
+
+export interface ClaimYieldAccounts {
+  /** signer, writable */
+  crank: PublicKey;
+  /** readonly, writable */
+  rwtVault: PublicKey;
+  /** readonly */
+  distConfig: PublicKey;
+  /** readonly, writable */
+  rwtClaimAta: PublicKey;
+  /** readonly, writable */
+  liquidityDest: PublicKey;
+  /** readonly, writable */
+  protocolRevenueDest: PublicKey;
+  /** readonly */
+  ydConfig: PublicKey;
+  /** readonly */
+  otMint: PublicKey;
+  /** readonly, writable */
+  ydDistributor: PublicKey;
+  /** readonly, writable */
+  ydClaimStatus: PublicKey;
+  /** readonly, writable */
+  ydRewardVault: PublicKey;
+  /** readonly */
+  ydProgram: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+}
+
+export interface ClaimYieldArgs {
+  cumulativeAmount: bigint;
+  proof: Bytes32[];
+}
+
+const IDL_CLAIM_YIELD_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "cumulative_amount",
+    "type": "u64"
+  },
+  {
+    "name": "proof",
+    "type": {
+      "vec": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
+    }
+  }
+];
+
+export const WIRE_CLAIM_YIELD_ARG_FIELDS: WireFieldMap = {
+  "cumulative_amount": "cumulativeAmount",
+  "proof": "proof",
+};
+
+/**
+ * Encode arguments for the `claim_yield` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeClaimYieldArgs(args: ClaimYieldArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_CLAIM_YIELD_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_CLAIM_YIELD_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(CLAIM_YIELD_DISCRIMINATOR), argBuf]);
 }

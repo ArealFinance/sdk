@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: native_dex v0.1.0
+// IDL: native-dex v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -13,10 +15,9 @@ import {
   instructionDiscriminator,
   remapTsToWire,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Type registry shared across all instruction encoders in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"Bin","type":{"kind":"struct","fields":[{"name":"liquidity_a","type":"u64"},{"name":"liquidity_b","type":"u64"}]}}] as any, [{"name":"DexConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"pause_authority","type":{"array":["u8",32]}},{"name":"base_fee_bps","type":"u16"},{"name":"lp_fee_share_bps","type":"u16"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"rebalancer","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolState","type":{"kind":"struct","fields":[{"name":"pool_type","type":"u8"},{"name":"token_a_mint","type":{"array":["u8",32]}},{"name":"token_b_mint","type":{"array":["u8",32]}},{"name":"vault_a","type":{"array":["u8",32]}},{"name":"vault_b","type":{"array":["u8",32]}},{"name":"reserve_a","type":"u64"},{"name":"reserve_b","type":"u64"},{"name":"total_lp_shares","type":"u128"},{"name":"fee_bps","type":"u16"},{"name":"is_active","type":"bool"},{"name":"total_fees_accumulated","type":"u64"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"ot_treasury_fee_destination","type":{"array":["u8",32]}},{"name":"has_ot_treasury","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolCreators","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"creators","type":{"array":[{"array":["u8",32]},10]}},{"name":"active_count","type":"u8"},{"name":"bump","type":"u8"}]}},{"name":"LpPosition","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"owner","type":{"array":["u8",32]}},{"name":"shares","type":"u128"},{"name":"last_update_ts","type":"i64"},{"name":"bump","type":"u8"}]}},{"name":"BinArray","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"bins","type":{"array":[{"defined":"Bin"},70]}},{"name":"lower_bin_id","type":"i32"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"FeeBreakdown","type":{"kind":"struct","fields":[{"name":"fee_total","type":"u64"},{"name":"fee_lp","type":"u64"},{"name":"fee_protocol","type":"u64"},{"name":"ot_treasury_fee","type":"u64"}]}},{"name":"Bin","type":{"kind":"struct","fields":[{"name":"liquidity_a","type":"u64"},{"name":"liquidity_b","type":"u64"}]}}] as any, [{"name":"DexConfig","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"pause_authority","type":{"array":["u8",32]}},{"name":"base_fee_bps","type":"u16"},{"name":"lp_fee_share_bps","type":"u16"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"rebalancer","type":{"array":["u8",32]}},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"PoolState","type":{"kind":"struct","fields":[{"name":"pool_type","type":"u8"},{"name":"token_a_mint","type":{"array":["u8",32]}},{"name":"token_b_mint","type":{"array":["u8",32]}},{"name":"vault_a","type":{"array":["u8",32]}},{"name":"vault_b","type":{"array":["u8",32]}},{"name":"reserve_a","type":"u64"},{"name":"reserve_b","type":"u64"},{"name":"total_lp_shares","type":"u128"},{"name":"fee_bps","type":"u16"},{"name":"is_active","type":"bool"},{"name":"total_fees_accumulated","type":"u64"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"ot_treasury_fee_destination","type":{"array":["u8",32]}},{"name":"has_ot_treasury","type":"bool"},{"name":"bump","type":"u8"},{"name":"cumulative_fees_per_share_a","type":"u128"},{"name":"cumulative_fees_per_share_b","type":"u128"}]}},{"name":"PoolCreators","type":{"kind":"struct","fields":[{"name":"authority","type":{"array":["u8",32]}},{"name":"creators","type":{"array":[{"array":["u8",32]},10]}},{"name":"active_count","type":"u8"},{"name":"bump","type":"u8"}]}},{"name":"LpPosition","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"owner","type":{"array":["u8",32]}},{"name":"shares","type":"u128"},{"name":"last_update_ts","type":"i64"},{"name":"bump","type":"u8"},{"name":"fees_claimed_per_share_a","type":"u128"},{"name":"fees_claimed_per_share_b","type":"u128"}]}},{"name":"BinArray","type":{"kind":"struct","fields":[{"name":"pool","type":{"array":["u8",32]}},{"name":"bins","type":{"array":[{"defined":"Bin"},70]}},{"name":"lower_bin_id","type":"i32"},{"name":"bin_step_bps","type":"u16"},{"name":"active_bin_id","type":"i32"},{"name":"bump","type":"u8"}]}},{"name":"LiquidityNexus","type":{"kind":"struct","fields":[{"name":"manager","type":{"array":["u8",32]}},{"name":"total_deposited_usdc","type":"u64"},{"name":"total_deposited_rwt","type":"u64"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}}] as any);
 
 // ============================================================
 // Instruction: initialize_dex
@@ -27,9 +28,9 @@ export const INITIALIZE_DEX_DISCRIMINATOR: Uint8Array = new Uint8Array([0x22, 0x
 export interface InitializeDexAccounts {
   /** signer, writable */
   deployer: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   dexConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   poolCreators: PublicKey;
   /** readonly */
   systemProgram: PublicKey;
@@ -122,6 +123,71 @@ export interface CreatePoolAccounts {
 /** Encode (no args) for the `create_pool` instruction — discriminator only. */
 export function encodeCreatePoolArgs(): Buffer {
   return Buffer.from(CREATE_POOL_DISCRIMINATOR);
+}
+
+// ============================================================
+// Instruction: create_concentrated_pool
+// ============================================================
+
+export const CREATE_CONCENTRATED_POOL_DISCRIMINATOR: Uint8Array = new Uint8Array([0x43, 0x11, 0x9a, 0xdf, 0xd1, 0xc3, 0xd6, 0xe2]);
+
+export interface CreateConcentratedPoolAccounts {
+  /** signer, writable */
+  creator: PublicKey;
+  /** readonly */
+  dexConfig: PublicKey;
+  /** readonly */
+  poolCreators: PublicKey;
+  /** readonly, writable */
+  poolState: PublicKey;
+  /** readonly, writable */
+  binArray: PublicKey;
+  /** readonly */
+  tokenAMint: PublicKey;
+  /** readonly */
+  tokenBMint: PublicKey;
+  /** signer, writable */
+  vaultA: PublicKey;
+  /** signer, writable */
+  vaultB: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+}
+
+export interface CreateConcentratedPoolArgs {
+  binStepBps: number;
+  initialActiveBin: number;
+}
+
+const IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "bin_step_bps",
+    "type": "u16"
+  },
+  {
+    "name": "initial_active_bin",
+    "type": "i32"
+  }
+];
+
+export const WIRE_CREATE_CONCENTRATED_POOL_ARG_FIELDS: WireFieldMap = {
+  "bin_step_bps": "binStepBps",
+  "initial_active_bin": "initialActiveBin",
+};
+
+/**
+ * Encode arguments for the `create_concentrated_pool` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeCreateConcentratedPoolArgs(args: CreateConcentratedPoolArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_CREATE_CONCENTRATED_POOL_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(CREATE_CONCENTRATED_POOL_DISCRIMINATOR), argBuf]);
 }
 
 // ============================================================
@@ -275,7 +341,7 @@ export function encodeZapLiquidityArgs(args: ZapLiquidityArgs): Buffer {
 export const REMOVE_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0x50, 0x55, 0xd1, 0x48, 0x18, 0xce, 0xb1, 0x6c]);
 
 export interface RemoveLiquidityAccounts {
-  /** signer, writable */
+  /** signer */
   provider: PublicKey;
   /** readonly, writable */
   poolState: PublicKey;
@@ -389,6 +455,57 @@ export function encodeSwapArgs(args: SwapArgs): Buffer {
 }
 
 // ============================================================
+// Instruction: shift_liquidity
+// ============================================================
+
+export const SHIFT_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0x5a, 0x93, 0x3b, 0x6c, 0x08, 0x73, 0xe9, 0x05]);
+
+export interface ShiftLiquidityAccounts {
+  /** signer */
+  rebalancer: PublicKey;
+  /** readonly */
+  dexConfig: PublicKey;
+  /** readonly, writable */
+  poolState: PublicKey;
+  /** readonly, writable */
+  binArray: PublicKey;
+}
+
+export interface ShiftLiquidityArgs {
+  navBin: number;
+  targetBinCount: number;
+}
+
+const IDL_SHIFT_LIQUIDITY_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "nav_bin",
+    "type": "i32"
+  },
+  {
+    "name": "target_bin_count",
+    "type": "u16"
+  }
+];
+
+export const WIRE_SHIFT_LIQUIDITY_ARG_FIELDS: WireFieldMap = {
+  "nav_bin": "navBin",
+  "target_bin_count": "targetBinCount",
+};
+
+/**
+ * Encode arguments for the `shift_liquidity` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeShiftLiquidityArgs(args: ShiftLiquidityArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_SHIFT_LIQUIDITY_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_SHIFT_LIQUIDITY_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(SHIFT_LIQUIDITY_DISCRIMINATOR), argBuf]);
+}
+
+// ============================================================
 // Instruction: update_dex_config
 // ============================================================
 
@@ -397,7 +514,7 @@ export const UPDATE_DEX_CONFIG_DISCRIMINATOR: Uint8Array = new Uint8Array([0xb3,
 export interface UpdateDexConfigAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   dexConfig: PublicKey;
 }
 
@@ -463,7 +580,7 @@ export interface UpdatePoolCreatorsAccounts {
   authority: PublicKey;
   /** readonly */
   dexConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   poolCreators: PublicKey;
 }
 
@@ -555,7 +672,7 @@ export const PROPOSE_AUTHORITY_TRANSFER_DISCRIMINATOR: Uint8Array = new Uint8Arr
 export interface ProposeAuthorityTransferAccounts {
   /** signer */
   authority: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   dexConfig: PublicKey;
 }
 
@@ -613,119 +730,75 @@ export function encodeAcceptAuthorityTransferArgs(): Buffer {
 }
 
 // ============================================================
-// Instruction: create_concentrated_pool
+// Instruction: compound_yield
 // ============================================================
 
-export const CREATE_CONCENTRATED_POOL_DISCRIMINATOR: Uint8Array = new Uint8Array([0x43, 0x11, 0x9a, 0xdf, 0xd1, 0xc3, 0xd6, 0xe2]);
+export const COMPOUND_YIELD_DISCRIMINATOR: Uint8Array = new Uint8Array([0xd2, 0x75, 0x2c, 0x46, 0x0c, 0xc7, 0x32, 0xf6]);
 
-export interface CreateConcentratedPoolAccounts {
+export interface CompoundYieldAccounts {
   /** signer, writable */
-  creator: PublicKey;
-  /** readonly */
-  dexConfig: PublicKey;
-  /** readonly */
-  poolCreators: PublicKey;
+  crank: PublicKey;
   /** readonly, writable */
   poolState: PublicKey;
   /** readonly, writable */
-  binArray: PublicKey;
+  targetVault: PublicKey;
   /** readonly */
-  tokenAMint: PublicKey;
+  ydConfig: PublicKey;
   /** readonly */
-  tokenBMint: PublicKey;
-  /** signer, writable */
-  vaultA: PublicKey;
-  /** signer, writable */
-  vaultB: PublicKey;
+  otMint: PublicKey;
+  /** readonly, writable */
+  ydDistributor: PublicKey;
+  /** readonly, writable */
+  ydClaimStatus: PublicKey;
+  /** readonly, writable */
+  ydRewardVault: PublicKey;
+  /** readonly */
+  ydProgram: PublicKey;
   /** readonly */
   tokenProgram: PublicKey;
   /** readonly */
   systemProgram: PublicKey;
 }
 
-export interface CreateConcentratedPoolArgs {
-  binStepBps: number;
-  initialActiveBin: number;
+export interface CompoundYieldArgs {
+  cumulativeAmount: bigint;
+  proof: Bytes32[];
 }
 
-const IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS: IdlField[] = [
+const IDL_COMPOUND_YIELD_ARG_FIELDS: IdlField[] = [
   {
-    "name": "bin_step_bps",
-    "type": "u16"
+    "name": "cumulative_amount",
+    "type": "u64"
   },
   {
-    "name": "initial_active_bin",
-    "type": "i32"
+    "name": "proof",
+    "type": {
+      "vec": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
+    }
   }
 ];
 
-export const WIRE_CREATE_CONCENTRATED_POOL_ARG_FIELDS: WireFieldMap = {
-  "bin_step_bps": "binStepBps",
-  "initial_active_bin": "initialActiveBin",
+export const WIRE_COMPOUND_YIELD_ARG_FIELDS: WireFieldMap = {
+  "cumulative_amount": "cumulativeAmount",
+  "proof": "proof",
 };
 
 /**
- * Encode arguments for the `create_concentrated_pool` instruction.
+ * Encode arguments for the `compound_yield` instruction.
  * Returns a Buffer with discriminator + serialized args.
  */
-export function encodeCreateConcentratedPoolArgs(args: CreateConcentratedPoolArgs): Buffer {
-  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_CREATE_CONCENTRATED_POOL_ARG_FIELDS, {
+export function encodeCompoundYieldArgs(args: CompoundYieldArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_COMPOUND_YIELD_ARG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
   });
-  const argBuf = serializeArgs(IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS, wire, TYPE_REGISTRY);
-  return Buffer.concat([Buffer.from(CREATE_CONCENTRATED_POOL_DISCRIMINATOR), argBuf]);
-}
-
-// ============================================================
-// Instruction: shift_liquidity
-// ============================================================
-
-export const SHIFT_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0x5a, 0x93, 0x3b, 0x6c, 0x08, 0x73, 0xe9, 0x05]);
-
-export interface ShiftLiquidityAccounts {
-  /** signer */
-  rebalancer: PublicKey;
-  /** readonly */
-  dexConfig: PublicKey;
-  /** readonly, writable */
-  poolState: PublicKey;
-  /** readonly, writable */
-  binArray: PublicKey;
-}
-
-export interface ShiftLiquidityArgs {
-  navBin: number;
-  targetBinCount: number;
-}
-
-const IDL_SHIFT_LIQUIDITY_ARG_FIELDS: IdlField[] = [
-  {
-    "name": "nav_bin",
-    "type": "i32"
-  },
-  {
-    "name": "target_bin_count",
-    "type": "u16"
-  }
-];
-
-export const WIRE_SHIFT_LIQUIDITY_ARG_FIELDS: WireFieldMap = {
-  "nav_bin": "navBin",
-  "target_bin_count": "targetBinCount",
-};
-
-/**
- * Encode arguments for the `shift_liquidity` instruction.
- * Returns a Buffer with discriminator + serialized args.
- */
-export function encodeShiftLiquidityArgs(args: ShiftLiquidityArgs): Buffer {
-  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_SHIFT_LIQUIDITY_ARG_FIELDS, {
-    nestedMaps: {},
-    arrayMaps: {},
-  });
-  const argBuf = serializeArgs(IDL_SHIFT_LIQUIDITY_ARG_FIELDS, wire, TYPE_REGISTRY);
-  return Buffer.concat([Buffer.from(SHIFT_LIQUIDITY_DISCRIMINATOR), argBuf]);
+  const argBuf = serializeArgs(IDL_COMPOUND_YIELD_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(COMPOUND_YIELD_DISCRIMINATOR), argBuf]);
 }
 
 // ============================================================
@@ -739,7 +812,7 @@ export interface InitializeNexusAccounts {
   authority: PublicKey;
   /** readonly */
   dexConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   liquidityNexus: PublicKey;
   /** readonly */
   systemProgram: PublicKey;
@@ -789,7 +862,7 @@ export interface UpdateNexusManagerAccounts {
   authority: PublicKey;
   /** readonly */
   dexConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   liquidityNexus: PublicKey;
 }
 

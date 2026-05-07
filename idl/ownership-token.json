@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "name": "ownership_token",
+  "name": "ownership-token",
   "metadata": {
     "address": "oWnqbNwmEdjNS5KVbxz8xeuGNjKMd1aiNF89d7qdARL"
   },
@@ -25,12 +25,12 @@
         },
         {
           "name": "ot_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "revenue_account",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -40,17 +40,17 @@
         },
         {
           "name": "revenue_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "ot_governance",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "ot_treasury",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -128,7 +128,7 @@
         },
         {
           "name": "ot_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -189,7 +189,7 @@
         },
         {
           "name": "revenue_account",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -286,7 +286,7 @@
         },
         {
           "name": "revenue_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -316,7 +316,7 @@
         },
         {
           "name": "ot_governance",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -347,11 +347,93 @@
         },
         {
           "name": "ot_governance",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
       "args": []
+    },
+    {
+      "name": "claim_yd_for_treasury",
+      "accounts": [
+        {
+          "name": "crank",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_treasury",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "treasury_rwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "yd_ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "yd_distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_claim_status",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "cumulative_amount",
+          "type": "u64"
+        },
+        {
+          "name": "proof",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "accounts": [
@@ -418,6 +500,15 @@
         "fields": [
           {
             "name": "ot_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "revenue_token_account",
             "type": {
               "array": [
                 "u8",
@@ -574,7 +665,6 @@
     {
       "name": "RevenueDestination",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "address",
@@ -598,13 +688,13 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     },
     {
       "name": "BatchDestination",
       "type": {
-        "kind": "struct",
         "fields": [
           {
             "name": "address",
@@ -628,7 +718,8 @@
               ]
             }
           }
-        ]
+        ],
+        "kind": "struct"
       }
     }
   ],
@@ -870,6 +961,37 @@
           "type": "i64"
         }
       ]
+    },
+    {
+      "name": "TreasuryYieldClaimed",
+      "fields": [
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "yd_ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
     }
   ],
   "errors": [
@@ -1022,6 +1144,31 @@
       "code": 6029,
       "name": "InvalidInitialAuthority",
       "msg": "Initial authority cannot be zero address"
+    },
+    {
+      "code": 6030,
+      "name": "ZeroAuthority",
+      "msg": "New authority cannot be zero address"
+    },
+    {
+      "code": 6031,
+      "name": "InvalidYdProgram",
+      "msg": "yd_program account does not match pinned YD_PROGRAM_ID"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidOtTreasuryPda",
+      "msg": "ot_treasury PDA does not match expected derivation"
+    },
+    {
+      "code": 6033,
+      "name": "InvalidTreasuryAtaOwner",
+      "msg": "treasury RWT ATA owner is not the OtTreasury PDA"
+    },
+    {
+      "code": 6034,
+      "name": "InvalidTreasuryAtaMint",
+      "msg": "treasury RWT ATA mint is not RWT_MINT"
     }
   ]
 }

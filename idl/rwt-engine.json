@@ -1,6 +1,6 @@
 {
   "version": "0.1.0",
-  "name": "rwt_engine",
+  "name": "rwt-engine",
   "metadata": {
     "address": "RWT9hgbjHQDj98xP7FYsT5QYp5X32XyK6QfMRmFtARL"
   },
@@ -15,12 +15,12 @@
         },
         {
           "name": "rwt_vault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
           "name": "dist_config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -163,7 +163,7 @@
         },
         {
           "name": "rwt_vault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -203,7 +203,7 @@
         },
         {
           "name": "rwt_vault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -224,7 +224,7 @@
         },
         {
           "name": "rwt_vault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -334,7 +334,7 @@
         },
         {
           "name": "rwt_vault",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -437,6 +437,98 @@
         {
           "name": "a_to_b",
           "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "claim_yield",
+      "accounts": [
+        {
+          "name": "crank",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "rwt_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dist_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_claim_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "liquidity_dest",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "protocol_revenue_dest",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ot_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "yd_distributor",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_claim_status",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_reward_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "yd_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "cumulative_amount",
+          "type": "u64"
+        },
+        {
+          "name": "proof",
+          "type": {
+            "vec": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
         }
       ]
     }
@@ -580,6 +672,343 @@
       }
     }
   ],
+  "types": [],
+  "events": [
+    {
+      "name": "VaultInitialized",
+      "fields": [
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "nav",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "RwtMinted",
+      "fields": [
+        {
+          "name": "user",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "deposit_amount",
+          "type": "u64"
+        },
+        {
+          "name": "rwt_amount",
+          "type": "u64"
+        },
+        {
+          "name": "fee_vault",
+          "type": "u64"
+        },
+        {
+          "name": "fee_dao",
+          "type": "u64"
+        },
+        {
+          "name": "nav_after",
+          "type": "u64"
+        },
+        {
+          "name": "is_admin",
+          "type": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "CapitalAdjusted",
+      "fields": [
+        {
+          "name": "old_capital",
+          "type": "u128"
+        },
+        {
+          "name": "new_capital",
+          "type": "u128"
+        },
+        {
+          "name": "writedown_amount",
+          "type": "u64"
+        },
+        {
+          "name": "old_nav",
+          "type": "u64"
+        },
+        {
+          "name": "new_nav",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "VaultManagerUpdated",
+      "fields": [
+        {
+          "name": "old_manager",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_manager",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "DistributionConfigUpdated",
+      "fields": [
+        {
+          "name": "book_value_bps",
+          "type": "u16"
+        },
+        {
+          "name": "liquidity_bps",
+          "type": "u16"
+        },
+        {
+          "name": "protocol_revenue_bps",
+          "type": "u16"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "MintPauseToggled",
+      "fields": [
+        {
+          "name": "paused",
+          "type": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "VaultSwapExecuted",
+      "fields": [
+        {
+          "name": "token_in_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "token_out_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount_in",
+          "type": "u64"
+        },
+        {
+          "name": "amount_out",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "YieldDistributed",
+      "fields": [
+        {
+          "name": "vault",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "total_yield",
+          "type": "u64"
+        },
+        {
+          "name": "book_value_share",
+          "type": "u64"
+        },
+        {
+          "name": "liquidity_share",
+          "type": "u64"
+        },
+        {
+          "name": "protocol_revenue_share",
+          "type": "u64"
+        },
+        {
+          "name": "nav_before",
+          "type": "u64"
+        },
+        {
+          "name": "nav_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "LiquidityHoldingFunded",
+      "fields": [
+        {
+          "name": "liquidity_holding",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "ot_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
   "errors": [
     {
       "code": 6000,
@@ -700,6 +1129,26 @@
       "code": 6023,
       "name": "SameTokenAccount",
       "msg": "Input and output token accounts must be different"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidYdProgram",
+      "msg": "yd_program account does not match pinned YD_PROGRAM_ID"
+    },
+    {
+      "code": 6025,
+      "name": "InvalidRwtClaimAta",
+      "msg": "rwt_claim_ata owner is not the RwtVault PDA, or mint is not RWT_MINT"
+    },
+    {
+      "code": 6026,
+      "name": "InvalidLiquidityDest",
+      "msg": "liquidity_dest does not match dist_config.liquidity_destination"
+    },
+    {
+      "code": 6027,
+      "name": "InvalidProtocolRevenueDest",
+      "msg": "protocol_revenue_dest does not match dist_config.protocol_revenue_destination"
     }
   ]
 }

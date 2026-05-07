@@ -25,7 +25,7 @@
         },
         {
           "name": "config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -46,7 +46,7 @@
         },
         {
           "name": "config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         },
         {
@@ -207,7 +207,7 @@
         },
         {
           "name": "config",
-          "isMut": true,
+          "isMut": false,
           "isSigner": false
         }
       ],
@@ -672,42 +672,57 @@
     {
       "code": 6013,
       "name": "ParamsHashMismatch",
-      "msg": "Hash mismatch"
+      "msg": "Hash of provided destinations does not match proposal params_hash"
     },
     {
       "code": 6014,
       "name": "DestinationMismatch",
-      "msg": "Executor account mismatch"
+      "msg": "Executor account does not match proposal destination"
     },
     {
       "code": 6015,
       "name": "TokenMintMismatch",
-      "msg": "Token mint mismatch"
+      "msg": "Token mint does not match proposal token_mint"
     },
     {
       "code": 6016,
       "name": "GovernanceClaimMismatch",
-      "msg": "OT governance pending_authority mismatch"
+      "msg": "OT governance pending_authority does not match this Futarchy config"
     },
     {
       "code": 6017,
       "name": "InvalidOtProgram",
-      "msg": "OT program account mismatch"
+      "msg": "OT program account does not match OT_PROGRAM_ID"
     },
     {
       "code": 6018,
       "name": "InvalidOtGovernance",
-      "msg": "OT governance PDA mismatch"
+      "msg": "OT governance PDA derivation mismatch"
     },
     {
       "code": 6019,
       "name": "ProposalConfigMismatch",
-      "msg": "Proposal does not belong to this config"
+      "msg": "Proposal does not belong to this Futarchy config"
     },
     {
       "code": 6020,
       "name": "OtMintMismatch",
-      "msg": "OT mint account mismatch"
+      "msg": "OT mint account does not match config ot_mint"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidFutarchyConfig",
+      "msg": "Futarchy config PDA seeds do not match"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidProposal",
+      "msg": "Proposal PDA seeds do not match"
+    },
+    {
+      "code": 6023,
+      "name": "ZeroAuthority",
+      "msg": "New authority cannot be zero address"
     }
   ]
 }

@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: ownership_token v0.1.0
+// IDL: ownership-token v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -13,7 +15,6 @@ import {
   instructionDiscriminator,
   remapTsToWire,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Defined struct from IDL: BatchDestination */
 export interface BatchDestination {
@@ -55,7 +56,7 @@ export const IDL_BATCHDESTINATION_FIELDS: IdlField[] = [
 ];
 
 /** Type registry shared across all instruction encoders in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"RevenueDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}},{"name":"BatchDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}}] as any, [{"name":"OtConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"name","type":{"array":["u8",32]}},{"name":"symbol","type":{"array":["u8",10]}},{"name":"decimals","type":"u8"},{"name":"total_minted","type":"u64"},{"name":"uri","type":{"array":["u8",200]}},{"name":"bump","type":"u8"}]}},{"name":"RevenueAccount","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"total_distributed","type":"u64"},{"name":"distribution_count","type":"u64"},{"name":"last_distribution_ts","type":"i64"},{"name":"min_distribution_amount","type":"u64"},{"name":"is_distributing","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"RevenueConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"destinations","type":{"array":[{"defined":"RevenueDestination"},10]}},{"name":"active_count","type":"u8"},{"name":"config_version","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"OtGovernance","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"OtTreasury","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"RevenueDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}},{"name":"BatchDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}}] as any, [{"name":"OtConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"name","type":{"array":["u8",32]}},{"name":"symbol","type":{"array":["u8",10]}},{"name":"decimals","type":"u8"},{"name":"total_minted","type":"u64"},{"name":"uri","type":{"array":["u8",200]}},{"name":"bump","type":"u8"}]}},{"name":"RevenueAccount","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"revenue_token_account","type":{"array":["u8",32]}},{"name":"total_distributed","type":"u64"},{"name":"distribution_count","type":"u64"},{"name":"last_distribution_ts","type":"i64"},{"name":"min_distribution_amount","type":"u64"},{"name":"is_distributing","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"RevenueConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"destinations","type":{"array":[{"defined":"RevenueDestination"},10]}},{"name":"active_count","type":"u8"},{"name":"config_version","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"OtGovernance","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"OtTreasury","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}}] as any);
 
 // ============================================================
 // Instruction: initialize_ot
@@ -70,17 +71,17 @@ export interface InitializeOtAccounts {
   otMint: PublicKey;
   /** readonly */
   usdcMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   revenueAccount: PublicKey;
   /** readonly, writable */
   revenueTokenAccount: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   revenueConfig: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otGovernance: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otTreasury: PublicKey;
   /** readonly */
   arealFeeDestinationAccount: PublicKey;
@@ -169,7 +170,7 @@ export interface MintOtAccounts {
   authority: PublicKey;
   /** readonly */
   otGovernance: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otConfig: PublicKey;
   /** readonly, writable */
   otMint: PublicKey;
@@ -226,7 +227,7 @@ export interface DistributeRevenueAccounts {
   crank: PublicKey;
   /** readonly */
   otMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   revenueAccount: PublicKey;
   /** readonly, writable */
   revenueTokenAccount: PublicKey;
@@ -309,7 +310,7 @@ export interface BatchUpdateDestinationsAccounts {
   otMint: PublicKey;
   /** readonly */
   otGovernance: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   revenueConfig: PublicKey;
 }
 
@@ -358,7 +359,7 @@ export interface ProposeAuthorityTransferAccounts {
   authority: PublicKey;
   /** readonly */
   otMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otGovernance: PublicKey;
 }
 
@@ -406,11 +407,85 @@ export interface AcceptAuthorityTransferAccounts {
   newAuthority: PublicKey;
   /** readonly */
   otMint: PublicKey;
-  /** readonly, writable */
+  /** readonly */
   otGovernance: PublicKey;
 }
 
 /** Encode (no args) for the `accept_authority_transfer` instruction — discriminator only. */
 export function encodeAcceptAuthorityTransferArgs(): Buffer {
   return Buffer.from(ACCEPT_AUTHORITY_TRANSFER_DISCRIMINATOR);
+}
+
+// ============================================================
+// Instruction: claim_yd_for_treasury
+// ============================================================
+
+export const CLAIM_YD_FOR_TREASURY_DISCRIMINATOR: Uint8Array = new Uint8Array([0xbb, 0x8d, 0xf0, 0xbe, 0x60, 0xed, 0x4b, 0xf9]);
+
+export interface ClaimYdForTreasuryAccounts {
+  /** signer, writable */
+  crank: PublicKey;
+  /** readonly */
+  otMint: PublicKey;
+  /** readonly */
+  otTreasury: PublicKey;
+  /** readonly, writable */
+  treasuryRwtAta: PublicKey;
+  /** readonly */
+  ydConfig: PublicKey;
+  /** readonly */
+  ydOtMint: PublicKey;
+  /** readonly, writable */
+  ydDistributor: PublicKey;
+  /** readonly, writable */
+  ydClaimStatus: PublicKey;
+  /** readonly, writable */
+  ydRewardVault: PublicKey;
+  /** readonly */
+  ydProgram: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+  /** readonly */
+  systemProgram: PublicKey;
+}
+
+export interface ClaimYdForTreasuryArgs {
+  cumulativeAmount: bigint;
+  proof: Bytes32[];
+}
+
+const IDL_CLAIM_YD_FOR_TREASURY_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "cumulative_amount",
+    "type": "u64"
+  },
+  {
+    "name": "proof",
+    "type": {
+      "vec": {
+        "array": [
+          "u8",
+          32
+        ]
+      }
+    }
+  }
+];
+
+export const WIRE_CLAIM_YD_FOR_TREASURY_ARG_FIELDS: WireFieldMap = {
+  "cumulative_amount": "cumulativeAmount",
+  "proof": "proof",
+};
+
+/**
+ * Encode arguments for the `claim_yd_for_treasury` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeClaimYdForTreasuryArgs(args: ClaimYdForTreasuryArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_CLAIM_YD_FOR_TREASURY_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_CLAIM_YD_FOR_TREASURY_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(CLAIM_YD_FOR_TREASURY_DISCRIMINATOR), argBuf]);
 }

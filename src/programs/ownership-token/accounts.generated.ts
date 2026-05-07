@@ -1,6 +1,8 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: ownership_token v0.1.0
+// IDL: ownership-token v0.1.0
 // Generator: @arlex/client codegen v1
+
+import { Buffer } from 'buffer';
 
 import {
   PublicKey,
@@ -14,7 +16,6 @@ import {
   parseDiscriminator,
   remapWireToTs,
 } from '@arlex/client/codegen-runtime';
-import { Buffer } from 'buffer';
 
 /** Defined struct from IDL: RevenueDestination */
 export interface RevenueDestination {
@@ -56,7 +57,7 @@ export const IDL_REVENUEDESTINATION_FIELDS: IdlField[] = [
 ];
 
 /** Type registry shared across all account parsers in this module. */
-const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"RevenueDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}},{"name":"BatchDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}}] as any, [{"name":"OtConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"name","type":{"array":["u8",32]}},{"name":"symbol","type":{"array":["u8",10]}},{"name":"decimals","type":"u8"},{"name":"total_minted","type":"u64"},{"name":"uri","type":{"array":["u8",200]}},{"name":"bump","type":"u8"}]}},{"name":"RevenueAccount","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"total_distributed","type":"u64"},{"name":"distribution_count","type":"u64"},{"name":"last_distribution_ts","type":"i64"},{"name":"min_distribution_amount","type":"u64"},{"name":"is_distributing","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"RevenueConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"destinations","type":{"array":[{"defined":"RevenueDestination"},10]}},{"name":"active_count","type":"u8"},{"name":"config_version","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"OtGovernance","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"OtTreasury","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}}] as any);
+const TYPE_REGISTRY: TypeRegistry = buildTypeRegistry([{"name":"RevenueDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}},{"name":"BatchDestination","type":{"kind":"struct","fields":[{"name":"address","type":{"array":["u8",32]}},{"name":"allocation_bps","type":"u16"},{"name":"label","type":{"array":["u8",32]}}]}}] as any, [{"name":"OtConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"name","type":{"array":["u8",32]}},{"name":"symbol","type":{"array":["u8",10]}},{"name":"decimals","type":"u8"},{"name":"total_minted","type":"u64"},{"name":"uri","type":{"array":["u8",200]}},{"name":"bump","type":"u8"}]}},{"name":"RevenueAccount","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"revenue_token_account","type":{"array":["u8",32]}},{"name":"total_distributed","type":"u64"},{"name":"distribution_count","type":"u64"},{"name":"last_distribution_ts","type":"i64"},{"name":"min_distribution_amount","type":"u64"},{"name":"is_distributing","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"RevenueConfig","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"destinations","type":{"array":[{"defined":"RevenueDestination"},10]}},{"name":"active_count","type":"u8"},{"name":"config_version","type":"u64"},{"name":"areal_fee_destination","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}},{"name":"OtGovernance","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"authority","type":{"array":["u8",32]}},{"name":"pending_authority","type":{"array":["u8",32]}},{"name":"has_pending","type":"bool"},{"name":"is_active","type":"bool"},{"name":"bump","type":"u8"}]}},{"name":"OtTreasury","type":{"kind":"struct","fields":[{"name":"ot_mint","type":{"array":["u8",32]}},{"name":"bump","type":"u8"}]}}] as any);
 
 // ============================================================
 // Account: OtConfig
@@ -155,6 +156,7 @@ export function parseOtConfig(data: Buffer | Uint8Array): OtConfig {
 
 export interface RevenueAccount {
   otMint: PublicKey;
+  revenueTokenAccount: PublicKey;
   totalDistributed: bigint;
   distributionCount: bigint;
   lastDistributionTs: bigint;
@@ -167,6 +169,7 @@ export const REVENUEACCOUNT_DISCRIMINATOR: Uint8Array = new Uint8Array([0x8d, 0x
 
 export const WIRE_REVENUEACCOUNT_FIELDS: WireFieldMap = {
   "ot_mint": "otMint",
+  "revenue_token_account": "revenueTokenAccount",
   "total_distributed": "totalDistributed",
   "distribution_count": "distributionCount",
   "last_distribution_ts": "lastDistributionTs",
@@ -178,6 +181,15 @@ export const WIRE_REVENUEACCOUNT_FIELDS: WireFieldMap = {
 const IDL_REVENUEACCOUNT_FIELDS: IdlField[] = [
   {
     "name": "ot_mint",
+    "type": {
+      "array": [
+        "u8",
+        32
+      ]
+    }
+  },
+  {
+    "name": "revenue_token_account",
     "type": {
       "array": [
         "u8",

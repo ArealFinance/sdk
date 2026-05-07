@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: ownership_token v0.1.0
+// IDL: ownership-token v0.1.0
 // Generator: @arlex/client codegen v1
 
 import {
@@ -74,6 +74,16 @@ export enum ProgramErrorCode {
   InvalidFeeAccount = 6028,
   /** Initial authority cannot be zero address */
   InvalidInitialAuthority = 6029,
+  /** New authority cannot be zero address */
+  ZeroAuthority = 6030,
+  /** yd_program account does not match pinned YD_PROGRAM_ID */
+  InvalidYdProgram = 6031,
+  /** ot_treasury PDA does not match expected derivation */
+  InvalidOtTreasuryPda = 6032,
+  /** treasury RWT ATA owner is not the OtTreasury PDA */
+  InvalidTreasuryAtaOwner = 6033,
+  /** treasury RWT ATA mint is not RWT_MINT */
+  InvalidTreasuryAtaMint = 6034,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -108,6 +118,11 @@ export const ProgramErrors: IdlError[] = [
   { code: 6027, name: "TokenMintMismatch", msg: "Token account mint mismatch" },
   { code: 6028, name: "InvalidFeeAccount", msg: "Areal fee account does not match revenue config" },
   { code: 6029, name: "InvalidInitialAuthority", msg: "Initial authority cannot be zero address" },
+  { code: 6030, name: "ZeroAuthority", msg: "New authority cannot be zero address" },
+  { code: 6031, name: "InvalidYdProgram", msg: "yd_program account does not match pinned YD_PROGRAM_ID" },
+  { code: 6032, name: "InvalidOtTreasuryPda", msg: "ot_treasury PDA does not match expected derivation" },
+  { code: 6033, name: "InvalidTreasuryAtaOwner", msg: "treasury RWT ATA owner is not the OtTreasury PDA" },
+  { code: 6034, name: "InvalidTreasuryAtaMint", msg: "treasury RWT ATA mint is not RWT_MINT" },
 ];
 
 /**
