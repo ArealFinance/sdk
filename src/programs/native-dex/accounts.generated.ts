@@ -16,8 +16,11 @@ import {
 } from '@arlex/client/codegen-runtime';
 
 import {
+  ARRAY_MAPS_BIN,
   Bin,
   IDL_BIN_FIELDS,
+  NESTED_MAPS_BIN,
+  PUBKEY_BIN_FIELDS,
   TYPE_REGISTRY,
   WIRE_BIN_FIELDS,
 } from './defined-types.generated.js';
@@ -53,6 +56,15 @@ export const WIRE_DEXCONFIG_FIELDS: WireFieldMap = {
   "is_active": "isActive",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for DexConfig (heuristic + overrides). */
+export const PUBKEY_DEXCONFIG_FIELDS = [
+  "authority",
+  "pendingAuthority",
+  "pauseAuthority",
+  "arealFeeDestination",
+  "rebalancer",
+] as const;
 
 const IDL_DEXCONFIG_FIELDS: IdlField[] = [
   {
@@ -133,6 +145,7 @@ export function parseDexConfig(data: Buffer | Uint8Array): DexConfig {
   return remapWireToTs(raw, WIRE_DEXCONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_DEXCONFIG_FIELDS,
   }) as unknown as DexConfig;
 }
 
@@ -183,6 +196,15 @@ export const WIRE_POOLSTATE_FIELDS: WireFieldMap = {
   "cumulative_fees_per_share_a": "cumulativeFeesPerShareA",
   "cumulative_fees_per_share_b": "cumulativeFeesPerShareB",
 };
+
+/** Pubkey-classified [u8;32] fields for PoolState (heuristic + overrides). */
+export const PUBKEY_POOLSTATE_FIELDS = [
+  "tokenAMint",
+  "tokenBMint",
+  "vaultA",
+  "vaultB",
+  "otTreasuryFeeDestination",
+] as const;
 
 const IDL_POOLSTATE_FIELDS: IdlField[] = [
   {
@@ -295,6 +317,7 @@ export function parsePoolState(data: Buffer | Uint8Array): PoolState {
   return remapWireToTs(raw, WIRE_POOLSTATE_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_POOLSTATE_FIELDS,
   }) as unknown as PoolState;
 }
 
@@ -317,6 +340,11 @@ export const WIRE_POOLCREATORS_FIELDS: WireFieldMap = {
   "active_count": "activeCount",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for PoolCreators (heuristic + overrides). */
+export const PUBKEY_POOLCREATORS_FIELDS = [
+  "authority",
+] as const;
 
 const IDL_POOLCREATORS_FIELDS: IdlField[] = [
   {
@@ -363,6 +391,7 @@ export function parsePoolCreators(data: Buffer | Uint8Array): PoolCreators {
   return remapWireToTs(raw, WIRE_POOLCREATORS_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_POOLCREATORS_FIELDS,
   }) as unknown as PoolCreators;
 }
 
@@ -391,6 +420,12 @@ export const WIRE_LPPOSITION_FIELDS: WireFieldMap = {
   "fees_claimed_per_share_a": "feesClaimedPerShareA",
   "fees_claimed_per_share_b": "feesClaimedPerShareB",
 };
+
+/** Pubkey-classified [u8;32] fields for LpPosition (heuristic + overrides). */
+export const PUBKEY_LPPOSITION_FIELDS = [
+  "pool",
+  "owner",
+] as const;
 
 const IDL_LPPOSITION_FIELDS: IdlField[] = [
   {
@@ -444,6 +479,7 @@ export function parseLpPosition(data: Buffer | Uint8Array): LpPosition {
   return remapWireToTs(raw, WIRE_LPPOSITION_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_LPPOSITION_FIELDS,
   }) as unknown as LpPosition;
 }
 
@@ -470,6 +506,11 @@ export const WIRE_BINARRAY_FIELDS: WireFieldMap = {
   "active_bin_id": "activeBinId",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for BinArray (heuristic + overrides). */
+export const PUBKEY_BINARRAY_FIELDS = [
+  "pool",
+] as const;
 
 const IDL_BINARRAY_FIELDS: IdlField[] = [
   {
@@ -521,8 +562,9 @@ export function parseBinArray(data: Buffer | Uint8Array): BinArray {
   return remapWireToTs(raw, WIRE_BINARRAY_FIELDS, {
     nestedMaps: {},
     arrayMaps: {
-  "bins": WIRE_BIN_FIELDS,
+  "bins": { map: WIRE_BIN_FIELDS, pubkeyFields: PUBKEY_BIN_FIELDS, nestedMaps: NESTED_MAPS_BIN, arrayMaps: ARRAY_MAPS_BIN },
 },
+    pubkeyFields: PUBKEY_BINARRAY_FIELDS,
   }) as unknown as BinArray;
 }
 
@@ -547,6 +589,11 @@ export const WIRE_LIQUIDITYNEXUS_FIELDS: WireFieldMap = {
   "is_active": "isActive",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for LiquidityNexus (heuristic + overrides). */
+export const PUBKEY_LIQUIDITYNEXUS_FIELDS = [
+  "manager",
+] as const;
 
 const IDL_LIQUIDITYNEXUS_FIELDS: IdlField[] = [
   {
@@ -587,5 +634,6 @@ export function parseLiquidityNexus(data: Buffer | Uint8Array): LiquidityNexus {
   return remapWireToTs(raw, WIRE_LIQUIDITYNEXUS_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_LIQUIDITYNEXUS_FIELDS,
   }) as unknown as LiquidityNexus;
 }

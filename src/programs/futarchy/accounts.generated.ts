@@ -45,6 +45,13 @@ export const WIRE_FUTARCHYCONFIG_FIELDS: WireFieldMap = {
   "bump": "bump",
 };
 
+/** Pubkey-classified [u8;32] fields for FutarchyConfig (heuristic + overrides). */
+export const PUBKEY_FUTARCHYCONFIG_FIELDS = [
+  "otMint",
+  "authority",
+  "pendingAuthority",
+] as const;
+
 const IDL_FUTARCHYCONFIG_FIELDS: IdlField[] = [
   {
     "name": "ot_mint",
@@ -102,6 +109,7 @@ export function parseFutarchyConfig(data: Buffer | Uint8Array): FutarchyConfig {
   return remapWireToTs(raw, WIRE_FUTARCHYCONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_FUTARCHYCONFIG_FIELDS,
   }) as unknown as FutarchyConfig;
 }
 
@@ -140,6 +148,14 @@ export const WIRE_PROPOSAL_FIELDS: WireFieldMap = {
   "executed_ts": "executedTs",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for Proposal (heuristic + overrides). */
+export const PUBKEY_PROPOSAL_FIELDS = [
+  "otMint",
+  "proposer",
+  "destination",
+  "tokenMint",
+] as const;
 
 const IDL_PROPOSAL_FIELDS: IdlField[] = [
   {
@@ -228,5 +244,6 @@ export function parseProposal(data: Buffer | Uint8Array): Proposal {
   return remapWireToTs(raw, WIRE_PROPOSAL_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_PROPOSAL_FIELDS,
   }) as unknown as Proposal;
 }

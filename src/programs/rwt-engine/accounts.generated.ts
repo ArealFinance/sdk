@@ -57,6 +57,17 @@ export const WIRE_RWTVAULT_FIELDS: WireFieldMap = {
   "bump": "bump",
 };
 
+/** Pubkey-classified [u8;32] fields for RwtVault (heuristic + overrides). */
+export const PUBKEY_RWTVAULT_FIELDS = [
+  "capitalAccumulatorAta",
+  "rwtMint",
+  "authority",
+  "pendingAuthority",
+  "manager",
+  "pauseAuthority",
+  "arealFeeDestination",
+] as const;
+
 const IDL_RWTVAULT_FIELDS: IdlField[] = [
   {
     "name": "total_invested_capital",
@@ -158,6 +169,7 @@ export function parseRwtVault(data: Buffer | Uint8Array): RwtVault {
   return remapWireToTs(raw, WIRE_RWTVAULT_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_RWTVAULT_FIELDS,
   }) as unknown as RwtVault;
 }
 
@@ -184,6 +196,12 @@ export const WIRE_RWTDISTRIBUTIONCONFIG_FIELDS: WireFieldMap = {
   "protocol_revenue_destination": "protocolRevenueDestination",
   "bump": "bump",
 };
+
+/** Pubkey-classified [u8;32] fields for RwtDistributionConfig (heuristic + overrides). */
+export const PUBKEY_RWTDISTRIBUTIONCONFIG_FIELDS = [
+  "liquidityDestination",
+  "protocolRevenueDestination",
+] as const;
 
 const IDL_RWTDISTRIBUTIONCONFIG_FIELDS: IdlField[] = [
   {
@@ -233,5 +251,6 @@ export function parseRwtDistributionConfig(data: Buffer | Uint8Array): RwtDistri
   return remapWireToTs(raw, WIRE_RWTDISTRIBUTIONCONFIG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
+    pubkeyFields: PUBKEY_RWTDISTRIBUTIONCONFIG_FIELDS,
   }) as unknown as RwtDistributionConfig;
 }

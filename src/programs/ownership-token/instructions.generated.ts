@@ -15,8 +15,11 @@ import {
 } from '@arlex/client/codegen-runtime';
 
 import {
+  ARRAY_MAPS_BATCHDESTINATION,
   BatchDestination,
   IDL_BATCHDESTINATION_FIELDS,
+  NESTED_MAPS_BATCHDESTINATION,
+  PUBKEY_BATCHDESTINATION_FIELDS,
   TYPE_REGISTRY,
   WIRE_BATCHDESTINATION_FIELDS,
 } from './defined-types.generated.js';
@@ -304,7 +307,7 @@ export function encodeBatchUpdateDestinationsArgs(args: BatchUpdateDestinationsA
   const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_BATCH_UPDATE_DESTINATIONS_ARG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {
-  "destinations": WIRE_BATCHDESTINATION_FIELDS,
+  "destinations": { map: WIRE_BATCHDESTINATION_FIELDS, pubkeyFields: PUBKEY_BATCHDESTINATION_FIELDS, nestedMaps: NESTED_MAPS_BATCHDESTINATION, arrayMaps: ARRAY_MAPS_BATCHDESTINATION },
 },
   });
   const argBuf = serializeArgs(IDL_BATCH_UPDATE_DESTINATIONS_ARG_FIELDS, wire, TYPE_REGISTRY);
