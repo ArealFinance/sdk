@@ -27,6 +27,8 @@
 
 import type { PublicKey } from '@solana/web3.js';
 
+import type { ClusterName } from '../../network/clusters.js';
+import { isPlaceholderRwtMint } from '../../network/constants.js';
 import type { DexConfig, PoolState } from './accounts.generated.js';
 
 // ─────────────────────────────── constants ────────────────────────────────
@@ -57,7 +59,8 @@ export type QuoteError =
   | 'ZeroOutput'
   | 'PoolNotActive'
   | 'PoolPaused'
-  | 'MathOverflow';
+  | 'MathOverflow'
+  | 'MainnetNotDeployed';
 
 export interface QuoteFees {
   /** Total fee taken from the RWT side (input or output, depending on direction). */
@@ -115,6 +118,15 @@ export interface QuoteSwapArgs {
    * deploy (when the placeholder is replaced) does not need a quote rebuild.
    */
   rwtMint: PublicKey;
+  /**
+   * Optional safety check — when set to `'mainnet'` and `rwtMint` is the R20
+   * placeholder, `quoteSwap` returns `{ ok: false, error: 'MainnetNotDeployed' }`
+   * without proceeding. Mirrors the invariant enforced by `buildSwapTx` so
+   * callers cannot mis-detect `inputIsRwt` against the placeholder mint.
+   * Devnet/localnet (or omitting the field) preserves the prior behaviour —
+   * the placeholder IS the expected mint there.
+   */
+  cluster?: ClusterName;
 }
 
 export type QuoteOutcome =
@@ -135,7 +147,16 @@ export type QuoteOutcome =
  * 1-lamport dust floor and the protocol-takes-remainder rounding).
  */
 export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
-  const { pool, config, amountIn, aToB, rwtMint } = args;
+  const { pool, config, amountIn, aToB, rwtMint, cluster } = args;
+
+  // Mainnet safety: refuse to quote against the R20 placeholder. Without
+  // this guard a caller passing the placeholder mint on mainnet would
+  // silently mis-detect `inputIsRwt` (both pool sides could equal the
+  // placeholder) and return a quote a real `buildSwapTx` would refuse.
+  // Mirrors the invariant in `tx/native-dex/swap.ts::buildSwapTx`.
+  if (cluster === 'mainnet' && isPlaceholderRwtMint(rwtMint)) {
+    return err('MainnetNotDeployed');
+  }
 
   // Mirror swap_internal preflight order.
   if (!config.isActive) return err('PoolPaused');

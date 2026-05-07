@@ -383,6 +383,65 @@ describe('applySlippage — QM-13: bounds', () => {
   });
 });
 
+// QM-15
+describe('quoteSwap — QM-15: mainnet placeholder guard', () => {
+  it('returns MainnetNotDeployed when cluster=mainnet and rwtMint is the R20 placeholder', () => {
+    // RWT_MINT here equals the R20 placeholder bytes pinned in
+    // `src/network/constants.ts`. Mirrors the invariant enforced by
+    // `buildSwapTx` so quotes cannot mis-detect inputIsRwt during the
+    // pre-mainnet placeholder window.
+    const pool = makePool({
+      tokenAMint: RWT_MINT,
+      tokenBMint: NON_RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+      feeBps: 30,
+    });
+    const config = makeConfig({ lpFeeShareBps: 8000 });
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 10_000n,
+      aToB: true,
+      rwtMint: RWT_MINT,
+      cluster: 'mainnet',
+    });
+    expect(out.ok).toBe(false);
+    if (out.ok) return;
+    expect(out.error).toBe('MainnetNotDeployed');
+  });
+
+  it('proceeds normally when cluster=mainnet and rwtMint is a real mint (non-placeholder)', () => {
+    // A real mainnet RWT mint is just a non-placeholder PublicKey — quote
+    // path runs identically to the no-cluster case.
+    const realMainnetRwt = Keypair.generate().publicKey;
+    const pool = makePool({
+      tokenAMint: realMainnetRwt,
+      tokenBMint: NON_RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+      feeBps: 30,
+    });
+    const config = makeConfig({ lpFeeShareBps: 8000 });
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 10_000n,
+      aToB: true,
+      rwtMint: realMainnetRwt,
+      cluster: 'mainnet',
+    });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    // Same numerics as QM-1 — the guard is a pure short-circuit, the math
+    // path is unchanged.
+    expect(out.quote.fees.feeTotal).toBe(30n);
+    expect(out.quote.netInput).toBe(9_970n);
+    const expected = (1_000_000n * 9_970n) / (1_000_000n + 9_970n);
+    expect(out.quote.amountOut).toBe(expected);
+  });
+});
+
 // QM-14
 describe('quoteSwap — QM-14: side-B RWT (aToB=false, token_b is RWT)', () => {
   it('input_is_rwt=true when token_b is RWT and aToB=false (selling RWT)', () => {
