@@ -9,3 +9,4 @@ export * from './swap.js';
 export * from './add-liquidity.js';
 export * from './zap-liquidity.js';
 export * from './remove-liquidity.js';
+export * from './claim-lp-fees.js';
