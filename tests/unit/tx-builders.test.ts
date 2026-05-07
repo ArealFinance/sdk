@@ -23,6 +23,7 @@ import {
   buildNexusAddLiquidityIx,
   buildNexusRemoveLiquidityIx,
   buildNexusSwapIx,
+  buildShiftLiquidityIx,
   type NexusAccountContext,
   type PoolAccountContext,
 } from '../../src/tx/native-dex/index.js';
@@ -30,6 +31,7 @@ import {
   NEXUS_ADD_LIQUIDITY_DISCRIMINATOR,
   NEXUS_REMOVE_LIQUIDITY_DISCRIMINATOR,
   NEXUS_SWAP_DISCRIMINATOR,
+  SHIFT_LIQUIDITY_DISCRIMINATOR,
 } from '../../src/programs/native-dex/instructions.generated.js';
 import { SPL_TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID } from '../../src/network/constants.js';
 import {
@@ -646,5 +648,109 @@ describe('buildPublishRootIx', () => {
     expect(() =>
       buildPublishRootIx({ ...baseArgs(), maxTotalClaim: 1n << 64n }),
     ).toThrow(/max_total_claim/);
+  });
+});
+
+// ────────────────────────── shift_liquidity ──────────────────
+
+describe('buildShiftLiquidityIx', () => {
+  const baseArgs = () => ({
+    dexProgramId: NATIVE_DEX_PROGRAM_ID,
+    rebalancer: k(),
+    dexConfig: k(),
+    poolState: k(),
+    binArray: k(),
+    navBin: 100,
+    targetBinCount: 32,
+  });
+
+  it('discriminator = codegen SHIFT_LIQUIDITY_DISCRIMINATOR', () => {
+    const ix = buildShiftLiquidityIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(Buffer.from(SHIFT_LIQUIDITY_DISCRIMINATOR)),
+    ).toBe(true);
+  });
+
+  it('discriminator also matches sha256("global:shift_liquidity")[..8]', () => {
+    const ix = buildShiftLiquidityIx(baseArgs());
+    expect(
+      Buffer.from(ix.data).subarray(0, 8).equals(discFromName('shift_liquidity')),
+    ).toBe(true);
+  });
+
+  it('data layout: [disc(8) | nav_bin(i32 LE) | target_bin_count(u16 LE)] = 14 bytes', () => {
+    const ix = buildShiftLiquidityIx({
+      ...baseArgs(),
+      navBin: -12345,
+      targetBinCount: 0xbeef,
+    });
+    const data = Buffer.from(ix.data);
+    expect(data.length).toBe(14);
+    expect(data.readInt32LE(8)).toBe(-12345);
+    expect(data.readUInt16LE(12)).toBe(0xbeef);
+  });
+
+  it('account list: 4 keys, programId = dexProgramId, signer/writable flags', () => {
+    const args = baseArgs();
+    const ix = buildShiftLiquidityIx(args);
+    expect(ix.keys.length).toBe(4);
+    expect(ix.programId.equals(NATIVE_DEX_PROGRAM_ID)).toBe(true);
+
+    // 0. rebalancer — signer, read-only
+    expect(ix.keys[0]!.pubkey.equals(args.rebalancer)).toBe(true);
+    expect(ix.keys[0]!.isSigner).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(false);
+
+    // 1. dex_config — read-only
+    expect(ix.keys[1]!.pubkey.equals(args.dexConfig)).toBe(true);
+    expect(ix.keys[1]!.isSigner).toBe(false);
+    expect(ix.keys[1]!.isWritable).toBe(false);
+
+    // 2. pool_state — mut
+    expect(ix.keys[2]!.pubkey.equals(args.poolState)).toBe(true);
+    expect(ix.keys[2]!.isSigner).toBe(false);
+    expect(ix.keys[2]!.isWritable).toBe(true);
+
+    // 3. bin_array — mut
+    expect(ix.keys[3]!.pubkey.equals(args.binArray)).toBe(true);
+    expect(ix.keys[3]!.isSigner).toBe(false);
+    expect(ix.keys[3]!.isWritable).toBe(true);
+  });
+
+  it('encodes negative navBin (i32 two\'s-complement)', () => {
+    const ix = buildShiftLiquidityIx({ ...baseArgs(), navBin: -1 });
+    expect(Buffer.from(ix.data).readInt32LE(8)).toBe(-1);
+  });
+
+  it('throws when navBin > i32::MAX', () => {
+    expect(() =>
+      buildShiftLiquidityIx({ ...baseArgs(), navBin: 2 ** 31 }),
+    ).toThrow(/nav_bin/);
+  });
+
+  it('throws when navBin < i32::MIN', () => {
+    expect(() =>
+      buildShiftLiquidityIx({ ...baseArgs(), navBin: -(2 ** 31) - 1 }),
+    ).toThrow(/nav_bin/);
+  });
+
+  it('throws when navBin is not an integer', () => {
+    expect(() =>
+      buildShiftLiquidityIx({ ...baseArgs(), navBin: 1.5 }),
+    ).toThrow(/nav_bin/);
+  });
+
+  it('throws when targetBinCount > u16::MAX', () => {
+    expect(() =>
+      buildShiftLiquidityIx({ ...baseArgs(), targetBinCount: 0x10000 }),
+    ).toThrow(/target_bin_count/);
+  });
+
+  it('throws when targetBinCount is negative', () => {
+    expect(() =>
+      buildShiftLiquidityIx({ ...baseArgs(), targetBinCount: -1 }),
+    ).toThrow(/target_bin_count/);
   });
 });
