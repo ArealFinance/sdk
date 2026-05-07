@@ -20,6 +20,7 @@
     "./network": { "types": "./dist/network/index.d.ts", "import": "./dist/network/index.mjs", "require": "./dist/network/index.cjs" },
     "./errors": { "types": "./dist/errors/index.d.ts", "import": "./dist/errors/index.mjs", "require": "./dist/errors/index.cjs" },
     "./portfolio": { "types": "./dist/portfolio/index.d.ts", "import": "./dist/portfolio/index.mjs", "require": "./dist/portfolio/index.cjs" },
+    "./markets": { "types": "./dist/markets/index.d.ts", "import": "./dist/markets/index.mjs", "require": "./dist/markets/index.cjs" },
     "./idl/*.json": "./idl/*.json"
   },
   "scripts": {
