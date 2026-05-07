@@ -50,6 +50,30 @@ export const RWT_MINTS: Record<ClusterName, PublicKey> = {
 };
 
 /**
+ * USDY mint per cluster.
+ *
+ * PLACEHOLDER — the production Ondo USDY mint has not yet been wired to
+ * Areal across any cluster. The bytes below carry the ASCII prefix
+ * `"USDY"` followed by zero-padding (mirroring the RWT placeholder
+ * pattern) so that a master-pool guard can match against them by
+ * orientation while still being distinguishable from any real mint
+ * address. Replace the per-cluster bytes when the mint is announced and
+ * delete this comment in the same PR.
+ *
+ * Used today only by `markets/master-pool.ts::isMasterPool` as a UI-only
+ * guard. SDK consumers MUST NOT submit transactions that touch this mint
+ * on mainnet — there is no on-chain mint behind it.
+ */
+export const USDY_MINTS: Record<ClusterName, PublicKey> = {
+  // PLACEHOLDER — same bytes across all clusters until the production
+  // USDY mint is announced. Decodes from the ASCII prefix `"USDY"` plus
+  // 27 zero bytes plus a 0x01 tail.
+  mainnet: new PublicKey('6k5JAvDt4bWSRrow6izQckf6skDRSJdJxtZgUWGDeJun'),
+  devnet: new PublicKey('6k5JAvDt4bWSRrow6izQckf6skDRSJdJxtZgUWGDeJun'),
+  localnet: new PublicKey('6k5JAvDt4bWSRrow6izQckf6skDRSJdJxtZgUWGDeJun'),
+};
+
+/**
  * Base58 of the on-chain `RWT_MINT` R20 placeholder bytes. Anything that
  * matches this address is the devnet/localnet placeholder, NOT a real
  * mainnet RWT mint — see `isPlaceholderRwtMint`.

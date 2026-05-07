@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.7.0 — 2026-05-07
+
+- **feat(tx/native-dex)**: add four user-signed LP tx-builders for
+  Phase 11 — `buildAddLiquidityIx` / `buildAddLiquidityTx`,
+  `buildZapLiquidityIx` / `buildZapLiquidityTx`,
+  `buildRemoveLiquidityIx` / `buildRemoveLiquidityTx`, and
+  `buildClaimLpFeesIx` / `buildClaimLpFeesTx`. Each pure builder emits
+  the contract handler's exact account list (11 / 12 / 8 / 8 keys
+  respectively) with wire encoding delegated to the codegen
+  `encode*Args` helpers — no hand-rolled discriminators or arg buffers.
+  Convenience `buildXxxTx` helpers apply the mainnet RWT placeholder
+  guard (Add/Zap only — Remove/Claim must always work to let LPs exit),
+  optionally prepend `createAssociatedTokenAccountIdempotent` ix(s) when
+  provider/recipient ATAs are missing, and append the optional OT
+  treasury fee destination on `zap_liquidity` when the pool's
+  `has_ot_treasury` flag implies it. SDK rejects boundary-violating
+  amounts (`amount_a == 0`, `> u64::MAX`, `min_shares > u128::MAX`,
+  `shares_to_burn == 0`) at the call site mirroring the contract's
+  `ZeroAmount` / `InsufficientLpShares` checks. Concentrated-pool
+  BinArray remaining_accounts on `remove_liquidity` are deferred to a
+  future phase (Phase 11 scope = constant-product pools only).
+
+- **feat(programs/native-dex)**: add `applySlippageU128` companion to
+  `applySlippage` for use against LP-share quotes (`add_liquidity` /
+  `zap_liquidity` `min_shares` is u128, not u64). Same arithmetic;
+  skips the u64 boundary check and widens the slippage range to
+  `[0, 10000]` bps so callers can opt in to `min_shares == 0` for
+  first-deposit semantics.
+
+- **feat(markets)**: add `isMasterPool` UI-only guard — orientation- and
+  cluster-agnostic match for the two canonical master pools (RWT/USDC,
+  RWT/USDY). The contract has no concept of master pools today; SDK
+  consumers MUST NOT rely on this helper as a security boundary
+  (R-PHASE-11-1).
+
+- **feat(network)**: add `USDY_MINTS` placeholder table (per-cluster
+  bytes mirroring the RWT placeholder pattern). The production Ondo
+  USDY mint is not yet wired to any cluster; the bytes carry the ASCII
+  prefix `"USDY"` so the master-pool guard can match them while
+  remaining trivially distinguishable from any real mint.
+
 ## 0.6.0 — 2026-05-07
 
 - **feat(tx/rwt-engine)**: add `buildMintRwtIx` and `buildMintRwtTx` for
