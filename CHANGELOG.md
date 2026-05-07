@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.6.0 — 2026-05-07
+
+- **feat(tx/rwt-engine)**: add `buildMintRwtIx` and `buildMintRwtTx` for
+  the user-facing `rwt-engine::mint_rwt` flow (Phase 10). The pure
+  builder emits the 8-account ix in `mint_rwt::handler` order
+  (NO system_program — the contract does not allocate accounts on this
+  path), with wire encoding delegated to codegen `encodeMintRwtArgs`.
+  The convenience helper applies the mainnet RWT placeholder guard,
+  optionally prepends a `createAssociatedTokenAccountIdempotent` ix when
+  the user's RWT ATA does not yet exist, and returns a legacy
+  `Transaction`. SDK rejects `min_rwt_out == 0` at the boundary mirroring
+  the contract's `ZeroSlippage` check.
+
+- **feat(programs/rwt-engine)**: add `quoteMintRwt` pure helper mirroring
+  `contracts/rwt-engine/src/{instructions/mint_rwt.rs,nav.rs}`. Returns
+  a discriminated union with the same error tags as `RwtError`
+  (`MintPaused`, `ZeroAmount`, `BelowMinMint`, `ZeroRwtOutput`,
+  `MathOverflow`) and a `MintQuoteResult` carrying `rwtOut`, `netDeposit`,
+  fee breakdown (with the on-chain remainder pattern — vault gets the
+  odd-cent rounding), the NAV used to price the mint, and the post-mint
+  vault projection (`capitalAfter`/`supplyAfter`/`navAfter`) for UI
+  display. NAV calculation mirrors the contract's clamp-to-1 guard for
+  capital/supply truncation. All math runs in `bigint` — no intermediate
+  `Number` coercion. Re-exports `applySlippage` as `applyMintSlippage`.
+
 ## 0.5.0 — 2026-05-07
 
 - **feat(markets)**: add `@areal/sdk/markets` subpath — composite reader
