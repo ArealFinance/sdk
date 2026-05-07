@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.3.0 — 2026-05-07
+
+- **feat(tx/yield-distribution)**: add `buildClaimDistributionIx` and
+  `buildClaimTx` for the holder-facing claim flow. The pure builder
+  emits the 10-account `yield_distribution::claim` instruction with wire
+  encoding delegated to codegen `encodeClaimArgs` (single source of
+  truth for the snake/camel remap and nested `vec<[u8; 32]>` layout).
+  The convenience helper decodes hex proof nodes, derives YD config /
+  distributor / claim_status / claimant ATA PDAs, optionally prepends a
+  create-ATA-idempotent ix when the holder's RWT ATA does not yet exist,
+  and returns a legacy `Transaction`. Both reject `proof.length > 20`
+  (`MAX_PROOF_LEN`) and any node that is not exactly 32 bytes.
+
+- **feat(network)**: add `RWT_MINTS` cluster table mirroring
+  `USDC_MINTS`, plus `isPlaceholderRwtMint` guard. Devnet/localnet pin
+  the R20 placeholder bytes (`"RWT" + 28*0x00 + 0x01`) baked into the
+  on-chain Yield Distribution program. Mainnet uses the same placeholder
+  until the production RWT mint is deployed; consumers MUST refuse to
+  submit RWT writes on mainnet while the guard returns true.
+
+- **deps**: add `@solana/spl-token ^0.4.14` runtime dependency for
+  `createAssociatedTokenAccountIdempotentInstruction`. Externalised in
+  `tsup.config.ts` so consumer bundlers do not duplicate it.
+
 ## 0.2.0 — 2026-05-07
 
 - **feat(portfolio)**: add portfolio composite reads (`getHolderPortfolio`,
