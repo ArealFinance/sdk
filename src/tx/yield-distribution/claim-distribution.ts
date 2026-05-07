@@ -38,7 +38,11 @@ import {
 } from '@solana/web3.js';
 import { createAssociatedTokenAccountIdempotentInstruction } from '@solana/spl-token';
 
-import { SPL_TOKEN_PROGRAM_ID } from '../../network/constants.js';
+import {
+  isPlaceholderRwtMint,
+  SPL_TOKEN_PROGRAM_ID,
+} from '../../network/constants.js';
+import type { ClusterName } from '../../network/clusters.js';
 import {
   findAssociatedTokenAddressPda,
   findClaimStatusPda,
@@ -171,6 +175,16 @@ export interface BuildClaimTxArgs {
    * the ATA is initialised. Defaults to false.
    */
   ensureAta?: boolean;
+
+  /**
+   * Optional safety check. When set to `'mainnet'` and the provided
+   * `rwtMint` matches the R20 placeholder bytes, the builder throws rather
+   * than producing a tx that will fail on-chain with `InvalidTokenAccount`
+   * once a real RWT mint is deployed. Devnet and localnet pass through
+   * unchanged — the placeholder IS the expected mint there. Omitting the
+   * field preserves backwards-compatible behavior (no guard).
+   */
+  cluster?: ClusterName;
 }
 
 const HEX_RE = /^[0-9a-fA-F]+$/;
@@ -214,6 +228,17 @@ export async function buildClaimTx(
   args: BuildClaimTxArgs,
 ): Promise<Transaction> {
   const proof = decodeProofHex(args.proofHex);
+
+  // Mainnet safety guard: refuse to build a claim tx against the R20
+  // placeholder mint. Submitting it on mainnet would cost a blockhash and
+  // revert with `InvalidTokenAccount` once the real RWT mint is deployed.
+  // Devnet/localnet intentionally use the placeholder, so they skip this.
+  if (args.cluster === 'mainnet' && isPlaceholderRwtMint(args.rwtMint)) {
+    throw new Error(
+      'rwtMint is the R20 placeholder; mainnet RWT mint not yet deployed.',
+    );
+  }
+
   const payer = args.payer ?? args.claimant;
 
   const [config] = findYdConfigPda(args.ydProgramId);

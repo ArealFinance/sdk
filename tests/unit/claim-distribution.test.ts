@@ -315,6 +315,45 @@ describe('buildClaimTx', () => {
     expect(claimIx.keys[7]!.pubkey.equals(expectedAta)).toBe(true);
   });
 
+  // ─────────────── mainnet placeholder guard (security LOW) ───────────────
+
+  it('cluster=mainnet + placeholder rwtMint → throws "placeholder; mainnet RWT mint not yet deployed"', async () => {
+    const { conn } = makeMockConn({ ataExists: true });
+    await expect(
+      buildClaimTx(
+        baseTxArgs(conn, {
+          cluster: 'mainnet',
+          rwtMint: RWT_MINTS.mainnet, // same placeholder bytes today
+        }),
+      ),
+    ).rejects.toThrow(/placeholder; mainnet RWT mint not yet deployed/);
+  });
+
+  it('cluster=mainnet + non-placeholder rwtMint → does NOT throw (builds tx normally)', async () => {
+    const { conn } = makeMockConn({ ataExists: true });
+    const realMint = Keypair.generate().publicKey; // any non-placeholder bytes
+    const tx = await buildClaimTx(
+      baseTxArgs(conn, { cluster: 'mainnet', rwtMint: realMint }),
+    );
+    expect(tx.instructions.length).toBe(1);
+    expect(tx.instructions[0]!.programId.equals(YIELD_DISTRIBUTION_PROGRAM_ID)).toBe(true);
+  });
+
+  it('cluster=devnet + placeholder rwtMint → does NOT throw (placeholder is expected on devnet)', async () => {
+    const { conn } = makeMockConn({ ataExists: true });
+    const tx = await buildClaimTx(
+      baseTxArgs(conn, { cluster: 'devnet', rwtMint: RWT_MINTS.devnet }),
+    );
+    expect(tx.instructions.length).toBe(1);
+  });
+
+  it('cluster omitted + placeholder rwtMint → does NOT throw (backwards-compatible)', async () => {
+    const { conn } = makeMockConn({ ataExists: true });
+    // baseTxArgs already uses RWT_MINTS.localnet (placeholder bytes) and no cluster.
+    const tx = await buildClaimTx(baseTxArgs(conn));
+    expect(tx.instructions.length).toBe(1);
+  });
+
   // Sanity: derived PDAs land in the right slots.
   it('derives YD config / distributor / claim_status into the correct slots', async () => {
     const { conn } = makeMockConn({ ataExists: true });
