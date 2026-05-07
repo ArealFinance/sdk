@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.5.0 — 2026-05-07
+
+- **feat(markets)**: add `@areal/sdk/markets` subpath — composite reader
+  for the markets list + detail pages. Exposes `getMarketsSnapshot`
+  (token rows with USDC pricing + RWT NAV, pool rows with USDC TVL),
+  `enumeratePools` (`getProgramAccounts` + 252-byte / discriminator
+  filter mirroring `enumerateOtConfigs`), `chainPriceToUsdc` (resolves
+  prices via direct-USDC pool first, then `token → RWT → USDC` chain),
+  `poolTvlUsdc` (TVL with `'exact'` / `'mirrored'` precision hint), and
+  `computeDepth` (10-bucket depth ladder per side via the existing pure
+  `quoteSwap`). Top-level reads run through `Promise.allSettled` so a
+  missing program degrades gracefully; `slot` is captured AFTER all
+  reads to preserve the WS-staleness ordering contract used by the
+  portfolio reader. Concentrated pools yield empty depth ladders (no
+  BinArray walk available off-chain). Subpath-only export — NOT added
+  to the flat `@areal/sdk` aggregator.
+
 ## 0.4.0 — 2026-05-07
 
 - **feat(tx/native-dex)**: add `buildSwapIx` and `buildSwapTx` for the
