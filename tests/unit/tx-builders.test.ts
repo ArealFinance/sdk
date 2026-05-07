@@ -109,12 +109,12 @@ describe('buildNexusSwapIx', () => {
     expect(ixB.keys[4]!.pubkey.equals(ctx.nexusRwtAta)).toBe(true);
   });
 
-  it('account list: 11 keys, manager is signer+writable, token_program duplicated', () => {
+  it('account list: 11 keys, manager is signer-only (not writable per contract), token_program duplicated', () => {
     const ix = buildNexusSwapIx({ ctx, pool, aToB: true, amountIn: 1n, minAmountOut: 1n });
     expect(ix.keys.length).toBe(11);
     expect(ix.keys[0]!.pubkey.equals(ctx.manager)).toBe(true);
     expect(ix.keys[0]!.isSigner).toBe(true);
-    expect(ix.keys[0]!.isWritable).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(false); // contract has no #[account(mut)]; runtime auto-promotes if fee payer
     expect(ix.keys[1]!.isWritable).toBe(false); // dex_config
     expect(ix.keys[2]!.isWritable).toBe(true); // liquidity_nexus
     expect(ix.keys[9]!.pubkey.equals(SPL_TOKEN_PROGRAM_ID)).toBe(true);
