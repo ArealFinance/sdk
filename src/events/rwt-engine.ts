@@ -89,6 +89,11 @@ const EVENTS: readonly IdlEvent[] = [
 export const RWT_ENGINE_EVENTS: ProgramEventRegistry =
   buildProgramEventRegistry('rwt-engine', EVENTS);
 
+// Internal: exposes the inlined IDL-event literals for the IDL-vs-literal
+// drift detection test (tests/unit/events-idl-drift.test.ts). Not part of the
+// public SDK surface — do not import from outside `@areal/sdk` internals.
+export { EVENTS as RWT_ENGINE_EVENT_LITERALS };
+
 // ----------------------------------------------------------------------------
 // Typed wrappers
 // ----------------------------------------------------------------------------

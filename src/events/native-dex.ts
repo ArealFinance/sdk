@@ -150,6 +150,11 @@ const EVENTS: readonly IdlEvent[] = [
 export const NATIVE_DEX_EVENTS: ProgramEventRegistry =
   buildProgramEventRegistry('native-dex', EVENTS);
 
+// Internal: exposes the inlined IDL-event literals for the IDL-vs-literal
+// drift detection test (tests/unit/events-idl-drift.test.ts). Not part of the
+// public SDK surface — do not import from outside `@areal/sdk` internals.
+export { EVENTS as NATIVE_DEX_EVENT_LITERALS };
+
 // ----------------------------------------------------------------------------
 // Typed wrappers (top-4 events used by price ticker + LP UI + indexer)
 // ----------------------------------------------------------------------------
