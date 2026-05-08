@@ -8,6 +8,20 @@
  * cannot be parsed, or when the underlying fetch rejects (network down,
  * CORS, etc.). `status` is `null` for transport-level failures because
  * there is no HTTP response to inspect.
+ *
+ * @example
+ * ```ts
+ * try {
+ *   const page = await getTransactions({ wallet, cluster: 'mainnet' });
+ * } catch (e) {
+ *   if (e instanceof HistoryFetchError) {
+ *     // Backend reachable: e.status (e.g. 404, 500), e.url
+ *     // Network failure:   e.status === null, e.url is the attempted URL
+ *   } else if (e instanceof TypeError) {
+ *     // Caller bug: invalid wallet, limit, or missing baseUrl/cluster
+ *   }
+ * }
+ * ```
  */
 export class HistoryFetchError extends Error {
   constructor(

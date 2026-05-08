@@ -35,7 +35,7 @@ import type {
 const BASE58_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 const MIN_LIMIT = 1;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 50;
 const DEFAULT_LIMIT = 20;
 
 const HISTORY_KINDS: ReadonlySet<HistoryKind> = new Set([

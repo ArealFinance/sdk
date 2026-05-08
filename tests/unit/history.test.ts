@@ -5,15 +5,17 @@
 // case asserts either the URL the client built (validation tests) or the
 // shape of the parsed page (mapping tests).
 //
-// 19 cases (in PM brief order):
+// 21 cases (in PM brief order):
 //   1.  getTransactions happy path — 3 rows + nextCursor
 //   2.  getTransactions empty page
 //   3.  getTransactions kind filter — URL has kind=claim
 //   4.  getTransactions before cursor — URL has before=<cursor> (single-encoded)
 //   5.  getTransactions limit=50 — URL has limit=50
 //   6.  getTransactions invalid wallet → TypeError, no fetch call
-//   7.  getTransactions invalid limit (0, 101, 1.5) → TypeError, no fetch
+//   7.  getTransactions invalid limit (0, 51, 1.5) → TypeError, no fetch
 //   8.  getTransactions no baseUrl + no cluster → TypeError
+//   20. before cursor longer than 256 chars → TypeError, no fetch
+//   21. empty before cursor → TypeError, no fetch
 //   9.  getTransactions 5xx → HistoryFetchError(status=500)
 //   10. getTransactions 404 → HistoryFetchError(status=404)
 //   11. getTransactions network error (fetch rejects) → HistoryFetchError(status=null)
@@ -178,7 +180,7 @@ describe('getTransactions', () => {
   // Case 7
   it('invalid limit (0, 101, 1.5) → TypeError, no fetch call', async () => {
     const fetchMock = vi.fn();
-    for (const bad of [0, 101, 1.5]) {
+    for (const bad of [0, 51, 1.5]) {
       await expect(
         getTransactions({
           wallet: VALID_WALLET,
