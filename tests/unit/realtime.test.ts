@@ -645,6 +645,66 @@ describe('connect_error redaction', () => {
     sockets[0]!.fire('connect_error', { message: 'transport error' });
     expect(heard[0]).toBe('transport error');
   });
+
+  it('redacts a truncated JWT prefix (defence against future log-slicing)', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+
+    // Simulate a future socket.io-client that logs only the first 30 chars
+    // of auth.token. The full-string replace would NOT match, but the
+    // JWT-prefix regex must.
+    const truncated = token.slice(0, 30);
+    sockets[0]!.fire('connect_error', {
+      message: `auth failed for token ${truncated}`,
+    });
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).not.toContain(truncated);
+    expect(heard[0]).toContain('[REDACTED]');
+  });
+
+  it('redacts a foreign JWT-shaped substring (defensive — never selectively redact)', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+
+    // A JWT-shaped string that is NOT our configured token — still must be
+    // redacted to avoid leaking a token we somehow proxy.
+    const foreign =
+      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmb28ifQ.signature-not-ours';
+    sockets[0]!.fire('connect_error', {
+      message: `unexpected auth artefact: ${foreign}`,
+    });
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).not.toContain(foreign);
+    expect(heard[0]).toContain('[REDACTED]');
+  });
+
+  it('leaves connect_error message unchanged when no JWT-shaped content present', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+    sockets[0]!.fire('connect_error', { message: 'transport error: ECONNREFUSED' });
+    expect(heard[0]).toBe('transport error: ECONNREFUSED');
+  });
 });
 
 describe('transaction_indexed routing', () => {
