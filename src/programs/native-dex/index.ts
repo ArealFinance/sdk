@@ -16,3 +16,11 @@ export {
   type QuoteFees,
   type QuoteSwapArgs,
 } from './quote.js';
+
+// Ergonomic wrapper that fetches + parses PoolState/DexConfig and delegates
+// to quoteSwap. Useful when the caller has just a pool address.
+export {
+  simulateSwap,
+  type SwapSide,
+  type SimulateSwapOptions,
+} from './simulate.js';
