@@ -236,10 +236,22 @@ export interface ClaimLpFeesAccountContext {
   poolVaultA: PublicKey;
   /** Pool's vault for `token_b`. */
   poolVaultB: PublicKey;
-  /** Recipient's ATA for `token_a` — must exist on-chain (or be ensured separately). */
-  recipientTokenA: PublicKey;
-  /** Recipient's ATA for `token_b` — must exist on-chain (or be ensured separately). */
-  recipientTokenB: PublicKey;
+  /**
+   * Recipient's ATA for `token_a` — must exist on-chain (or be ensured
+   * separately via `ensureRecipientAtas` on `BuildClaimLpFeesTxArgs`).
+   *
+   * Named `recipientTokenAAta` for parity with the codegen
+   * `ClaimLpFeesAccounts.recipientTokenAAta` (Phase 11 F-LP-5).
+   */
+  recipientTokenAAta: PublicKey;
+  /**
+   * Recipient's ATA for `token_b` — must exist on-chain (or be ensured
+   * separately via `ensureRecipientAtas` on `BuildClaimLpFeesTxArgs`).
+   *
+   * Named `recipientTokenBAta` for parity with the codegen
+   * `ClaimLpFeesAccounts.recipientTokenBAta` (Phase 11 F-LP-5).
+   */
+  recipientTokenBAta: PublicKey;
 }
 
 export interface BuildClaimLpFeesIxArgs {

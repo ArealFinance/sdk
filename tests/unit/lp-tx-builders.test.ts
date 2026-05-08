@@ -655,8 +655,8 @@ function makeClaimCtx(
     lpPosition: k(),
     poolVaultA: k(),
     poolVaultB: k(),
-    recipientTokenA: k(),
-    recipientTokenB: k(),
+    recipientTokenAAta: k(),
+    recipientTokenBAta: k(),
     ...overrides,
   };
 }
@@ -689,10 +689,10 @@ describe('buildClaimLpFeesIx', () => {
     expect(ix.keys[4]!.pubkey.equals(ctx.poolVaultB)).toBe(true);
     expect(ix.keys[4]!.isWritable).toBe(true);
 
-    // 5/6: recipient_token_a/b
-    expect(ix.keys[5]!.pubkey.equals(ctx.recipientTokenA)).toBe(true);
+    // 5/6: recipient_token_a/b ATAs
+    expect(ix.keys[5]!.pubkey.equals(ctx.recipientTokenAAta)).toBe(true);
     expect(ix.keys[5]!.isWritable).toBe(true);
-    expect(ix.keys[6]!.pubkey.equals(ctx.recipientTokenB)).toBe(true);
+    expect(ix.keys[6]!.pubkey.equals(ctx.recipientTokenBAta)).toBe(true);
     expect(ix.keys[6]!.isWritable).toBe(true);
 
     // 7: token_program — read
