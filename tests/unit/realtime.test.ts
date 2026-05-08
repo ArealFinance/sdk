@@ -379,6 +379,36 @@ describe('unsubscribe', () => {
 
     expect(client.subscriptions.has(`pool:${VALID_POOL}` as Room)).toBe(false);
   });
+
+  it('does not re-add the room when subscribe-ack arrives AFTER unsubscribe-ack (race guard)', async () => {
+    const { factory, sockets } = makeFactory();
+    const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+    // 1. Start subscribe — do NOT ack yet.
+    const subPromise = client.subscribe(`pool:${VALID_POOL}` as Room);
+
+    // 2. Consumer calls unsubscribe(room) BEFORE subscribe-ack arrives.
+    //    Server has nothing to leave (subscribe ack not yet processed),
+    //    so the unsubscribe ack returns ok (no-op).
+    const unsubPromise = client.unsubscribe(`pool:${VALID_POOL}` as Room);
+    const unsubEmit = sockets[0]!.emitLog.find((e) => e.channel === 'unsubscribe');
+    unsubEmit!.ack!({ ok: true });
+    await unsubPromise;
+
+    // 3. NOW the late subscribe-ack arrives. Without the guard, this would
+    //    add the room back to local subscriptions, leaving us out of sync
+    //    with the consumer's intent.
+    const subEmit = sockets[0]!.emitLog.find((e) => e.channel === 'subscribe');
+    subEmit!.ack!({ ok: true });
+    const subResult = await subPromise;
+
+    // The original subscribe promise still resolves ok:true (the subscribe
+    // server-side did succeed) but local state must reflect the consumer's
+    // unsubscribe call.
+    expect(subResult).toEqual({ ok: true });
+    expect(client.subscriptions.has(`pool:${VALID_POOL}` as Room)).toBe(false);
+    expect(client.subscriptions.size).toBe(0);
+  });
 });
 
 describe('on/off — listener registration', () => {

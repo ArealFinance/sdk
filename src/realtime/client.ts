@@ -204,6 +204,14 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     reject: (err: Error) => void;
   };
   const pendingAcks = new Set<PendingAck>();
+  // In-flight subscribe()s, indexed by the entry that owns them. Each entry
+  // carries a `voided` flag flipped to `true` by a subsequent unsubscribe()
+  // for the same room. The subscribe-ack handler checks `voided` before
+  // adding the room to local state, so a subscribe-then-unsubscribe race
+  // (where the unsubscribe-ack arrives BEFORE the subscribe-ack) can't
+  // resurrect a room the consumer has already asked to leave.
+  type PendingSubscribe = { room: Room; voided: boolean };
+  const pendingSubscribes = new Set<PendingSubscribe>();
 
   // ─── Helper: emit synthetic event to local listeners ───
   function emitLocal<K extends keyof RealtimeEventMap>(
@@ -365,10 +373,13 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     return new Promise<SubscribeResult>((resolve, reject) => {
       let settled = false;
       let entry: PendingAck;
+      const subEntry: PendingSubscribe = { room, voided: false };
+      pendingSubscribes.add(subEntry);
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
         pendingAcks.delete(entry);
+        pendingSubscribes.delete(subEntry);
         reject(new Error('subscribe ack timeout'));
       }, SUBSCRIBE_ACK_TIMEOUT_MS);
       entry = { timer, reject };
@@ -380,6 +391,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
           settled = true;
           clearTimeout(timer);
           pendingAcks.delete(entry);
+          pendingSubscribes.delete(subEntry);
 
           // Defensive parse — server contract is `{ ok: true } |
           // { ok: false, error }` but we don't trust the wire blindly.
@@ -388,8 +400,17 @@ export function connect(opts: ConnectOptions): RealtimeClient {
             typeof ack === 'object' &&
             (ack as { ok?: unknown }).ok === true
           ) {
-            subscriptions.add(room);
-            scheduleStale(room);
+            // Race guard: if a concurrent unsubscribe(room) voided this
+            // subscribe before the ack arrived, do NOT add the room to
+            // local state — otherwise we drift out of sync with the
+            // consumer's intent. The promise still resolves ok:true (the
+            // subscribe itself succeeded server-side; the consumer's
+            // subsequent unsubscribe is responsible for cleaning up the
+            // server-side membership).
+            if (!subEntry.voided) {
+              subscriptions.add(room);
+              scheduleStale(room);
+            }
             resolve({ ok: true });
             return;
           }
@@ -412,6 +433,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
         settled = true;
         clearTimeout(timer);
         pendingAcks.delete(entry);
+        pendingSubscribes.delete(subEntry);
         reject(e);
       }
     });
@@ -420,6 +442,13 @@ export function connect(opts: ConnectOptions): RealtimeClient {
   function unsubscribe(room: Room): Promise<{ ok: boolean }> {
     if (typeof room !== 'string' || !isValidRoom(room)) {
       throw new TypeError(`unsubscribe: invalid room shape "${String(room)}"`);
+    }
+    // Race guard: void any in-flight subscribe(room) so when its ack
+    // eventually returns, the subscribe-ack handler skips adding the room
+    // to local state. Without this, a late ok:true ack would re-add the
+    // room AFTER the consumer asked to leave it.
+    for (const sub of pendingSubscribes) {
+      if (sub.room === room) sub.voided = true;
     }
     return new Promise<{ ok: boolean }>((resolve, reject) => {
       let settled = false;
@@ -508,6 +537,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     subscriptions.clear();
     staleRooms.clear();
     lastEventAt.clear();
+    pendingSubscribes.clear();
     // Drop listeners so leftover references can be GC'd.
     listeners.clear();
   }
