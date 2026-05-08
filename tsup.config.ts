@@ -15,6 +15,7 @@ export default defineConfig({
     'src/portfolio/index.ts',
     'src/markets/index.ts',
     'src/events/index.ts',
+    'src/history/index.ts',
   ],
   format: ['cjs', 'esm'],
   dts: true,
