@@ -14,6 +14,7 @@ export default defineConfig({
     'src/errors/index.ts',
     'src/portfolio/index.ts',
     'src/markets/index.ts',
+    'src/events/index.ts',
   ],
   format: ['cjs', 'esm'],
   dts: true,

@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.8.0 — 2026-05-08
+
+- **feat(events)**: add `@areal/sdk/events` subpath exposing decoders for
+  all 60 Areal program events (yield-distribution=13, native-dex=20,
+  ownership-token=8, rwt-engine=11, futarchy=8). Events are decoded
+  dynamically from per-program IDL field literals (no codegen
+  changes — codegen still does not emit event bindings as of Phase 12.1).
+  Per-program registries `YIELD_DISTRIBUTION_EVENTS`, `NATIVE_DEX_EVENTS`,
+  `OWNERSHIP_TOKEN_EVENTS`, `RWT_ENGINE_EVENTS`, `FUTARCHY_EVENTS` provide
+  `byName` and `byDiscriminator` lookups; the unified `decodeEvent` and
+  `decodeTransactionEvents` dispatchers pick the right registry by program
+  ID and walk the `invoke`/`success` log stack to attribute events to the
+  emitting program even across nested CPIs. Decoders never throw —
+  unknown discriminators, malformed base64, foreign program IDs, and
+  truncated payloads all return `null` for safe consumption inside
+  high-volume indexers. Top-N events used by the Phase 6 portfolio claim
+  flow + indexer ship typed wrappers (`RewardsClaimed`, `RootPublished`,
+  `DistributorFunded`, `StreamConverted`, `SwapExecuted`,
+  `LiquidityAdded`, `LiquidityRemoved`, `ZapLiquidityExecuted`,
+  `OtMinted`, `RevenueDistributed`, `RwtMinted`); the remaining 49 events
+  decode to `Record<string, unknown>` with camelCase keys and `[u8;32]`
+  fields wrapped as `PublicKey`. Typed wrappers for the long tail are
+  deferred until a consumer demands them — generic codegen-emitted event
+  bindings tracked as a separate framework PR against `@arlex/client`.
+
 ## 0.7.0 — 2026-05-07
 
 - **feat(tx/native-dex)**: add four user-signed LP tx-builders for
