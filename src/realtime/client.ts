@@ -41,6 +41,17 @@ import type {
   SubscribeResult,
   TransactionIndexedEvent,
 } from './types.js';
+// Static ESM import for the real socket.io-client factory.
+//
+// Earlier this was a `require('socket.io-client')` inside a lazy factory to
+// "save bundle size for tests that pass `ioFactory`". That was a footgun —
+// tsup transpiled it to a `__require()` shim that throws "Dynamic require
+// of … is not supported" in pure-ESM consumers (SvelteKit prod / Vite SSR /
+// Cloudflare Workers / modern Node ESM). Anyone importing
+// `@areal/sdk/realtime` will call `connect()` and pay the dep cost anyway,
+// so a real ESM import is the right shape. Tests that inject `ioFactory`
+// still bypass this entirely.
+import { io as defaultIo } from 'socket.io-client';
 
 const SUBSCRIBE_ACK_TIMEOUT_MS = 5_000;
 const DEFAULT_STALE_AFTER_MS = 30_000;
@@ -103,15 +114,8 @@ function isValidRoom(room: string): room is Room {
   return false;
 }
 
-/**
- * Lazy-load the real `socket.io-client.io` factory. We import dynamically
- * via `require` (CJS) / `globalThis` lookup to avoid pulling the dep
- * into the bundled output for consumers who pass `ioFactory` in tests.
- */
 function defaultIoFactory(): IoFactory {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/no-var-requires
-  const mod = require('socket.io-client') as { io: IoFactory };
-  return mod.io;
+  return defaultIo as unknown as IoFactory;
 }
 
 /**
