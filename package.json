@@ -1,6 +1,6 @@
 {
   "name": "@areal/sdk",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Areal Finance product SDK (TypeScript) — typed bindings for the 5 on-chain programs, built on @arlex/client",
   "license": "Apache-2.0",
   "type": "module",
