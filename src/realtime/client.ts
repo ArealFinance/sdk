@@ -552,7 +552,11 @@ export function connect(opts: ConnectOptions): RealtimeClient {
       return socket.connected === true;
     },
     get subscriptions(): ReadonlySet<Room> {
-      return subscriptions;
+      // Return a snapshot, not the live internal Set. Otherwise a consumer
+      // iterating the result during an in-flight subscribe()/unsubscribe()
+      // would observe mid-mutation. The cost is one Set allocation per
+      // getter call — negligible at the call frequencies we expect.
+      return new Set(subscriptions);
     },
   };
 }

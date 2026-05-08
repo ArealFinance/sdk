@@ -380,6 +380,41 @@ describe('unsubscribe', () => {
     expect(client.subscriptions.has(`pool:${VALID_POOL}` as Room)).toBe(false);
   });
 
+  it('subscriptions getter returns a snapshot, not a live reference', async () => {
+    const { factory, sockets } = makeFactory();
+    const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+    // Establish one subscription.
+    const p1 = client.subscribe('protocol');
+    sockets[0]!.ackLastSubscribe({ ok: true });
+    await p1;
+
+    // Take a snapshot.
+    const snapshot = client.subscriptions;
+    expect(snapshot.has('protocol')).toBe(true);
+    expect(snapshot.size).toBe(1);
+
+    // Now mutate internal state by adding a second subscription.
+    const p2 = client.subscribe(`pool:${VALID_POOL}` as Room);
+    sockets[0]!.ackLastSubscribe({ ok: true });
+    await p2;
+
+    // The original snapshot must remain unchanged — proving it was a
+    // detached copy, not a live ref.
+    expect(snapshot.size).toBe(1);
+    expect(snapshot.has('protocol')).toBe(true);
+    expect(snapshot.has(`pool:${VALID_POOL}` as Room)).toBe(false);
+
+    // A fresh getter call must reflect the new state.
+    const next = client.subscriptions;
+    expect(next.size).toBe(2);
+    expect(next.has('protocol')).toBe(true);
+    expect(next.has(`pool:${VALID_POOL}` as Room)).toBe(true);
+
+    // Snapshots from different calls are distinct instances.
+    expect(snapshot).not.toBe(next);
+  });
+
   it('does not re-add the room when subscribe-ack arrives AFTER unsubscribe-ack (race guard)', async () => {
     const { factory, sockets } = makeFactory();
     const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
