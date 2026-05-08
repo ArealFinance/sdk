@@ -446,4 +446,33 @@ describe('history client — shared options', () => {
     const beforeParam = new URL(url2).searchParams.get('before');
     expect(beforeParam).toBe(serverCursor);
   });
+
+  // Case 20 — cursor cap: oversize cursor → TypeError, no fetch
+  it('rejects before cursor longer than 256 chars without calling fetch', async () => {
+    const fetchMock = vi.fn();
+    const huge = ('x'.repeat(257)) as Cursor;
+    await expect(
+      getTransactions({
+        wallet: VALID_WALLET,
+        before: huge,
+        baseUrl: BASE_URL,
+        fetch: fetchMock as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(TypeError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // Case 21 — cursor cap: empty cursor string → TypeError
+  it('rejects empty before cursor without calling fetch', async () => {
+    const fetchMock = vi.fn();
+    await expect(
+      getTransactions({
+        wallet: VALID_WALLET,
+        before: '' as Cursor,
+        baseUrl: BASE_URL,
+        fetch: fetchMock as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(TypeError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });

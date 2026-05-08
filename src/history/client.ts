@@ -74,6 +74,16 @@ function assertHistoryKind(kind: string): void {
   }
 }
 
+const MAX_CURSOR_LEN = 256;
+
+function assertCursor(value: unknown): void {
+  if (typeof value !== 'string' || value.length === 0 || value.length > MAX_CURSOR_LEN) {
+    throw new TypeError(
+      `history client: invalid before cursor (must be non-empty string ≤ ${MAX_CURSOR_LEN} chars)`,
+    );
+  }
+}
+
 function resolveBaseUrl(opts: HistoryClientOptions): string {
   if (opts.baseUrl !== undefined) {
     if (typeof opts.baseUrl !== 'string' || opts.baseUrl.length === 0) {
@@ -239,7 +249,7 @@ export async function getTransactions(
   appendQuery(parts, 'wallet', opts.wallet);
   if (opts.kind !== undefined) appendQuery(parts, 'kind', opts.kind);
   appendQuery(parts, 'limit', String(limit));
-  if (opts.before !== undefined) appendQuery(parts, 'before', opts.before);
+  if (opts.before !== undefined) { assertCursor(opts.before); appendQuery(parts, 'before', opts.before); }
 
   const url = `${base}/transactions?${parts.join('&')}`;
   return requestPage(url, opts, mapTransactionRow);
@@ -269,7 +279,7 @@ export async function getClaimHistory(
   const parts: string[] = [];
   if (opts.otMint !== undefined) appendQuery(parts, 'ot_mint', opts.otMint);
   appendQuery(parts, 'limit', String(limit));
-  if (opts.before !== undefined) appendQuery(parts, 'before', opts.before);
+  if (opts.before !== undefined) { assertCursor(opts.before); appendQuery(parts, 'before', opts.before); }
 
   const url = `${base}/portfolio/${encodeURIComponent(opts.wallet)}/claims?${parts.join('&')}`;
   return requestPage(url, opts, mapClaimRow);
@@ -299,7 +309,7 @@ export async function getLpPositionHistory(
   const parts: string[] = [];
   if (opts.pool !== undefined) appendQuery(parts, 'pool', opts.pool);
   appendQuery(parts, 'limit', String(limit));
-  if (opts.before !== undefined) appendQuery(parts, 'before', opts.before);
+  if (opts.before !== undefined) { assertCursor(opts.before); appendQuery(parts, 'before', opts.before); }
 
   const url = `${base}/portfolio/${encodeURIComponent(opts.wallet)}/lp-positions?${parts.join('&')}`;
   return requestPage(url, opts, mapLpRow);
