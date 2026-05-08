@@ -23,6 +23,7 @@
     "./markets": { "types": "./dist/markets/index.d.ts", "import": "./dist/markets/index.mjs", "require": "./dist/markets/index.cjs" },
     "./events": { "types": "./dist/events/index.d.ts", "import": "./dist/events/index.mjs", "require": "./dist/events/index.cjs" },
     "./history": { "types": "./dist/history/index.d.ts", "import": "./dist/history/index.mjs", "require": "./dist/history/index.cjs" },
+    "./markets-rest": { "types": "./dist/markets-rest/index.d.ts", "import": "./dist/markets-rest/index.mjs", "require": "./dist/markets-rest/index.cjs" },
     "./idl/*.json": "./idl/*.json"
   },
   "scripts": {
