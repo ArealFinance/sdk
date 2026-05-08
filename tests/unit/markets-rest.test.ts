@@ -15,7 +15,7 @@
 //   9.  getPoolSnapshots tvlUsd: null preserved (not coerced to 0)
 //   10. getPoolSnapshots wire-shape mismatch (tvla typo) → field becomes ''
 //   11. getPoolSnapshots no baseUrl + no cluster → TypeError
-//   12. getPoolSnapshots cluster resolution → HISTORY_API_BASE_URLS lookup
+//   12. getPoolSnapshots cluster resolution → BACKEND_API_BASE_URLS lookup
 //   13. getPoolSnapshots 5xx → MarketsFetchError(status=500)
 //   14. getPoolSnapshots 404 → MarketsFetchError(status=404)
 //   15. getPoolSnapshots network error → MarketsFetchError(status=null)
@@ -43,7 +43,7 @@ import {
   getProtocolSummary,
 } from '../../src/markets-rest/client.js';
 import { MarketsFetchError } from '../../src/markets-rest/errors.js';
-import { HISTORY_API_BASE_URLS } from '../../src/network/constants.js';
+import { BACKEND_API_BASE_URLS } from '../../src/network/constants.js';
 
 const VALID_POOL = 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK';
 const BASE_URL = 'https://api.test.example';
@@ -306,7 +306,7 @@ describe('getPoolSnapshots', () => {
   });
 
   // Case 12
-  it('cluster resolves to HISTORY_API_BASE_URLS lookup', async () => {
+  it('cluster resolves to BACKEND_API_BASE_URLS lookup', async () => {
     const fetchMock = vi.fn(async () => jsonResponse({ items: [] }));
     await getPoolSnapshots({
       pool: VALID_POOL,
@@ -314,7 +314,7 @@ describe('getPoolSnapshots', () => {
       fetch: fetchMock,
     });
     const url = fetchMock.mock.calls[0]![0] as string;
-    expect(url.startsWith(HISTORY_API_BASE_URLS.mainnet)).toBe(true);
+    expect(url.startsWith(BACKEND_API_BASE_URLS.mainnet)).toBe(true);
   });
 
   // Case 13
@@ -633,7 +633,7 @@ describe('getProtocolSummary', () => {
     );
     await getProtocolSummary({ cluster: 'localnet', fetch: fetchMock });
     const url = fetchMock.mock.calls[0]![0] as string;
-    expect(url).toBe(`${HISTORY_API_BASE_URLS.localnet}/markets/summary`);
+    expect(url).toBe(`${BACKEND_API_BASE_URLS.localnet}/markets/summary`);
   });
 });
 

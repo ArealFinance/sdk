@@ -379,6 +379,71 @@ describe('unsubscribe', () => {
 
     expect(client.subscriptions.has(`pool:${VALID_POOL}` as Room)).toBe(false);
   });
+
+  it('subscriptions getter returns a snapshot, not a live reference', async () => {
+    const { factory, sockets } = makeFactory();
+    const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+    // Establish one subscription.
+    const p1 = client.subscribe('protocol');
+    sockets[0]!.ackLastSubscribe({ ok: true });
+    await p1;
+
+    // Take a snapshot.
+    const snapshot = client.subscriptions;
+    expect(snapshot.has('protocol')).toBe(true);
+    expect(snapshot.size).toBe(1);
+
+    // Now mutate internal state by adding a second subscription.
+    const p2 = client.subscribe(`pool:${VALID_POOL}` as Room);
+    sockets[0]!.ackLastSubscribe({ ok: true });
+    await p2;
+
+    // The original snapshot must remain unchanged — proving it was a
+    // detached copy, not a live ref.
+    expect(snapshot.size).toBe(1);
+    expect(snapshot.has('protocol')).toBe(true);
+    expect(snapshot.has(`pool:${VALID_POOL}` as Room)).toBe(false);
+
+    // A fresh getter call must reflect the new state.
+    const next = client.subscriptions;
+    expect(next.size).toBe(2);
+    expect(next.has('protocol')).toBe(true);
+    expect(next.has(`pool:${VALID_POOL}` as Room)).toBe(true);
+
+    // Snapshots from different calls are distinct instances.
+    expect(snapshot).not.toBe(next);
+  });
+
+  it('does not re-add the room when subscribe-ack arrives AFTER unsubscribe-ack (race guard)', async () => {
+    const { factory, sockets } = makeFactory();
+    const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+    // 1. Start subscribe — do NOT ack yet.
+    const subPromise = client.subscribe(`pool:${VALID_POOL}` as Room);
+
+    // 2. Consumer calls unsubscribe(room) BEFORE subscribe-ack arrives.
+    //    Server has nothing to leave (subscribe ack not yet processed),
+    //    so the unsubscribe ack returns ok (no-op).
+    const unsubPromise = client.unsubscribe(`pool:${VALID_POOL}` as Room);
+    const unsubEmit = sockets[0]!.emitLog.find((e) => e.channel === 'unsubscribe');
+    unsubEmit!.ack!({ ok: true });
+    await unsubPromise;
+
+    // 3. NOW the late subscribe-ack arrives. Without the guard, this would
+    //    add the room back to local subscriptions, leaving us out of sync
+    //    with the consumer's intent.
+    const subEmit = sockets[0]!.emitLog.find((e) => e.channel === 'subscribe');
+    subEmit!.ack!({ ok: true });
+    const subResult = await subPromise;
+
+    // The original subscribe promise still resolves ok:true (the subscribe
+    // server-side did succeed) but local state must reflect the consumer's
+    // unsubscribe call.
+    expect(subResult).toEqual({ ok: true });
+    expect(client.subscriptions.has(`pool:${VALID_POOL}` as Room)).toBe(false);
+    expect(client.subscriptions.size).toBe(0);
+  });
 });
 
 describe('on/off — listener registration', () => {
@@ -567,6 +632,53 @@ describe('disconnect', () => {
     expect(stales).toContain('protocol');
     expect(client.subscriptions.size).toBe(0);
   });
+
+  it('cancels pending subscribe ack-timer mid-flight (rejects with "client disconnected", not "subscribe ack timeout")', async () => {
+    vi.useFakeTimers();
+    try {
+      const { factory } = makeFactory();
+      const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+      // Start a subscribe that will NOT be acked.
+      const promise = client.subscribe('protocol');
+      // Disconnect mid-flight, BEFORE the 5s ack timeout would fire.
+      client.disconnect();
+
+      // The promise should reject immediately with the "client disconnected"
+      // error, NOT the 5s "subscribe ack timeout".
+      await expect(promise).rejects.toThrow('client disconnected');
+
+      // Advance past the original 5s timeout window — there should be no
+      // additional rejection (the timer was cancelled).
+      vi.advanceTimersByTime(10_000);
+      // If the timer were still live, awaiting again would throw a different
+      // error. Reaching here without an unhandled rejection is the assertion.
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cancels pending unsubscribe ack-timer mid-flight', async () => {
+    vi.useFakeTimers();
+    try {
+      const { factory, sockets } = makeFactory();
+      const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+      // Establish a subscription first so the unsubscribe is meaningful.
+      const subPromise = client.subscribe('protocol');
+      sockets[0]!.ackLastSubscribe({ ok: true });
+      await subPromise;
+
+      // Start an unsubscribe that will NOT be acked.
+      const unsubPromise = client.unsubscribe('protocol');
+      client.disconnect();
+
+      await expect(unsubPromise).rejects.toThrow('client disconnected');
+      vi.advanceTimersByTime(10_000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe('connect_error redaction', () => {
@@ -597,6 +709,66 @@ describe('connect_error redaction', () => {
     client.on('connect_error', (e) => heard.push(e.message));
     sockets[0]!.fire('connect_error', { message: 'transport error' });
     expect(heard[0]).toBe('transport error');
+  });
+
+  it('redacts a truncated JWT prefix (defence against future log-slicing)', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+
+    // Simulate a future socket.io-client that logs only the first 30 chars
+    // of auth.token. The full-string replace would NOT match, but the
+    // JWT-prefix regex must.
+    const truncated = token.slice(0, 30);
+    sockets[0]!.fire('connect_error', {
+      message: `auth failed for token ${truncated}`,
+    });
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).not.toContain(truncated);
+    expect(heard[0]).toContain('[REDACTED]');
+  });
+
+  it('redacts a foreign JWT-shaped substring (defensive — never selectively redact)', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+
+    // A JWT-shaped string that is NOT our configured token — still must be
+    // redacted to avoid leaking a token we somehow proxy.
+    const foreign =
+      'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJmb28ifQ.signature-not-ours';
+    sockets[0]!.fire('connect_error', {
+      message: `unexpected auth artefact: ${foreign}`,
+    });
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).not.toContain(foreign);
+    expect(heard[0]).toContain('[REDACTED]');
+  });
+
+  it('leaves connect_error message unchanged when no JWT-shaped content present', () => {
+    const { factory, sockets } = makeFactory();
+    const token = fakeJwt(VALID_WALLET);
+    const client = connect({
+      baseUrl: 'wss://x/realtime',
+      token,
+      ioFactory: factory,
+    });
+    const heard: string[] = [];
+    client.on('connect_error', (e) => heard.push(e.message));
+    sockets[0]!.fire('connect_error', { message: 'transport error: ECONNREFUSED' });
+    expect(heard[0]).toBe('transport error: ECONNREFUSED');
   });
 });
 

@@ -11,9 +11,8 @@
 //      baseUrl is a caller bug — early throw shortens the failure path and
 //      keeps the network audit log clean.
 //   2. Resolves `baseUrl` from explicit option, then per-cluster constant.
-//      `HISTORY_API_BASE_URLS` is reused — same backend deployment serves
-//      both `/transactions/*` and `/markets/*`. (Phase 12.3.3 follow-up:
-//      consider renaming this constant to `BACKEND_API_BASE_URLS`.)
+//      `BACKEND_API_BASE_URLS` is reused — same backend deployment serves
+//      both `/transactions/*` and `/markets/*`.
 //   3. Builds a query string with single `encodeURIComponent`.
 //   4. Wraps the underlying fetch so every non-2xx and every transport
 //      failure surfaces as `MarketsFetchError` with `(status, url)`. The
@@ -23,7 +22,7 @@
 //      camelCase, so the mappers only validate types and normalise
 //      `undefined` holes to `null` for nullable fields.
 
-import { HISTORY_API_BASE_URLS } from '../network/constants.js';
+import { BACKEND_API_BASE_URLS } from '../network/constants.js';
 import { MarketsFetchError } from './errors.js';
 import type {
   DailyAggregateRow,
@@ -98,7 +97,7 @@ function resolveBaseUrl(opts: MarketsClientOptions): string {
     return opts.baseUrl.replace(/\/$/, '');
   }
   if (opts.cluster !== undefined) {
-    const url = HISTORY_API_BASE_URLS[opts.cluster];
+    const url = BACKEND_API_BASE_URLS[opts.cluster];
     if (!url) {
       throw new TypeError(`markets client: unknown cluster "${opts.cluster}"`);
     }

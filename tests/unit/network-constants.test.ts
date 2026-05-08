@@ -12,6 +12,8 @@ import { describe, expect, it } from 'vitest';
 import { PublicKey } from '@solana/web3.js';
 
 import {
+  BACKEND_API_BASE_URLS,
+  HISTORY_API_BASE_URLS,
   REALTIME_WS_URLS,
   RWT_MINTS,
   USDC_MINTS,
@@ -66,6 +68,37 @@ describe('isPlaceholderRwtMint', () => {
       'So11111111111111111111111111111111111111112', // wSOL
     );
     expect(isPlaceholderRwtMint(random)).toBe(false);
+  });
+});
+
+describe('BACKEND_API_BASE_URLS', () => {
+  it('exposes exactly mainnet | devnet | localnet keys', () => {
+    expect(Object.keys(BACKEND_API_BASE_URLS).sort()).toEqual([
+      'devnet',
+      'localnet',
+      'mainnet',
+    ]);
+  });
+
+  it('mainnet/devnet point at https://api.areal.finance', () => {
+    expect(BACKEND_API_BASE_URLS.mainnet).toBe('https://api.areal.finance');
+    expect(BACKEND_API_BASE_URLS.devnet).toBe('https://api.areal.finance');
+  });
+
+  it('localnet points at the dev backend (port 3010)', () => {
+    expect(BACKEND_API_BASE_URLS.localnet).toBe('http://localhost:3010');
+  });
+});
+
+describe('HISTORY_API_BASE_URLS (deprecated alias)', () => {
+  it('is the same reference as BACKEND_API_BASE_URLS (alias, not a copy)', () => {
+    expect(HISTORY_API_BASE_URLS).toBe(BACKEND_API_BASE_URLS);
+  });
+
+  it('every cluster URL matches the canonical constant', () => {
+    for (const cluster of ['mainnet', 'devnet', 'localnet'] as const) {
+      expect(HISTORY_API_BASE_URLS[cluster]).toBe(BACKEND_API_BASE_URLS[cluster]);
+    }
   });
 });
 

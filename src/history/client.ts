@@ -14,7 +14,7 @@
 //      fields stay strings — the SDK does NOT coerce them to bigint or
 //      number because callers downstream may need exact display fidelity.
 
-import { HISTORY_API_BASE_URLS } from '../network/constants.js';
+import { BACKEND_API_BASE_URLS } from '../network/constants.js';
 import { HistoryFetchError } from './errors.js';
 import type {
   ClaimHistoryRow,
@@ -92,7 +92,7 @@ function resolveBaseUrl(opts: HistoryClientOptions): string {
     return opts.baseUrl.replace(/\/$/, '');
   }
   if (opts.cluster !== undefined) {
-    const url = HISTORY_API_BASE_URLS[opts.cluster];
+    const url = BACKEND_API_BASE_URLS[opts.cluster];
     if (!url) {
       throw new TypeError(`history client: unknown cluster "${opts.cluster}"`);
     }

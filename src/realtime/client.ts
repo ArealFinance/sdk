@@ -118,14 +118,39 @@ function defaultIoFactory(): IoFactory {
   return defaultIo as unknown as IoFactory;
 }
 
+// Match a full JWT-shaped substring: 3 base64url segments separated by dots,
+// with the leading segment starting with `eyJ` (base64url of `{"`). The
+// length floors are loose lower bounds — real JWTs are much longer, but we
+// don't want to miss a defensively-minted short token.
+const JWT_SHAPE_RE = /eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g;
+// Catches truncated JWT prefixes (e.g. socket.io-client log slicing the
+// first ~30 chars of `auth.token`). Run AFTER the full-shape pass so we
+// don't double-redact already-replaced segments.
+const JWT_PREFIX_RE = /eyJ[A-Za-z0-9_-]{20,}/g;
+
 /**
- * Strip a token (if present in `opts.token`) from a free-form error
- * message. Defence-in-depth: socket.io-client shouldn't leak tokens, but
- * a future version might.
+ * Strip the configured token from a free-form error message and, as a
+ * second line of defence, any JWT-shaped substring that might have leaked.
+ *
+ * Pass order matters:
+ *   1. Full-string `token` replace (fastest, exact match — covers the
+ *      common case where socket.io-client logs the verbatim auth value).
+ *   2. JWT-shape regex (3 dot-separated base64url segments) — catches
+ *      future versions that might log a foreign token.
+ *   3. JWT-prefix regex — catches truncated token prefixes
+ *      (e.g. `eyJhbGciOi…` slices).
+ *
+ * The regex passes are deliberately broad: if a non-JWT happens to match,
+ * redacting it is preferable to leaking a real token.
  */
 function redactToken(message: string, token: string | undefined): string {
-  if (!token) return message;
-  return message.split(token).join('[REDACTED]');
+  let out = message;
+  if (token) {
+    out = out.split(token).join('[REDACTED]');
+  }
+  out = out.replace(JWT_SHAPE_RE, '[REDACTED]');
+  out = out.replace(JWT_PREFIX_RE, '[REDACTED]');
+  return out;
 }
 
 /**
@@ -169,6 +194,24 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     keyof RealtimeEventMap,
     Set<(payload: unknown) => void>
   >();
+  // In-flight ack-races for `subscribe()`/`unsubscribe()` — tracked so that
+  // `disconnect()` can cancel them deterministically. Without this, the 5s
+  // ack timers continue running and reject their Promises long after
+  // listeners have been cleared, producing "subscribe ack timeout" /
+  // "unsubscribe ack timeout" unhandled rejection warnings in Node consumers.
+  type PendingAck = {
+    timer: ReturnType<typeof setTimeout>;
+    reject: (err: Error) => void;
+  };
+  const pendingAcks = new Set<PendingAck>();
+  // In-flight subscribe()s, indexed by the entry that owns them. Each entry
+  // carries a `voided` flag flipped to `true` by a subsequent unsubscribe()
+  // for the same room. The subscribe-ack handler checks `voided` before
+  // adding the room to local state, so a subscribe-then-unsubscribe race
+  // (where the unsubscribe-ack arrives BEFORE the subscribe-ack) can't
+  // resurrect a room the consumer has already asked to leave.
+  type PendingSubscribe = { room: Room; voided: boolean };
+  const pendingSubscribes = new Set<PendingSubscribe>();
 
   // ─── Helper: emit synthetic event to local listeners ───
   function emitLocal<K extends keyof RealtimeEventMap>(
@@ -329,17 +372,26 @@ export function connect(opts: ConnectOptions): RealtimeClient {
 
     return new Promise<SubscribeResult>((resolve, reject) => {
       let settled = false;
+      let entry: PendingAck;
+      const subEntry: PendingSubscribe = { room, voided: false };
+      pendingSubscribes.add(subEntry);
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
+        pendingAcks.delete(entry);
+        pendingSubscribes.delete(subEntry);
         reject(new Error('subscribe ack timeout'));
       }, SUBSCRIBE_ACK_TIMEOUT_MS);
+      entry = { timer, reject };
+      pendingAcks.add(entry);
 
       try {
         socket.emit('subscribe', { room }, (ack: unknown) => {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          pendingAcks.delete(entry);
+          pendingSubscribes.delete(subEntry);
 
           // Defensive parse — server contract is `{ ok: true } |
           // { ok: false, error }` but we don't trust the wire blindly.
@@ -348,8 +400,17 @@ export function connect(opts: ConnectOptions): RealtimeClient {
             typeof ack === 'object' &&
             (ack as { ok?: unknown }).ok === true
           ) {
-            subscriptions.add(room);
-            scheduleStale(room);
+            // Race guard: if a concurrent unsubscribe(room) voided this
+            // subscribe before the ack arrived, do NOT add the room to
+            // local state — otherwise we drift out of sync with the
+            // consumer's intent. The promise still resolves ok:true (the
+            // subscribe itself succeeded server-side; the consumer's
+            // subsequent unsubscribe is responsible for cleaning up the
+            // server-side membership).
+            if (!subEntry.voided) {
+              subscriptions.add(room);
+              scheduleStale(room);
+            }
             resolve({ ok: true });
             return;
           }
@@ -371,6 +432,8 @@ export function connect(opts: ConnectOptions): RealtimeClient {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        pendingAcks.delete(entry);
+        pendingSubscribes.delete(subEntry);
         reject(e);
       }
     });
@@ -380,19 +443,31 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     if (typeof room !== 'string' || !isValidRoom(room)) {
       throw new TypeError(`unsubscribe: invalid room shape "${String(room)}"`);
     }
+    // Race guard: void any in-flight subscribe(room) so when its ack
+    // eventually returns, the subscribe-ack handler skips adding the room
+    // to local state. Without this, a late ok:true ack would re-add the
+    // room AFTER the consumer asked to leave it.
+    for (const sub of pendingSubscribes) {
+      if (sub.room === room) sub.voided = true;
+    }
     return new Promise<{ ok: boolean }>((resolve, reject) => {
       let settled = false;
+      let entry: PendingAck;
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
+        pendingAcks.delete(entry);
         reject(new Error('unsubscribe ack timeout'));
       }, SUBSCRIBE_ACK_TIMEOUT_MS);
+      entry = { timer, reject };
+      pendingAcks.add(entry);
 
       try {
         socket.emit('unsubscribe', { room }, (ack: unknown) => {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          pendingAcks.delete(entry);
 
           // Always tear down local state — even if the server replied
           // with a non-ok ack we want to stop receiving events for the
@@ -412,6 +487,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        pendingAcks.delete(entry);
         reject(e);
       }
     });
@@ -442,6 +518,15 @@ export function connect(opts: ConnectOptions): RealtimeClient {
   }
 
   function disconnect(): void {
+    // Reject any in-flight subscribe()/unsubscribe() promises BEFORE we
+    // tear down the socket — otherwise their 5s ack timers fire later
+    // and reject to no listener (unhandled rejection warning in Node).
+    for (const entry of pendingAcks) {
+      clearTimeout(entry.timer);
+      entry.reject(new Error('client disconnected'));
+    }
+    pendingAcks.clear();
+
     try {
       socket.disconnect();
     } catch {
@@ -452,6 +537,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     subscriptions.clear();
     staleRooms.clear();
     lastEventAt.clear();
+    pendingSubscribes.clear();
     // Drop listeners so leftover references can be GC'd.
     listeners.clear();
   }
@@ -466,7 +552,11 @@ export function connect(opts: ConnectOptions): RealtimeClient {
       return socket.connected === true;
     },
     get subscriptions(): ReadonlySet<Room> {
-      return subscriptions;
+      // Return a snapshot, not the live internal Set. Otherwise a consumer
+      // iterating the result during an in-flight subscribe()/unsubscribe()
+      // would observe mid-mutation. The cost is one Set allocation per
+      // getter call — negligible at the call frequencies we expect.
+      return new Set(subscriptions);
     },
   };
 }

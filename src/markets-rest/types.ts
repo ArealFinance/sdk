@@ -131,7 +131,7 @@ export interface ProtocolSummary {
 export interface MarketsClientOptions {
   /** Explicit backend URL — wins over `cluster`. */
   baseUrl?: string;
-  /** Falls back to `HISTORY_API_BASE_URLS[cluster]` (same backend deployment). */
+  /** Falls back to `BACKEND_API_BASE_URLS[cluster]` (same backend deployment). */
   cluster?: ClusterName;
   /** Injected fetch for tests. Defaults to global `fetch`. */
   fetch?: typeof fetch;
