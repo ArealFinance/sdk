@@ -309,4 +309,52 @@ describe('decodeTransactionEvents', () => {
     const logs = [logFor(PROGRAM_IDS.nativeDex, swapDecoder, buildSwapPayload())];
     expect(decodeTransactionEvents(logs)).toEqual([]);
   });
+
+  it('does NOT pop the invoke stack on user-controlled `Program log: success`', () => {
+    // Regression: previously EXIT_RE matched `\S+` (any non-whitespace) at the
+    // program-id slot, so a malicious foreign program emitting
+    // `msg!("success")` (which Solana surfaces as `Program log: success`)
+    // could pop the legitimate program off our stack one level early and
+    // misattribute subsequent events.
+    const dexId = PROGRAM_IDS.nativeDex.toBase58();
+    const swapDecoder = NATIVE_DEX_EVENTS.byName['SwapExecuted']!;
+
+    const logs = [
+      `Program ${dexId} invoke [1]`,
+      // Adversarial line — must NOT be treated as an EXIT for the DEX program.
+      'Program log: success',
+      'Program log: failed: malicious',
+      // The real event still comes from the DEX (stack top intact).
+      logFor(PROGRAM_IDS.nativeDex, swapDecoder, buildSwapPayload()),
+      `Program ${dexId} success`,
+    ];
+
+    const events = decodeTransactionEvents(logs);
+    expect(events).toHaveLength(1);
+    expect(events[0]!.programName).toBe('native-dex');
+    expect(events[0]!.eventName).toBe('SwapExecuted');
+  });
+
+  it('does NOT mis-route `Program data: success` payloads as EXIT lines', () => {
+    // A `Program data:` line whose base64 body literally spells `success`
+    // (or any non-discriminator garbage) must reach the DATA_RE branch and
+    // simply fail to decode — it must never be silently consumed by EXIT_RE.
+    const dexId = PROGRAM_IDS.nativeDex.toBase58();
+    const swapDecoder = NATIVE_DEX_EVENTS.byName['SwapExecuted']!;
+
+    const logs = [
+      `Program ${dexId} invoke [1]`,
+      // `success` base64-decodes to ~5 bytes — well below the 8-byte
+      // discriminator threshold, so decodeEvent returns null. The key
+      // assertion is that the stack is NOT popped here.
+      'Program data: success',
+      logFor(PROGRAM_IDS.nativeDex, swapDecoder, buildSwapPayload()),
+      `Program ${dexId} success`,
+    ];
+
+    const events = decodeTransactionEvents(logs);
+    expect(events).toHaveLength(1);
+    expect(events[0]!.programName).toBe('native-dex');
+    expect(events[0]!.eventName).toBe('SwapExecuted');
+  });
 });

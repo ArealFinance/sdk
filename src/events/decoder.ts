@@ -94,8 +94,13 @@ export function decodeEvent(
  * Match `Program <pubkey> invoke [<depth>]` (program enter).
  * Captures the program ID — depth is informational and not tracked separately
  * because Solana already pops via `success`/`failed` lines we treat below.
+ *
+ * Program ID is anchored to the base58 alphabet so user-controllable
+ * `Program log: ...` / `Program data: ...` lines cannot match (`log:` and
+ * `data:` contain `:` which is outside the base58 alphabet, and lone `log` /
+ * `data` would still fail to match the trailing ` invoke [<n>]` literal).
  */
-const INVOKE_RE = /^Program (\S+) invoke \[\d+\]$/;
+const INVOKE_RE = /^Program ([1-9A-HJ-NP-Za-km-z]+) invoke \[\d+\]$/;
 
 /**
  * Match `Program data: <base64>` (event payload).
@@ -105,8 +110,13 @@ const DATA_RE = /^Program data: (.+)$/;
 /**
  * Match `Program <pubkey> success` or `... failed: ...` (program exit).
  * Either form pops the current program off our stack.
+ *
+ * Program ID is anchored to the base58 alphabet so a malicious program
+ * emitting `msg!("success")` (which surfaces as `Program log: success`) or
+ * `emit!` payloads decoding to literals like `Program data: success` cannot
+ * be misclassified as an EXIT line and pop the invoke-stack one level early.
  */
-const EXIT_RE = /^Program \S+ (?:success|failed:.*)$/;
+const EXIT_RE = /^Program [1-9A-HJ-NP-Za-km-z]+ (?:success|failed:.*)$/;
 
 /**
  * Decode all Areal events in a transaction's `logMessages` array.
