@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.9.0 — 2026-05-08
+
+- **feat(history)**: add typed clients for the Phase 12.2.1 backend
+  history endpoints — `getTransactions`, `getClaimHistory`,
+  `getLpPositionHistory`. Subpath: `@areal/sdk/history`. Each function
+  validates inputs (base58 wallet/mint/pool, integer `limit ∈ [1,100]`,
+  resolvable `baseUrl`/`cluster`) BEFORE any network call, wraps every
+  non-2xx and transport failure in `HistoryFetchError(message, status,
+  url)`, and maps the snake_case wire payload to camelCase rows
+  (decimal-string fields stay strings — no implicit `bigint`/`number`
+  coercion). The opaque branded `Cursor` type round-trips a single-encoded
+  server cursor through `before=` without any client-side parsing —
+  callers MUST treat it as an identifier so the backend can swap its
+  internal encoding without an SDK major bump. Adds `HISTORY_API_BASE_URLS`
+  per-cluster table (mainnet + devnet co-deploy at `api.areal.finance`,
+  localnet at `http://localhost:3010`) and re-exports it from
+  `@areal/sdk/network`. 19 unit tests with mocked `fetch`.
+
 ## 0.8.0 — 2026-05-08
 
 - **feat(events)**: add `@areal/sdk/events` subpath exposing decoders for

@@ -74,6 +74,23 @@ export const USDY_MINTS: Record<ClusterName, PublicKey> = {
 };
 
 /**
+ * Base URL of the Areal history backend (Phase 12.2.1) per cluster.
+ *
+ * The backend is cluster-aware via its own configuration: a single
+ * deployment serves both mainnet and devnet reads (the indexer keys data
+ * by chain), so devnet and mainnet point at the same hostname today. If
+ * cluster-specific deployments are introduced later, only this table
+ * needs to change — no SDK consumer code references the URL directly.
+ *
+ * Localnet points at the developer's Nest backend (`PORT=3010`).
+ */
+export const HISTORY_API_BASE_URLS: Record<ClusterName, string> = {
+  mainnet: 'https://api.areal.finance',
+  devnet: 'https://api.areal.finance',
+  localnet: 'http://localhost:3010',
+};
+
+/**
  * Base58 of the on-chain `RWT_MINT` R20 placeholder bytes. Anything that
  * matches this address is the devnet/localnet placeholder, NOT a real
  * mainnet RWT mint — see `isPlaceholderRwtMint`.
