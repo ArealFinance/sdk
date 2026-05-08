@@ -74,7 +74,10 @@ export const USDY_MINTS: Record<ClusterName, PublicKey> = {
 };
 
 /**
- * Base URL of the Areal history backend (Phase 12.2.1) per cluster.
+ * Base URL of the Areal backend REST API per cluster — used by both
+ * `@areal/sdk/history` (`/transactions/*`, `/portfolio/*`) and
+ * `@areal/sdk/markets-rest` (`/markets/*`). A single backend deployment
+ * serves all REST subpaths today.
  *
  * The backend is cluster-aware via its own configuration: a single
  * deployment serves both mainnet and devnet reads (the indexer keys data
@@ -84,15 +87,25 @@ export const USDY_MINTS: Record<ClusterName, PublicKey> = {
  *
  * Localnet points at the developer's Nest backend (`PORT=3010`).
  */
-export const HISTORY_API_BASE_URLS: Record<ClusterName, string> = {
+export const BACKEND_API_BASE_URLS: Record<ClusterName, string> = {
   mainnet: 'https://api.areal.finance',
   devnet: 'https://api.areal.finance',
   localnet: 'http://localhost:3010',
 };
 
 /**
+ * @deprecated Use `BACKEND_API_BASE_URLS`. Removed in next major bump.
+ *
+ * Phase 12.2.1 originally introduced this constant for `@areal/sdk/history`
+ * only; Phase 12.3.2 added `@areal/sdk/markets-rest` reusing the same
+ * URLs, making the `HISTORY_` prefix misleading. Kept as an alias for
+ * semver-minor backward compatibility.
+ */
+export const HISTORY_API_BASE_URLS = BACKEND_API_BASE_URLS;
+
+/**
  * WebSocket URL of the Areal realtime gateway (Phase 12.3.1, namespace
- * `/realtime`) per cluster. Sibling to `HISTORY_API_BASE_URLS` and pinned
+ * `/realtime`) per cluster. Sibling to `BACKEND_API_BASE_URLS` and pinned
  * to the same hostname today (single backend deployment serves both REST
  * and WS surfaces).
  *

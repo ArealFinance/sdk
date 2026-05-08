@@ -113,7 +113,7 @@ export interface HistoryPage<T> {
 export interface HistoryClientOptions {
   /** Explicit backend URL — wins over `cluster`. */
   baseUrl?: string;
-  /** Falls back to `HISTORY_API_BASE_URLS[cluster]`. */
+  /** Falls back to `BACKEND_API_BASE_URLS[cluster]`. */
   cluster?: ClusterName;
   /** Injected fetch for tests. Defaults to global `fetch`. */
   fetch?: typeof fetch;

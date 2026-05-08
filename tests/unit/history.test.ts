@@ -25,7 +25,7 @@
 //   15. getLpPositionHistory happy path
 //   16. getLpPositionHistory invalid pool filter → TypeError
 //   17. AbortSignal forwarded to fetch
-//   18. baseUrl resolution: cluster → HISTORY_API_BASE_URLS lookup
+//   18. baseUrl resolution: cluster → BACKEND_API_BASE_URLS lookup
 //   19. Cursor opacity: round-trip server cursor — single encode
 
 import { describe, expect, it, vi } from 'vitest';
@@ -37,7 +37,7 @@ import {
 } from '../../src/history/client.js';
 import { HistoryFetchError } from '../../src/history/errors.js';
 import type { Cursor } from '../../src/history/types.js';
-import { HISTORY_API_BASE_URLS } from '../../src/network/constants.js';
+import { BACKEND_API_BASE_URLS } from '../../src/network/constants.js';
 
 const VALID_WALLET = 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK';
 const VALID_OT_MINT = 'So11111111111111111111111111111111111111112';
@@ -406,7 +406,7 @@ describe('history client — shared options', () => {
   });
 
   // Case 18
-  it('cluster resolves to HISTORY_API_BASE_URLS lookup', async () => {
+  it('cluster resolves to BACKEND_API_BASE_URLS lookup', async () => {
     const fetchMock = vi.fn(async () =>
       jsonResponse({ items: [], nextCursor: null }),
     );
@@ -416,7 +416,7 @@ describe('history client — shared options', () => {
       fetch: fetchMock,
     });
     const calledUrl = fetchMock.mock.calls[0]![0] as string;
-    expect(calledUrl.startsWith(HISTORY_API_BASE_URLS.devnet)).toBe(true);
+    expect(calledUrl.startsWith(BACKEND_API_BASE_URLS.devnet)).toBe(true);
   });
 
   // Case 19 (bonus)
