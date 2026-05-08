@@ -91,6 +91,26 @@ export const HISTORY_API_BASE_URLS: Record<ClusterName, string> = {
 };
 
 /**
+ * WebSocket URL of the Areal realtime gateway (Phase 12.3.1, namespace
+ * `/realtime`) per cluster. Sibling to `HISTORY_API_BASE_URLS` and pinned
+ * to the same hostname today (single backend deployment serves both REST
+ * and WS surfaces).
+ *
+ * Mainnet/devnet use `wss://` (TLS-terminated by Cloudflared); localnet
+ * uses bare `ws://` against the developer's Nest backend (`PORT=3010`).
+ *
+ * Note: the `/realtime` suffix is the Socket.IO **namespace**, not a path
+ * on the HTTP server. Socket.IO's connect handshake mounts on the host's
+ * default WS path (`/socket.io/`) and the namespace is selected from this
+ * URL fragment by the client.
+ */
+export const REALTIME_WS_URLS: Record<ClusterName, string> = {
+  mainnet: 'wss://api.areal.finance/realtime',
+  devnet: 'wss://api.areal.finance/realtime',
+  localnet: 'ws://localhost:3010/realtime',
+};
+
+/**
  * Base58 of the on-chain `RWT_MINT` R20 placeholder bytes. Anything that
  * matches this address is the devnet/localnet placeholder, NOT a real
  * mainnet RWT mint — see `isPlaceholderRwtMint`.
