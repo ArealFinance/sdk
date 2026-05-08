@@ -169,6 +169,16 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     keyof RealtimeEventMap,
     Set<(payload: unknown) => void>
   >();
+  // In-flight ack-races for `subscribe()`/`unsubscribe()` — tracked so that
+  // `disconnect()` can cancel them deterministically. Without this, the 5s
+  // ack timers continue running and reject their Promises long after
+  // listeners have been cleared, producing "subscribe ack timeout" /
+  // "unsubscribe ack timeout" unhandled rejection warnings in Node consumers.
+  type PendingAck = {
+    timer: ReturnType<typeof setTimeout>;
+    reject: (err: Error) => void;
+  };
+  const pendingAcks = new Set<PendingAck>();
 
   // ─── Helper: emit synthetic event to local listeners ───
   function emitLocal<K extends keyof RealtimeEventMap>(
@@ -329,17 +339,22 @@ export function connect(opts: ConnectOptions): RealtimeClient {
 
     return new Promise<SubscribeResult>((resolve, reject) => {
       let settled = false;
+      let entry: PendingAck;
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
+        pendingAcks.delete(entry);
         reject(new Error('subscribe ack timeout'));
       }, SUBSCRIBE_ACK_TIMEOUT_MS);
+      entry = { timer, reject };
+      pendingAcks.add(entry);
 
       try {
         socket.emit('subscribe', { room }, (ack: unknown) => {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          pendingAcks.delete(entry);
 
           // Defensive parse — server contract is `{ ok: true } |
           // { ok: false, error }` but we don't trust the wire blindly.
@@ -371,6 +386,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        pendingAcks.delete(entry);
         reject(e);
       }
     });
@@ -382,17 +398,22 @@ export function connect(opts: ConnectOptions): RealtimeClient {
     }
     return new Promise<{ ok: boolean }>((resolve, reject) => {
       let settled = false;
+      let entry: PendingAck;
       const timer = setTimeout(() => {
         if (settled) return;
         settled = true;
+        pendingAcks.delete(entry);
         reject(new Error('unsubscribe ack timeout'));
       }, SUBSCRIBE_ACK_TIMEOUT_MS);
+      entry = { timer, reject };
+      pendingAcks.add(entry);
 
       try {
         socket.emit('unsubscribe', { room }, (ack: unknown) => {
           if (settled) return;
           settled = true;
           clearTimeout(timer);
+          pendingAcks.delete(entry);
 
           // Always tear down local state — even if the server replied
           // with a non-ok ack we want to stop receiving events for the
@@ -412,6 +433,7 @@ export function connect(opts: ConnectOptions): RealtimeClient {
         if (settled) return;
         settled = true;
         clearTimeout(timer);
+        pendingAcks.delete(entry);
         reject(e);
       }
     });
@@ -442,6 +464,15 @@ export function connect(opts: ConnectOptions): RealtimeClient {
   }
 
   function disconnect(): void {
+    // Reject any in-flight subscribe()/unsubscribe() promises BEFORE we
+    // tear down the socket — otherwise their 5s ack timers fire later
+    // and reject to no listener (unhandled rejection warning in Node).
+    for (const entry of pendingAcks) {
+      clearTimeout(entry.timer);
+      entry.reject(new Error('client disconnected'));
+    }
+    pendingAcks.clear();
+
     try {
       socket.disconnect();
     } catch {

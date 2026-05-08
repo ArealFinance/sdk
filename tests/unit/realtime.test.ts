@@ -567,6 +567,53 @@ describe('disconnect', () => {
     expect(stales).toContain('protocol');
     expect(client.subscriptions.size).toBe(0);
   });
+
+  it('cancels pending subscribe ack-timer mid-flight (rejects with "client disconnected", not "subscribe ack timeout")', async () => {
+    vi.useFakeTimers();
+    try {
+      const { factory } = makeFactory();
+      const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+      // Start a subscribe that will NOT be acked.
+      const promise = client.subscribe('protocol');
+      // Disconnect mid-flight, BEFORE the 5s ack timeout would fire.
+      client.disconnect();
+
+      // The promise should reject immediately with the "client disconnected"
+      // error, NOT the 5s "subscribe ack timeout".
+      await expect(promise).rejects.toThrow('client disconnected');
+
+      // Advance past the original 5s timeout window — there should be no
+      // additional rejection (the timer was cancelled).
+      vi.advanceTimersByTime(10_000);
+      // If the timer were still live, awaiting again would throw a different
+      // error. Reaching here without an unhandled rejection is the assertion.
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('cancels pending unsubscribe ack-timer mid-flight', async () => {
+    vi.useFakeTimers();
+    try {
+      const { factory, sockets } = makeFactory();
+      const client = connect({ baseUrl: 'wss://x/realtime', ioFactory: factory });
+
+      // Establish a subscription first so the unsubscribe is meaningful.
+      const subPromise = client.subscribe('protocol');
+      sockets[0]!.ackLastSubscribe({ ok: true });
+      await subPromise;
+
+      // Start an unsubscribe that will NOT be acked.
+      const unsubPromise = client.unsubscribe('protocol');
+      client.disconnect();
+
+      await expect(unsubPromise).rejects.toThrow('client disconnected');
+      vi.advanceTimersByTime(10_000);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe('connect_error redaction', () => {
