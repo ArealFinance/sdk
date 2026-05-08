@@ -113,6 +113,11 @@ const EVENTS: readonly IdlEvent[] = [
 export const YIELD_DISTRIBUTION_EVENTS: ProgramEventRegistry =
   buildProgramEventRegistry('yield-distribution', EVENTS);
 
+// Internal: exposes the inlined IDL-event literals for the IDL-vs-literal
+// drift detection test (tests/unit/events-idl-drift.test.ts). Not part of the
+// public SDK surface — do not import from outside `@areal/sdk` internals.
+export { EVENTS as YIELD_DISTRIBUTION_EVENT_LITERALS };
+
 // ----------------------------------------------------------------------------
 // Typed wrappers (top-4 events used by claim flow + indexer)
 // ----------------------------------------------------------------------------

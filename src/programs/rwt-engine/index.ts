@@ -9,6 +9,11 @@ export * from './errors.generated.js';
 export {
   quoteMintRwt,
   applyMintSlippage,
+  // Public NAV constants — mirror `contracts/rwt-engine/src/constants.rs`.
+  // INITIAL_NAV is the bootstrap NAV used when the vault has zero supply;
+  // NAV_SCALE is the 6-decimal fixed-point scale that matches RWT decimals.
+  INITIAL_NAV,
+  NAV_SCALE,
   type MintQuoteResult,
   type MintQuoteOutcome,
   type MintQuoteError,

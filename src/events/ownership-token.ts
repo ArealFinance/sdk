@@ -68,6 +68,11 @@ const EVENTS: readonly IdlEvent[] = [
 export const OWNERSHIP_TOKEN_EVENTS: ProgramEventRegistry =
   buildProgramEventRegistry('ownership-token', EVENTS);
 
+// Internal: exposes the inlined IDL-event literals for the IDL-vs-literal
+// drift detection test (tests/unit/events-idl-drift.test.ts). Not part of the
+// public SDK surface — do not import from outside `@areal/sdk` internals.
+export { EVENTS as OWNERSHIP_TOKEN_EVENT_LITERALS };
+
 // ----------------------------------------------------------------------------
 // Typed wrappers
 // ----------------------------------------------------------------------------

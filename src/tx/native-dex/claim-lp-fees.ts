@@ -10,8 +10,8 @@
 //   2. lp_position          (writable)
 //   3. pool_vault_a         (writable)
 //   4. pool_vault_b         (writable)
-//   5. recipient_token_a    (writable)                  recipient's ATA for token_a
-//   6. recipient_token_b    (writable)                  recipient's ATA for token_b
+//   5. recipient_token_a_ata (writable)                  recipient's ATA for token_a
+//   6. recipient_token_b_ata (writable)                  recipient's ATA for token_b
 //   7. token_program        (read)
 //
 // Notes vs the other LP ixs:
@@ -64,8 +64,8 @@ export function buildClaimLpFeesIx(
     { pubkey: ctx.lpPosition, isSigner: false, isWritable: true },
     { pubkey: ctx.poolVaultA, isSigner: false, isWritable: true },
     { pubkey: ctx.poolVaultB, isSigner: false, isWritable: true },
-    { pubkey: ctx.recipientTokenA, isSigner: false, isWritable: true },
-    { pubkey: ctx.recipientTokenB, isSigner: false, isWritable: true },
+    { pubkey: ctx.recipientTokenAAta, isSigner: false, isWritable: true },
+    { pubkey: ctx.recipientTokenBAta, isSigner: false, isWritable: true },
     { pubkey: SPL_TOKEN_PROGRAM_ID, isSigner: false, isWritable: false },
   ];
 
@@ -108,14 +108,14 @@ export async function buildClaimLpFeesTx(
       );
     }
     const [infoA, infoB] = await Promise.all([
-      args.connection.getAccountInfo(args.ctx.recipientTokenA),
-      args.connection.getAccountInfo(args.ctx.recipientTokenB),
+      args.connection.getAccountInfo(args.ctx.recipientTokenAAta),
+      args.connection.getAccountInfo(args.ctx.recipientTokenBAta),
     ]);
     if (infoA === null) {
       tx.add(
         createAssociatedTokenAccountIdempotentInstruction(
           args.ctx.recipient,
-          args.ctx.recipientTokenA,
+          args.ctx.recipientTokenAAta,
           args.ctx.recipient,
           args.tokenAMint,
         ),
@@ -125,7 +125,7 @@ export async function buildClaimLpFeesTx(
       tx.add(
         createAssociatedTokenAccountIdempotentInstruction(
           args.ctx.recipient,
-          args.ctx.recipientTokenB,
+          args.ctx.recipientTokenBAta,
           args.ctx.recipient,
           args.tokenBMint,
         ),

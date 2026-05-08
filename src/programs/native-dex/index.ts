@@ -16,3 +16,24 @@ export {
   type QuoteFees,
   type QuoteSwapArgs,
 } from './quote.js';
+
+// Ergonomic wrapper that fetches + parses PoolState/DexConfig and delegates
+// to quoteSwap. Useful when the caller has just a pool address.
+export {
+  simulateSwap,
+  type SwapSide,
+  type SimulateSwapOptions,
+} from './simulate.js';
+
+// Pure off-chain LP math helpers (mirrors amm.rs::calculate_lp_shares +
+// calculate_remove_amounts). Phase 11 SDK F-LP-1.
+export {
+  quoteLpShares,
+  quoteLpRemove,
+  bigintIsqrt,
+  LP_MIN_LIQUIDITY,
+  type LpAddInputs,
+  type LpAddQuote,
+  type LpRemoveInputs,
+  type LpRemoveQuote,
+} from './lp-quote.js';

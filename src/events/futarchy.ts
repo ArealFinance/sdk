@@ -59,3 +59,8 @@ const EVENTS: readonly IdlEvent[] = [
 
 export const FUTARCHY_EVENTS: ProgramEventRegistry =
   buildProgramEventRegistry('futarchy', EVENTS);
+
+// Internal: exposes the inlined IDL-event literals for the IDL-vs-literal
+// drift detection test (tests/unit/events-idl-drift.test.ts). Not part of the
+// public SDK surface — do not import from outside `@areal/sdk` internals.
+export { EVENTS as FUTARCHY_EVENT_LITERALS };

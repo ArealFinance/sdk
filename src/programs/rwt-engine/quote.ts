@@ -40,11 +40,32 @@ const BPS_DENOMINATOR = 10_000n;
 /** `MINT_FEE_BPS` from `contracts/rwt-engine/src/constants.rs` — 1% total mint fee. */
 const MINT_FEE_BPS = 100n;
 
-/** `NAV_SCALE` from `contracts/rwt-engine/src/constants.rs` — 6-decimal fixed-point. */
-const NAV_SCALE = 1_000_000n;
+/**
+ * `NAV_SCALE` from `contracts/rwt-engine/src/constants.rs` — 6-decimal
+ * fixed-point scale for NAV. Matches the RWT mint's 6 decimals so a NAV of
+ * `1_000_000` = $1.00 per RWT (1:1 with USDC).
+ *
+ * Exposed publicly so consumers computing NAV bands, drift bounds, or display
+ * formats can divide by the same scale the SDK and contract use internally.
+ */
+export const NAV_SCALE = 1_000_000n;
 
-/** `INITIAL_NAV` from `contracts/rwt-engine/src/constants.rs` — $1.00 in USDC lamports. */
-const INITIAL_NAV = NAV_SCALE;
+/**
+ * `INITIAL_NAV` from `contracts/rwt-engine/src/constants.rs` — $1.00 in USDC
+ * lamports (6 decimals). Equal to `NAV_SCALE` by definition.
+ *
+ * This is the protocol's bootstrap NAV: when the very first RWT is minted
+ * against an empty vault (supply == 0), there is no realised yield to price
+ * against, so the contract pins NAV to `INITIAL_NAV` and the SDK quote helper
+ * mirrors that decision (`quote.ts` `computeNav()`).
+ *
+ * Exposed publicly so:
+ *   - `quoteMintRwt` consumers can compare `navAtQuote === INITIAL_NAV` to
+ *     detect bootstrap mints in UI flows.
+ *   - App-side mint quote shims (e.g. `app/lib/mint/quote.svelte.ts`) can
+ *     drop their hardcoded duplicate of this constant.
+ */
+export const INITIAL_NAV = NAV_SCALE;
 
 /** `MIN_MINT_AMOUNT` from `contracts/rwt-engine/src/constants.rs` — $1.00 minimum. */
 const MIN_MINT_AMOUNT = 1_000_000n;
