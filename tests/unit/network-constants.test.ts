@@ -12,6 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { PublicKey } from '@solana/web3.js';
 
 import {
+  REALTIME_WS_URLS,
   RWT_MINTS,
   USDC_MINTS,
   isPlaceholderRwtMint,
@@ -65,5 +66,26 @@ describe('isPlaceholderRwtMint', () => {
       'So11111111111111111111111111111111111111112', // wSOL
     );
     expect(isPlaceholderRwtMint(random)).toBe(false);
+  });
+});
+
+describe('REALTIME_WS_URLS', () => {
+  it('exposes exactly mainnet | devnet | localnet keys', () => {
+    expect(Object.keys(REALTIME_WS_URLS).sort()).toEqual([
+      'devnet',
+      'localnet',
+      'mainnet',
+    ]);
+  });
+
+  it('mainnet/devnet use wss:// (TLS) and target the /realtime namespace', () => {
+    expect(REALTIME_WS_URLS.mainnet.startsWith('wss://')).toBe(true);
+    expect(REALTIME_WS_URLS.devnet.startsWith('wss://')).toBe(true);
+    expect(REALTIME_WS_URLS.mainnet.endsWith('/realtime')).toBe(true);
+    expect(REALTIME_WS_URLS.devnet.endsWith('/realtime')).toBe(true);
+  });
+
+  it('localnet uses bare ws:// against the dev backend (port 3010)', () => {
+    expect(REALTIME_WS_URLS.localnet).toBe('ws://localhost:3010/realtime');
   });
 });
