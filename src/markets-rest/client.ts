@@ -206,6 +206,14 @@ function mapDailyAggregateRow(raw: unknown): DailyAggregateRow {
     txCount24h: numField(r, 'txCount24h'),
     uniqueWallets24h: numField(r, 'uniqueWallets24h'),
     apy24h: numOrNullField(r, 'apy24h'),
+    // Phase 12.3.3-I — latest-snapshot prices/decimals at the day boundary.
+    // `numOrNullField` treats both `undefined` (older backend) and `null`
+    // (newer backend with no snapshot before that day) as `null`, so app
+    // code only has to branch on `=== null`.
+    priceAUsdc: numOrNullField(r, 'priceAUsdc'),
+    priceBUsdc: numOrNullField(r, 'priceBUsdc'),
+    decimalsA: numOrNullField(r, 'decimalsA'),
+    decimalsB: numOrNullField(r, 'decimalsB'),
     updatedAt: strField(r, 'updatedAt'),
   };
 }

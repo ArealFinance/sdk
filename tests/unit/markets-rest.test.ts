@@ -555,6 +555,115 @@ describe('getPoolAggregate', () => {
     ).rejects.toBeInstanceOf(TypeError);
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  // Phase 12.3.3-I — latest-snapshot price/decimal enrichment.
+  // Case 24a
+  it('latest-snapshot prices + decimals are passed through', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        items: [
+          {
+            pool: VALID_POOL,
+            day: '2026-05-08',
+            volumeA24h: '1000000000',
+            volumeB24h: '950000000',
+            feesA24h: '3000000',
+            feesB24h: '2850000',
+            txCount24h: 42,
+            uniqueWallets24h: 17,
+            apy24h: 0.085,
+            priceAUsdc: 1.5,
+            priceBUsdc: 2.25,
+            decimalsA: 9,
+            decimalsB: 6,
+            updatedAt: '2026-05-08T12:00:00.000Z',
+          },
+        ],
+      }),
+    );
+    const page = await getPoolAggregate({
+      pool: VALID_POOL,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(page.items[0]!.priceAUsdc).toBe(1.5);
+    expect(page.items[0]!.priceBUsdc).toBe(2.25);
+    expect(page.items[0]!.decimalsA).toBe(9);
+    expect(page.items[0]!.decimalsB).toBe(6);
+  });
+
+  // Case 24b
+  it('older backend response (no price/decimal fields) → all four → null', async () => {
+    // Backward-compat: a backend predating Phase 12.3.3-I omits the four
+    // new keys entirely. The mapper must coerce undefined → null so app
+    // code only ever has to branch on `=== null`.
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        items: [
+          {
+            pool: VALID_POOL,
+            day: '2026-05-08',
+            volumeA24h: '1000000000',
+            volumeB24h: '950000000',
+            feesA24h: '3000000',
+            feesB24h: '2850000',
+            txCount24h: 42,
+            uniqueWallets24h: 17,
+            apy24h: 0.085,
+            updatedAt: '2026-05-08T12:00:00.000Z',
+            // priceAUsdc / priceBUsdc / decimalsA / decimalsB intentionally absent
+          },
+        ],
+      }),
+    );
+    const page = await getPoolAggregate({
+      pool: VALID_POOL,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(page.items[0]!.priceAUsdc).toBeNull();
+    expect(page.items[0]!.priceBUsdc).toBeNull();
+    expect(page.items[0]!.decimalsA).toBeNull();
+    expect(page.items[0]!.decimalsB).toBeNull();
+  });
+
+  // Case 24c
+  it('newer backend with explicit null prices/decimals → preserved as null', async () => {
+    // Happy path for the no-snapshot case: backend returns the keys with
+    // `null` values when no `pool_snapshots` row exists before the day
+    // boundary. Mapper must NOT coerce null → 0.
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        items: [
+          {
+            pool: VALID_POOL,
+            day: '2026-05-08',
+            volumeA24h: '0',
+            volumeB24h: '0',
+            feesA24h: '0',
+            feesB24h: '0',
+            txCount24h: 0,
+            uniqueWallets24h: 0,
+            apy24h: null,
+            priceAUsdc: null,
+            priceBUsdc: null,
+            decimalsA: null,
+            decimalsB: null,
+            updatedAt: '2026-05-08T00:00:00.000Z',
+          },
+        ],
+      }),
+    );
+    const page = await getPoolAggregate({
+      pool: VALID_POOL,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(page.items[0]!.priceAUsdc).toBeNull();
+    expect(page.items[0]!.priceBUsdc).toBeNull();
+    expect(page.items[0]!.decimalsA).toBeNull();
+    expect(page.items[0]!.decimalsB).toBeNull();
+  });
 });
 
 // ─────────────────── getProtocolSummary ───────────────────
