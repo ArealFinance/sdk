@@ -64,6 +64,14 @@ export interface SnapshotRow {
  * `apy24h` is a USD-derived ratio (1.0 = 100%) computed by the 5min rollup
  * from the latest snapshot's captured prices/decimals. `null` when prices
  * are unresolvable OR when `tvl_usd` is `null`/non-positive.
+ *
+ * Phase 12.3.3-I (backend) adds `priceAUsdc`, `priceBUsdc`, `decimalsA`,
+ * `decimalsB` — the LATEST `pool_snapshots` row's per-token USDC prices +
+ * on-chain decimals at-or-before this day's UTC end. These four are
+ * **optional** for backward compatibility: callers that pre-date the
+ * backend change will simply not see the keys. NULL on the wire (no
+ * snapshot, or snapshot from before migration 0006) is preserved at the
+ * SDK boundary.
  */
 export interface DailyAggregateRow {
   /** Pool PDA (base58). */
@@ -84,6 +92,32 @@ export interface DailyAggregateRow {
   uniqueWallets24h: number;
   /** USD-derived APY ratio (1.0 = 100%). `null` when unresolvable. */
   apy24h: number | null;
+  /**
+   * Latest snapshot's per-token USDC price (token A) at or before this
+   * day's UTC end. `null` when no snapshot exists for the (pool, day)
+   * before this date — pre-Phase-12.3.3.1 rows. Optional for backward
+   * compatibility with backends that predate Phase 12.3.3-I.
+   */
+  priceAUsdc?: number | null;
+  /**
+   * Latest snapshot's per-token USDC price (token B) at or before this
+   * day's UTC end. `null` when no snapshot exists for the (pool, day)
+   * before this date — pre-Phase-12.3.3.1 rows. Optional for backward
+   * compatibility with backends that predate Phase 12.3.3-I.
+   */
+  priceBUsdc?: number | null;
+  /**
+   * Latest snapshot's on-chain mint decimals for token A. `null` when no
+   * snapshot exists for the (pool, day) before this date — pre-Phase-
+   * 12.3.3.1 rows. Optional for backward compatibility.
+   */
+  decimalsA?: number | null;
+  /**
+   * Latest snapshot's on-chain mint decimals for token B. `null` when no
+   * snapshot exists for the (pool, day) before this date — pre-Phase-
+   * 12.3.3.1 rows. Optional for backward compatibility.
+   */
+  decimalsB?: number | null;
   /** ISO 8601 timestamp at last refresh. */
   updatedAt: string;
 }
