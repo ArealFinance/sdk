@@ -13,6 +13,7 @@ export default defineConfig({
     'src/network/index.ts',
     'src/errors/index.ts',
     'src/portfolio/index.ts',
+    'src/lp-portfolio/index.ts',
     'src/markets/index.ts',
     'src/events/index.ts',
     'src/history/index.ts',
