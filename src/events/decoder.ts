@@ -53,6 +53,39 @@ const PROGRAM_NAME_BY_ID: Record<string, ProgramLabel> = {
  * Never throws — designed for log-stream consumption where partial/foreign
  * events are common and must be silently skipped.
  */
+/**
+ * Decode a `Program data:` payload, accepting both wire formats Solana
+ * programs use to pass `emit!` events through transaction logs:
+ *
+ *   1. Anchor / single-chunk: `Program data: <disc+payload base64>`
+ *      The discriminator and the borsh-serialized payload share one base64
+ *      string. `Buffer.from(s, 'base64')` decodes the whole thing.
+ *
+ *   2. Arlex / two-chunk:    `Program data: <disc base64> <payload base64>`
+ *      The Arlex framework's `emit!` macro emits the 8-byte discriminator
+ *      and the payload as TWO separate base64 strings, space-joined.
+ *      Node's `Buffer.from(s, 'base64')` stops at the `=` padding of the
+ *      first chunk — so the naive single-decode path lands an 8-byte buffer
+ *      with the discriminator only and an empty payload, which then trips
+ *      the borsh deserializer (truncated buffer → throw → return null).
+ *
+ * Detect (2) by splitting on whitespace and decoding each chunk independently
+ * before concatenating. Falls back to (1) for any single-chunk input.
+ */
+function decodeProgramDataPayload(raw: string): Buffer | null {
+  const trimmed = raw.trim();
+  if (trimmed.length === 0) return null;
+  const parts = trimmed.split(/\s+/);
+  try {
+    if (parts.length === 1) {
+      return Buffer.from(parts[0]!, 'base64');
+    }
+    return Buffer.concat(parts.map((p) => Buffer.from(p, 'base64')));
+  } catch {
+    return null;
+  }
+}
+
 export function decodeEvent(
   programId: PublicKey,
   base64: string,
@@ -61,13 +94,8 @@ export function decodeEvent(
   const registry = PROGRAM_REGISTRIES[idStr];
   if (!registry) return null;
 
-  let data: Buffer;
-  try {
-    data = Buffer.from(base64, 'base64');
-  } catch {
-    return null;
-  }
-  if (data.length < 8) return null;
+  const data = decodeProgramDataPayload(base64);
+  if (!data || data.length < 8) return null;
 
   const disc = data.subarray(0, 8);
   const discKey = disc.toString('hex');
