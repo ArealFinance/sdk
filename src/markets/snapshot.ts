@@ -43,7 +43,10 @@ const RWT_DECIMALS = 6;
  * (no OtConfig exists for it), so we synthesise the row directly.
  */
 const RWT_SYMBOL = 'RWT';
-const RWT_NAME = 'Areal RWT';
+// Display name shown across the app for the protocol's RWT token. Matches
+// the Figma macet ("Real World Token") rather than the older "Areal RWT"
+// branding the SDK shipped with at R20.
+const RWT_NAME = 'Real World Token';
 
 export interface GetMarketsSnapshotOptions {
   /** Native DEX program (used for pool enumeration + DexConfig PDA). */
