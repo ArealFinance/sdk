@@ -70,6 +70,15 @@ export interface GetMarketsSnapshotOptions {
    * `rwtMint` field) when the deployment isn't using R20 pins.
    */
   rwtMint?: PublicKey;
+  /**
+   * Override for the USDC mint pubkey on the active cluster. Same reason
+   * as `rwtMint`: when bootstrap-init.ts creates a test USDC mint at a
+   * non-canonical address, `chainPriceToUsdc` can't find any USDC-paired
+   * pool against `USDC_MINTS[cluster]` (Solana devnet's real USDC) and
+   * every price comes back null. Override to the actual on-chain test
+   * USDC and the canonical pool walk works as designed.
+   */
+  usdcMint?: PublicKey;
 }
 
 /**
@@ -143,7 +152,7 @@ export async function getMarketsSnapshot(
   opts: GetMarketsSnapshotOptions,
 ): Promise<MarketsSnapshot> {
   const fetchedAt = Date.now();
-  const usdcMint = USDC_MINTS[cluster];
+  const usdcMint = opts.usdcMint ?? USDC_MINTS[cluster];
   const rwtMint = opts.rwtMint ?? RWT_MINTS[cluster];
   const includeNav = opts.includeNav ?? true;
 
