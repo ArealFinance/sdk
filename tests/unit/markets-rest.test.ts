@@ -41,6 +41,7 @@ import {
   getPoolAggregate,
   getPoolSnapshots,
   getProtocolSummary,
+  getTokenHolders,
 } from '../../src/markets-rest/client.js';
 import { MarketsFetchError } from '../../src/markets-rest/errors.js';
 import { BACKEND_API_BASE_URLS } from '../../src/network/constants.js';
@@ -743,6 +744,178 @@ describe('getProtocolSummary', () => {
     await getProtocolSummary({ cluster: 'localnet', fetch: fetchMock });
     const url = fetchMock.mock.calls[0]![0] as string;
     expect(url).toBe(`${BACKEND_API_BASE_URLS.localnet}/markets/summary`);
+  });
+});
+
+// ─────────────────── getTokenHolders ───────────────────
+
+describe('getTokenHolders', () => {
+  const VALID_MINT = 'DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK';
+
+  it('happy path returns parsed row', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        mint: VALID_MINT,
+        count: 942,
+        updatedAt: '2026-05-10T12:34:56.789Z',
+        source: 'rpc',
+      }),
+    );
+    const row = await getTokenHolders({
+      mint: VALID_MINT,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(row.mint).toBe(VALID_MINT);
+    expect(row.count).toBe(942);
+    expect(row.updatedAt).toBe('2026-05-10T12:34:56.789Z');
+    expect(row.source).toBe('rpc');
+    const url = fetchMock.mock.calls[0]![0] as string;
+    expect(url).toBe(`${BASE_URL}/markets/tokens/${VALID_MINT}/holders`);
+  });
+
+  it('cache source is preserved', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        mint: VALID_MINT,
+        count: 100,
+        updatedAt: '2026-05-10T12:00:00.000Z',
+        source: 'cache',
+      }),
+    );
+    const row = await getTokenHolders({
+      mint: VALID_MINT,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(row.source).toBe('cache');
+  });
+
+  it('rejects invalid mint with TypeError (sync, before fetch)', async () => {
+    const fetchMock = vi.fn();
+    await expect(
+      getTokenHolders({
+        mint: 'not-a-mint',
+        baseUrl: BASE_URL,
+        fetch: fetchMock as unknown as typeof fetch,
+      }),
+    ).rejects.toBeInstanceOf(TypeError);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('5xx response surfaces as MarketsFetchError(status=500, url)', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({}, { ok: false, status: 500 }),
+    );
+    try {
+      await getTokenHolders({
+        mint: VALID_MINT,
+        baseUrl: BASE_URL,
+        fetch: fetchMock,
+      });
+      expect.fail('expected MarketsFetchError');
+    } catch (e) {
+      expect(e).toBeInstanceOf(MarketsFetchError);
+      expect((e as MarketsFetchError).status).toBe(500);
+      expect((e as MarketsFetchError).url).toBe(
+        `${BASE_URL}/markets/tokens/${VALID_MINT}/holders`,
+      );
+    }
+  });
+
+  it('4xx response surfaces as MarketsFetchError(status=400, url)', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({}, { ok: false, status: 400 }),
+    );
+    try {
+      await getTokenHolders({
+        mint: VALID_MINT,
+        baseUrl: BASE_URL,
+        fetch: fetchMock,
+      });
+      expect.fail('expected MarketsFetchError');
+    } catch (e) {
+      expect(e).toBeInstanceOf(MarketsFetchError);
+      expect((e as MarketsFetchError).status).toBe(400);
+      expect((e as MarketsFetchError).url).toBe(
+        `${BASE_URL}/markets/tokens/${VALID_MINT}/holders`,
+      );
+    }
+  });
+
+  it('network failure surfaces as MarketsFetchError(status=null)', async () => {
+    const fetchMock = vi.fn(async () => {
+      throw new TypeError('Failed to fetch');
+    });
+    try {
+      await getTokenHolders({
+        mint: VALID_MINT,
+        baseUrl: BASE_URL,
+        fetch: fetchMock as unknown as typeof fetch,
+      });
+      expect.fail('expected MarketsFetchError');
+    } catch (e) {
+      expect(e).toBeInstanceOf(MarketsFetchError);
+      expect((e as MarketsFetchError).status).toBeNull();
+      expect((e as MarketsFetchError).message).toContain('network error');
+    }
+  });
+
+  it('coerces unknown source value to "rpc"', async () => {
+    // Forward-compat: backend may add a new discriminator value
+    // (e.g. 'projection'). The mapper narrows to 'rpc' so the SDK type
+    // stays a strict union.
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        mint: VALID_MINT,
+        count: 5,
+        updatedAt: '2026-05-10T12:00:00.000Z',
+        source: 'projection',
+      }),
+    );
+    const row = await getTokenHolders({
+      mint: VALID_MINT,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(row.source).toBe('rpc');
+  });
+
+  it('coerces missing source field to "rpc"', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        mint: VALID_MINT,
+        count: 5,
+        updatedAt: '2026-05-10T12:00:00.000Z',
+        // source intentionally absent
+      }),
+    );
+    const row = await getTokenHolders({
+      mint: VALID_MINT,
+      baseUrl: BASE_URL,
+      fetch: fetchMock,
+    });
+    expect(row.source).toBe('rpc');
+  });
+
+  it('cluster resolution uses BACKEND_API_BASE_URLS', async () => {
+    const fetchMock = vi.fn(async () =>
+      jsonResponse({
+        mint: VALID_MINT,
+        count: 0,
+        updatedAt: '2026-05-10T12:00:00.000Z',
+        source: 'rpc',
+      }),
+    );
+    await getTokenHolders({
+      mint: VALID_MINT,
+      cluster: 'mainnet',
+      fetch: fetchMock,
+    });
+    const url = fetchMock.mock.calls[0]![0] as string;
+    expect(url).toBe(
+      `${BACKEND_API_BASE_URLS.mainnet}/markets/tokens/${VALID_MINT}/holders`,
+    );
   });
 });
 

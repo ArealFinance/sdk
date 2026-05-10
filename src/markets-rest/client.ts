@@ -29,6 +29,7 @@ import type {
   MarketsClientOptions,
   ProtocolSummary,
   SnapshotRow,
+  TokenHoldersRow,
 } from './types.js';
 
 /**
@@ -218,6 +219,19 @@ function mapDailyAggregateRow(raw: unknown): DailyAggregateRow {
   };
 }
 
+function mapTokenHoldersRow(raw: unknown): TokenHoldersRow {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  // Coerce unknown source values to 'rpc' (defensive default — keeps the
+  // discriminator narrow when a future backend adds new sources).
+  const src = r.source === 'cache' ? 'cache' : 'rpc';
+  return {
+    mint: strField(r, 'mint'),
+    count: numField(r, 'count'),
+    updatedAt: strField(r, 'updatedAt'),
+    source: src,
+  };
+}
+
 function mapProtocolSummary(raw: unknown): ProtocolSummary {
   const r = (raw ?? {}) as Record<string, unknown>;
   return {
@@ -325,4 +339,26 @@ export async function getProtocolSummary(
   const url = `${base}/markets/summary`;
   const body = await requestJson<unknown>(url, opts);
   return mapProtocolSummary(body);
+}
+
+/**
+ * Fetch the holder count for a single SPL token mint.
+ *
+ * Backend resolves the count via `getProgramAccounts` against the SPL
+ * Token program (filtered by mint, `amount > 0`) and caches the result
+ * in Redis; `source: 'cache'` indicates a cache hit, `'rpc'` a fresh
+ * fetch. `updatedAt` reflects the BACKEND'S last RPC time, NOT the
+ * response time, so a cache hit can carry a stale-looking timestamp.
+ *
+ * @throws TypeError on validation failure (bad mint, missing baseUrl/cluster).
+ * @throws MarketsFetchError on HTTP non-2xx, transport error, or malformed body.
+ */
+export async function getTokenHolders(
+  opts: { mint: string } & MarketsClientOptions,
+): Promise<TokenHoldersRow> {
+  assertBase58('mint', opts.mint);
+  const base = resolveBaseUrl(opts);
+  const url = `${base}/markets/tokens/${encodeURIComponent(opts.mint)}/holders`;
+  const body = await requestJson<unknown>(url, opts);
+  return mapTokenHoldersRow(body);
 }

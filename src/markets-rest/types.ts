@@ -153,6 +153,33 @@ export interface ProtocolSummary {
 }
 
 /**
+ * Response shape of `GET /markets/tokens/:mint/holders`.
+ *
+ * Phase MARKETS-TOKEN-HOLDERS — typed client for the backend's RPC-backed
+ * holder count endpoint. The backend issues `getProgramAccounts` against
+ * the SPL Token program (filtered by mint) and counts entries with
+ * `amount > 0`; the result is cached in Redis to amortise the RPC cost.
+ *
+ * `updatedAt` is the timestamp at the BACKEND'S last RPC fetch (i.e. when
+ * the cached value was produced), NOT the response time. For a cache hit
+ * the timestamp can be older than `Date.now()` by up to the backend TTL.
+ *
+ * `source` discriminates between fresh RPC and Redis cache so the UI can
+ * show a "live"/"cached" indicator. Unknown values are coerced to `'rpc'`
+ * by the SDK mapper for forward-compatibility (see `mapTokenHoldersRow`).
+ */
+export interface TokenHoldersRow {
+  /** Token mint base58. */
+  mint: string;
+  /** Count of token accounts with amount > 0. */
+  count: number;
+  /** ISO 8601 timestamp at backend's last RPC fetch (NOT the response time). */
+  updatedAt: string;
+  /** 'rpc' = freshly fetched; 'cache' = served from Redis. */
+  source: 'rpc' | 'cache';
+}
+
+/**
  * Common options threaded through every markets-rest call.
  *
  * Either `baseUrl` or `cluster` must resolve to a non-empty URL, otherwise
