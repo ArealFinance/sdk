@@ -99,20 +99,19 @@ function trimNullBytes(bytes: Uint8Array): string {
  * Heuristic category bucket from the OT name/symbol. Pure helper so the
  * UI doesn't have to re-implement the prefix matching.
  *
- *   - `STOCK*`, `SPRK*`, `EQ*` → 'stock' (tokenised equities)
+ *   - `STOCK*`, `EQ*`          → 'stock' (tokenised equities, future)
  *   - `RWT`                    → 'protocol' (handled separately, but kept
  *                                here for completeness if a config ever
  *                                has the RWT symbol)
- *   - default                  → 'ownership' (the generic OT category)
+ *   - default                  → 'ownership' — the generic OT category,
+ *                                consumed by the /markets PROTOCOL section.
+ *                                Sparkles (SPRK) is the first such OT and
+ *                                belongs alongside RWT, not under STOCKS.
  */
 function deriveCategory(config: OtConfig): TokenRow['category'] {
   const symbol = trimNullBytes(config.symbol_).toUpperCase();
   if (symbol === 'RWT') return 'protocol';
-  if (
-    symbol.startsWith('SPRK') ||
-    symbol.startsWith('STOCK') ||
-    symbol.startsWith('EQ')
-  ) {
+  if (symbol.startsWith('STOCK') || symbol.startsWith('EQ')) {
     return 'stock';
   }
   return 'ownership';
