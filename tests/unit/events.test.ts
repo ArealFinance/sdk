@@ -203,6 +203,38 @@ describe('decodeEvent', () => {
       decodeEvent(PROGRAM_IDS.yieldDistribution, truncated.toString('base64')),
     ).toBeNull();
   });
+
+  it('decodes Arlex two-chunk emit format (disc + payload space-separated)', () => {
+    // Arlex's `emit!` macro writes the 8-byte discriminator and the borsh
+    // payload as TWO independent base64 strings, joined by a space:
+    //
+    //   Program data: <disc_b64>= <payload_b64>
+    //
+    // Anchor uses a single combined base64. The decoder must accept both —
+    // see `decodeProgramDataPayload` in src/events/decoder.ts.
+    const decoder =
+      YIELD_DISTRIBUTION_EVENTS.byName['RewardsClaimed']!;
+    const discB64 = Buffer.from(decoder.discriminator).toString('base64');
+    const payloadB64 = buildRewardsClaimedPayload().toString('base64');
+
+    const twoChunk = `${discB64} ${payloadB64}`;
+    const decoded = decodeEvent(PROGRAM_IDS.yieldDistribution, twoChunk);
+    expect(decoded).not.toBeNull();
+    expect(decoded!.eventName).toBe('RewardsClaimed');
+    expect((decoded!.data as Record<string, unknown>)['amount']).toBe(
+      1_000_000_000n,
+    );
+
+    // Sanity: the same payload concatenated as a single base64 string must
+    // still decode (Anchor-style, regression guard).
+    const singleChunk = Buffer.concat([
+      Buffer.from(decoder.discriminator),
+      buildRewardsClaimedPayload(),
+    ]).toString('base64');
+    const single = decodeEvent(PROGRAM_IDS.yieldDistribution, singleChunk);
+    expect(single).not.toBeNull();
+    expect(single!.eventName).toBe('RewardsClaimed');
+  });
 });
 
 // ----------------------------------------------------------------------------
