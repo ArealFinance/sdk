@@ -59,6 +59,17 @@ export interface GetMarketsSnapshotOptions {
    * that only need pool data.
    */
   includeNav?: boolean;
+  /**
+   * Override for the RWT mint pubkey on the active cluster. Defaults to
+   * `RWT_MINTS[cluster]` from `network/constants.ts` — that table holds
+   * the canonical R20-pinned values, but bootstrap pipelines that mint
+   * a non-pinned RWT (because the deployer doesn't hold the canonical
+   * keypair) need to point the snapshot at the actual on-chain mint or
+   * the price/supply lookups all read empty accounts. Pass through from
+   * a per-cluster override (see `app/src/lib/network/endpoints.ts`
+   * `rwtMint` field) when the deployment isn't using R20 pins.
+   */
+  rwtMint?: PublicKey;
 }
 
 /**
@@ -133,7 +144,7 @@ export async function getMarketsSnapshot(
 ): Promise<MarketsSnapshot> {
   const fetchedAt = Date.now();
   const usdcMint = USDC_MINTS[cluster];
-  const rwtMint = RWT_MINTS[cluster];
+  const rwtMint = opts.rwtMint ?? RWT_MINTS[cluster];
   const includeNav = opts.includeNav ?? true;
 
   // Top-level parallel reads. allSettled so any single failure degrades
