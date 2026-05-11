@@ -69,6 +69,15 @@ export interface AddLiquidityAccountContext extends LpAccountContextBase {
    * to be a signer.
    */
   payer?: PublicKey;
+  /**
+   * BinArray PDA — REQUIRED for concentrated pools (`pool.poolType == 1`).
+   * Derived as `["bins", pool_state]`. The contract reads this from
+   * `remaining_accounts[last]` (after the optional OT-treasury slot used
+   * by other ix) and calls `concentrated::distribute_to_bins` to fan the
+   * deposit across the active bin range. Omit for StandardCurve pools —
+   * the contract skips the bin path when `poolType == 0`.
+   */
+  binArray?: PublicKey;
 }
 
 export interface BuildAddLiquidityIxArgs {

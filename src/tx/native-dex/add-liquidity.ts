@@ -84,6 +84,14 @@ export function buildAddLiquidityIx(
     { pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false },
   ];
 
+  // Concentrated pools: BinArray must be the LAST remaining_account.
+  // The contract pops it from `remaining_accounts[len-1]` and skips this
+  // path entirely for StandardCurve pools, so omit on standard pools.
+  // See contracts/native-dex/src/instructions/add_liquidity.rs:300-320.
+  if (ctx.binArray) {
+    keys.push({ pubkey: ctx.binArray, isSigner: false, isWritable: true });
+  }
+
   return new TransactionInstruction({
     programId: ctx.dexProgramId,
     keys,
