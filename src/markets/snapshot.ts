@@ -125,7 +125,11 @@ function deriveCategory(config: OtConfig): TokenRow['category'] {
 async function readRwtVault(
   conn: Connection,
   programId: PublicKey,
-): Promise<{ navBookValue: bigint; totalRwtSupply: bigint } | null> {
+): Promise<{
+  navBookValue: bigint;
+  totalRwtSupply: bigint;
+  totalInvestedCapital: bigint;
+} | null> {
   try {
     const [vaultPda] = findRwtVaultPda(programId);
     const info = await conn.getAccountInfo(vaultPda, 'confirmed');
@@ -134,6 +138,7 @@ async function readRwtVault(
     return {
       navBookValue: parsed.navBookValue,
       totalRwtSupply: parsed.totalRwtSupply,
+      totalInvestedCapital: parsed.totalInvestedCapital,
     };
   } catch {
     return null;

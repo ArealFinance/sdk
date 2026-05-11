@@ -98,10 +98,26 @@ export interface MarketsSnapshot {
   pools: PoolRow[];
   /**
    * RwtVault state when `includeNav: true` AND the read succeeds; null
-   * otherwise. The UI uses `navBookValue / totalRwtSupply` to display
-   * book-value-per-RWT alongside the spot price.
+   * otherwise.
+   *
+   * Field semantics — important because two of these read like USDC totals
+   * but only one is:
+   *   * `navBookValue`        — NAV per RWT (USDC base units, 6 decimals).
+   *                             $1.00 at launch; drifts as protocol revenue
+   *                             flows into the vault.
+   *   * `totalRwtSupply`      — RWT in circulation (RWT base units).
+   *   * `totalInvestedCapital`— Cumulative USDC ever deposited into the
+   *                             vault. THIS is the right field for
+   *                             "USDC backing the vault" displays — multi-
+   *                             plying `navBookValue × totalRwtSupply` is
+   *                             not, because `navBookValue` is per-token,
+   *                             not total.
    */
-  rwtVault: { navBookValue: bigint; totalRwtSupply: bigint } | null;
+  rwtVault: {
+    navBookValue: bigint;
+    totalRwtSupply: bigint;
+    totalInvestedCapital: bigint;
+  } | null;
   /** ms since epoch — when the snapshot was assembled. */
   fetchedAt: number;
   /** slot taken AFTER all reads — see comment in `snapshot.ts`. */
