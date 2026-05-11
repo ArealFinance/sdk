@@ -15,7 +15,7 @@
 //     the proof-store about a non-existent distributor wastes an HTTP round
 //     trip.
 
-import type { Connection, PublicKey } from '@solana/web3.js';
+import { SYSVAR_CLOCK_PUBKEY, type Connection, type PublicKey } from '@solana/web3.js';
 
 import {
   parseMerkleDistributor,
@@ -171,11 +171,31 @@ export async function getHolderPortfolio(
 ): Promise<PortfolioSnapshot> {
   const fetchedAt = Date.now();
 
+  // Read the on-chain Clock sysvar in parallel with OT enumeration. Vesting
+  // math on the contract side uses `Clock::get().unix_timestamp` — which on
+  // a `solana-test-validator` is computed from slot × slot_time and can lag
+  // wall-clock by hours/days after restarts. If we used `Date.now()` here
+  // the UI's `claimableNow` would over-promise: it'd return the fully-vested
+  // amount, but the next `claim` ix would only release the (much smaller)
+  // chain-time-vested portion. Mismatch → users complain "claim took
+  // pennies, where did my reward go?". Read the chain clock and pass it
+  // through to `computeVestedClaimable` so UI matches ix outcome.
+  let chainUnixTs: bigint | null = null;
+
   // OT enumeration may legitimately fail (program not deployed). Degrade
   // to empty rows rather than propagating the error to the UI.
   let configs: EnumeratedOt[];
   try {
-    configs = await enumerateOtConfigs(conn, opts.ownershipTokenProgramId);
+    const [clockInfo, otsRes] = await Promise.all([
+      conn.getAccountInfo(SYSVAR_CLOCK_PUBKEY, 'confirmed').catch(() => null),
+      enumerateOtConfigs(conn, opts.ownershipTokenProgramId),
+    ]);
+    configs = otsRes;
+    if (clockInfo && clockInfo.data.length >= 40) {
+      // Clock sysvar layout: slot u64 | epoch_start_ts i64 | epoch u64 |
+      // leader_schedule_epoch u64 | unix_timestamp i64.
+      chainUnixTs = clockInfo.data.readBigInt64LE(32);
+    }
   } catch {
     configs = [];
   }
@@ -235,7 +255,12 @@ export async function getHolderPortfolio(
       // what the next `claim` ix will actually transfer.
       let claimableNow: bigint | null = null;
       if (cumulativeAmount !== null && parsedDistributor) {
-        const nowSecs = BigInt(Math.floor(Date.now() / 1000));
+        // Prefer the on-chain Clock sysvar over wall-clock — the contract
+        // sees the same Clock value at ix execution time, so this keeps
+        // UI and on-chain `claim` outcome in sync even on test-validator
+        // clusters where the chain clock lags wall-clock by hours/days.
+        const nowSecs =
+          chainUnixTs ?? BigInt(Math.floor(Date.now() / 1000));
         claimableNow = computeVestedClaimable(
           parsedDistributor,
           cumulativeAmount,
