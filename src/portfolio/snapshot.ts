@@ -72,22 +72,70 @@ async function readAtaBalance(
 }
 
 /**
- * Return the distributor PDA address only if an account actually exists at
- * it AND the bytes parse as a MerkleDistributor. The parsed value is
- * discarded — we only need existence.
+ * Return the distributor PDA address AND parsed state when the account
+ * exists. Callers that don't need the parsed state can ignore the second
+ * field. Returns null when missing/unparseable.
  */
 async function resolveDistributor(
   conn: Connection,
   distributor: PublicKey,
-): Promise<PublicKey | null> {
+): Promise<{
+  address: PublicKey;
+  parsed: ReturnType<typeof parseMerkleDistributor>;
+} | null> {
   const info = await conn.getAccountInfo(distributor, 'confirmed');
   if (!info) return null;
   try {
-    parseMerkleDistributor(info.data);
-    return distributor;
+    const parsed = parseMerkleDistributor(info.data);
+    return { address: distributor, parsed };
   } catch {
     return null;
   }
+}
+
+/**
+ * Mirror of `contracts/yield-distribution/src/vesting.rs::{calculate_total_vested,
+ * calculate_claimable}`. Pure function — no RPC.
+ *
+ * On-chain `claim` only transfers the *vested* share at each invocation:
+ *
+ *   total_vested = locked_vested
+ *                + (total_funded - locked_vested) × elapsed / vesting_period
+ *   my_share     = total_vested × cumulativeAmount / max_total_claim
+ *   claimable    = max(0, my_share - claimed_amount)
+ *
+ * Without this calculation client-side, the UI displays `cumulative -
+ * claimed` (theoretical max) while a real `claim` ix transfers only the
+ * tiny vested portion — looking like the protocol is "stealing" funds.
+ */
+function computeVestedClaimable(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dist: any,
+  cumulativeAmount: bigint,
+  claimedAmount: bigint,
+  nowSecs: bigint,
+): bigint {
+  const maxTotalClaim = dist.maxTotalClaim as bigint;
+  if (maxTotalClaim === 0n) return 0n;
+  const totalFunded = dist.totalFunded as bigint;
+  const lockedVested = dist.lockedVested as bigint;
+  const vestingPeriod =
+    (dist.vestingPeriodSecs as bigint) > 0n
+      ? (dist.vestingPeriodSecs as bigint)
+      : 1n;
+  const lastFundTs = dist.lastFundTs as bigint;
+
+  const elapsed = nowSecs > lastFundTs ? nowSecs - lastFundTs : 0n;
+  const capped = elapsed < vestingPeriod ? elapsed : vestingPeriod;
+  const newPortion =
+    totalFunded > lockedVested ? totalFunded - lockedVested : 0n;
+  const newVested = (newPortion * capped) / vestingPeriod;
+
+  let totalVested = lockedVested + newVested;
+  if (totalVested > maxTotalClaim) totalVested = maxTotalClaim;
+
+  const myShare = (totalVested * cumulativeAmount) / maxTotalClaim;
+  return myShare > claimedAmount ? myShare - claimedAmount : 0n;
 }
 
 /**
@@ -147,11 +195,13 @@ export async function getHolderPortfolio(
       );
 
       // Parallelise the three independent on-chain reads.
-      const [balance, distributor, claimedAmount] = await Promise.all([
+      const [balance, distributorResolved, claimedAmount] = await Promise.all([
         readAtaBalance(conn, ataAddress),
         resolveDistributor(conn, distributorPda),
         readClaimedAmount(conn, claimStatusPda),
       ]);
+      const distributor = distributorResolved?.address ?? null;
+      const parsedDistributor = distributorResolved?.parsed ?? null;
 
       // Proof fetch only when (a) configured AND (b) distributor exists.
       let cumulativeAmount: bigint | null = null;
@@ -177,11 +227,24 @@ export async function getHolderPortfolio(
         }
       }
 
-      // Clamp to >= 0n: in the tiny race where `claimed > cumulative`
-      // (claim landed before the new root was published) we report 0
-      // claimable rather than a confusing negative value.
+      // Vesting-aware claimable. The contract only transfers the vested
+      // portion of the merkle leaf at each `claim` (see vesting.rs); a
+      // naive `cumulative - claimed` would over-promise and the UI's
+      // "Unclaimed Rewards" pill would barely decrement after each claim.
+      // We mirror the on-chain math here so the displayed value matches
+      // what the next `claim` ix will actually transfer.
       let claimableNow: bigint | null = null;
-      if (cumulativeAmount !== null) {
+      if (cumulativeAmount !== null && parsedDistributor) {
+        const nowSecs = BigInt(Math.floor(Date.now() / 1000));
+        claimableNow = computeVestedClaimable(
+          parsedDistributor,
+          cumulativeAmount,
+          claimedAmount,
+          nowSecs,
+        );
+      } else if (cumulativeAmount !== null) {
+        // No distributor state available — fall back to the legacy plain
+        // (cumulative - claimed) math so the UI still surfaces something.
         claimableNow =
           cumulativeAmount > claimedAmount
             ? cumulativeAmount - claimedAmount
