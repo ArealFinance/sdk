@@ -94,6 +94,21 @@ export function buildSwapIx(args: BuildSwapIxArgs): TransactionInstruction {
     });
   }
 
+  // Concentrated pools require the BinArray PDA as a remaining_account.
+  // The contract picks it from `remaining_accounts[has_ot_treasury ? 1 : 0]`
+  // and bin-walks the swap there; without it the ix reverts with
+  // `InvalidBinRange`. See
+  // `contracts/native-dex/src/instructions/swap.rs:201-216`. Standard
+  // pools MUST omit it — the contract gates the BinArray load on
+  // `pool.poolType == POOL_TYPE_CONCENTRATED`.
+  if (ctx.binArray) {
+    keys.push({
+      pubkey: ctx.binArray,
+      isSigner: false,
+      isWritable: true,
+    });
+  }
+
   return new TransactionInstruction({
     programId: ctx.dexProgramId,
     keys,

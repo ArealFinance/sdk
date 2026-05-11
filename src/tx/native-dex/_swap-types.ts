@@ -35,6 +35,14 @@ export interface SwapAccountContext {
   arealFeeAccount: PublicKey;
   /** OT treasury fee destination — required only when `pool.has_ot_treasury`. */
   otTreasuryFeeDestination?: PublicKey;
+  /**
+   * BinArray PDA — REQUIRED for concentrated pools (`pool.poolType == 1`).
+   * Derived as `["bins", pool_state]`. The contract reads it from
+   * `remaining_accounts[has_ot_treasury ? 1 : 0]` and bin-walks the swap
+   * via `concentrated::bin_walk_swap`. Omit for StandardCurve pools — the
+   * contract gates the BinArray load on the pool type flag.
+   */
+  binArray?: PublicKey;
 }
 
 /** Args for the pure `buildSwapIx` builder (no RPC, no PDA derivation). */
