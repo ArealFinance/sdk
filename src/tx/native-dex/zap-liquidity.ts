@@ -70,8 +70,13 @@ export function buildZapLiquidityIx(
 ): TransactionInstruction {
   const { ctx, amountA, amountB, minShares } = args;
 
-  validateU64('amount_a', amountA);
-  validateU64('amount_b', amountB);
+  validateU64NonNegative('amount_a', amountA);
+  validateU64NonNegative('amount_b', amountB);
+  if (amountA === 0n && amountB === 0n) {
+    throw new Error(
+      'zap_liquidity: amount_a + amount_b must be > 0 (got 0 + 0)',
+    );
+  }
   validateMinShares(minShares);
 
   const payer = ctx.payer ?? ctx.provider;
@@ -187,9 +192,20 @@ export async function buildZapLiquidityTx(
 
 // ───────────────────────────── validation ─────────────────────────────────
 
-function validateU64(field: string, value: bigint): void {
-  if (value <= 0n) {
-    throw new Error(`zap_liquidity: ${field} must be > 0 (got ${value})`);
+/**
+ * Per-side amount validator for `zap_liquidity`.
+ *
+ * Unlike `add_liquidity` (which rejects any zero side), zap supports
+ * single-sided deposits: the contract's `zap_liquidity_internal` only
+ * rejects `amount_a == 0 && amount_b == 0` (see
+ * `contracts/native-dex/src/instructions/zap_liquidity.rs:147`). The
+ * empty-pool branch additionally requires both sides > 0, but that's a
+ * runtime check the contract owns — at the SDK level we mirror only the
+ * "not both zero" invariant via an aggregate check at the call site.
+ */
+function validateU64NonNegative(field: string, value: bigint): void {
+  if (value < 0n) {
+    throw new Error(`zap_liquidity: ${field} must be >= 0 (got ${value})`);
   }
   if (value > U64_MAX) {
     throw new Error(`zap_liquidity: ${field} exceeds u64::MAX (got ${value})`);
