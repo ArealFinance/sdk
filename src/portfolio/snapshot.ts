@@ -108,6 +108,47 @@ async function resolveDistributor(
  * claimed` (theoretical max) while a real `claim` ix transfers only the
  * tiny vested portion — looking like the protocol is "stealing" funds.
  */
+/**
+ * Per-second emission rate for a single holder, in base units / sec.
+ *
+ * The contract's vesting math (`vesting.rs`) releases new funds linearly
+ * over `vesting_period_secs`. For one holder, the per-second unlock is
+ * a constant during the window:
+ *
+ *   `(total_funded - locked_vested) × cumulative / max_total_claim / vesting_period`
+ *
+ * Outside the window (already fully vested OR no new funds) the rate is
+ * `0n`. Pure function — no RPC.
+ */
+function computeVestingRatePerSec(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  dist: any,
+  cumulativeAmount: bigint,
+  nowSecs: bigint,
+): bigint {
+  const maxTotalClaim = dist.maxTotalClaim as bigint;
+  if (maxTotalClaim === 0n) return 0n;
+  const totalFunded = dist.totalFunded as bigint;
+  const lockedVested = dist.lockedVested as bigint;
+  const vestingPeriod =
+    (dist.vestingPeriodSecs as bigint) > 0n
+      ? (dist.vestingPeriodSecs as bigint)
+      : 1n;
+  const lastFundTs = dist.lastFundTs as bigint;
+
+  // Window closed → flat 0 until the next fund.
+  const elapsed = nowSecs > lastFundTs ? nowSecs - lastFundTs : 0n;
+  if (elapsed >= vestingPeriod) return 0n;
+
+  const newPortion =
+    totalFunded > lockedVested ? totalFunded - lockedVested : 0n;
+  if (newPortion === 0n) return 0n;
+
+  // Multiply first, divide last — avoids precision loss at low cumulative
+  // shares (e.g. tens of base units / sec).
+  return (newPortion * cumulativeAmount) / (maxTotalClaim * vestingPeriod);
+}
+
 function computeVestedClaimable(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dist: any,
@@ -254,6 +295,7 @@ export async function getHolderPortfolio(
       // We mirror the on-chain math here so the displayed value matches
       // what the next `claim` ix will actually transfer.
       let claimableNow: bigint | null = null;
+      let vestingRatePerSec: bigint | null = null;
       if (cumulativeAmount !== null && parsedDistributor) {
         // Prefer the on-chain Clock sysvar over wall-clock — the contract
         // sees the same Clock value at ix execution time, so this keeps
@@ -265,6 +307,11 @@ export async function getHolderPortfolio(
           parsedDistributor,
           cumulativeAmount,
           claimedAmount,
+          nowSecs,
+        );
+        vestingRatePerSec = computeVestingRatePerSec(
+          parsedDistributor,
+          cumulativeAmount,
           nowSecs,
         );
       } else if (cumulativeAmount !== null) {
@@ -288,6 +335,7 @@ export async function getHolderPortfolio(
         cumulativeAmount,
         claimedAmount,
         claimableNow,
+        vestingRatePerSec,
         ataAddress,
       };
     }),

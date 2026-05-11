@@ -26,6 +26,23 @@ export interface PortfolioRow {
   claimedAmount: bigint;
   /** cumulative - claimed when known, clamped to >= 0n. null if cumulative unknown. */
   claimableNow: bigint | null;
+  /**
+   * Per-second emission rate for this holder, in RWT base units / sec.
+   *
+   * Mirrors the on-chain vesting math: while a fresh `fund_distributor`
+   * window is open (`now - last_fund_ts < vesting_period`), the unclaimed
+   * pile grows at a constant
+   *
+   *   `(total_funded - locked_vested) × cumulative / max_total_claim / vesting_period`
+   *
+   * per second. Once the window elapses the rate drops to `0n` — the
+   * caller's `claimableNow` keeps the already-vested amount, but no new
+   * unlocks happen until the next fund.
+   *
+   * `null` when `cumulativeAmount` is unknown (no proof) or no distributor
+   * exists — caller should display "—" instead of misleading "0".
+   */
+  vestingRatePerSec: bigint | null;
   /** Holder ATA — exposed for WS subscription. */
   ataAddress: PublicKey;
 }
