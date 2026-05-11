@@ -51,7 +51,7 @@ export interface GetHolderLpPortfolioOptions {
   nativeDexProgramId: PublicKey;
   /** Ownership Token program — used for OtConfig metadata enumeration. */
   ownershipTokenProgramId: PublicKey;
-  /** Cluster — selects USDC + RWT mints for pricing. */
+  /** Cluster — selects default USDC + RWT mints for pricing. */
   cluster: ClusterName;
   /**
    * LiquidityNexus PDA address (caller resolves via
@@ -60,6 +60,16 @@ export interface GetHolderLpPortfolioOptions {
    * though the server-side memcmp on owner=holder normally excludes them.
    */
   liquidityNexus: PublicKey;
+  /**
+   * Optional override for the USDC mint used in symbol resolution and
+   * pricing. Defaults to `USDC_MINTS[cluster]`. Required on clusters that
+   * use a non-canonical USDC mint (Areal Testnet's bootstrap-init.ts
+   * creates its own mint that does NOT match the SDK constant — without
+   * this override symbol/price fall back to the truncated-base58 stub).
+   */
+  usdcMint?: PublicKey;
+  /** Same override pattern for RWT — defaults to `RWT_MINTS[cluster]`. */
+  rwtMint?: PublicKey;
 }
 
 /**
@@ -88,8 +98,8 @@ export async function getHolderLpPortfolio(
   opts: GetHolderLpPortfolioOptions,
 ): Promise<HolderLpSnapshot> {
   const fetchedAt = Date.now();
-  const usdcMint = USDC_MINTS[opts.cluster];
-  const rwtMint = RWT_MINTS[opts.cluster];
+  const usdcMint = opts.usdcMint ?? USDC_MINTS[opts.cluster];
+  const rwtMint = opts.rwtMint ?? RWT_MINTS[opts.cluster];
 
   // Top-level parallel reads. allSettled so any single failure degrades
   // gracefully — a missing OT program shouldn't blank out the position list.
