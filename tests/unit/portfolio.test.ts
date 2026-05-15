@@ -85,19 +85,50 @@ function buildOtConfigBytes(args: {
 }
 
 /**
- * Build a minimal MerkleDistributor buffer. Only the discriminator matters
- * for our tests — all other fields are zeroed but valid for the parser.
+ * Build a MerkleDistributor buffer.
  *
  *   [8] disc | [32] ot_mint | [32] reward_vault | [32] accumulator |
  *   [32] merkle_root | [8] max_total_claim | [8] total_claimed |
  *   [8] total_funded | [8] locked_vested | [8] last_fund_ts |
  *   [8] vesting_period_secs | [8] epoch | [1] is_active | [1] bump
+ *
+ * Defaults yield a "fully-vested" distributor (`maxTotalClaim = lockedVested = 1e12`,
+ * `vestingPeriodSecs = 1`) so the snapshot's vesting-aware math reduces to
+ * `cumulative - claimed`. Tests that care about specific vesting behavior
+ * pass explicit overrides.
  */
-function buildDistributorBytes(otMint: PublicKey): Buffer {
+function buildDistributorBytes(
+  otMint: PublicKey,
+  opts: {
+    maxTotalClaim?: bigint;
+    totalFunded?: bigint;
+    lockedVested?: bigint;
+    lastFundTs?: bigint;
+    vestingPeriodSecs?: bigint;
+  } = {},
+): Buffer {
   const buf = Buffer.alloc(8 + 32 + 32 + 32 + 32 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 1 + 1);
   buf.set(MERKLEDISTRIBUTOR_DISCRIMINATOR, 0);
   buf.set(otMint.toBuffer(), 8);
-  // remaining bytes are zero-valued (valid)
+
+  // Fully-vested defaults: maxTotalClaim huge, lockedVested == maxTotalClaim,
+  // so `totalVested = maxTotalClaim` and `myShare = cumulative * maxTotalClaim
+  // / maxTotalClaim = cumulative`. This mirrors the legacy "cumulative -
+  // claimed" behavior these tests originally asserted against.
+  const maxTotalClaim = opts.maxTotalClaim ?? 1_000_000_000_000n;
+  const totalFunded = opts.totalFunded ?? maxTotalClaim;
+  const lockedVested = opts.lockedVested ?? maxTotalClaim;
+  const lastFundTs = opts.lastFundTs ?? 0n;
+  const vestingPeriodSecs = opts.vestingPeriodSecs ?? 1n;
+
+  const off = 8 + 32 + 32 + 32 + 32; // after disc + 4 pubkey-shaped fields
+  buf.writeBigUInt64LE(maxTotalClaim, off);
+  // total_claimed left as 0
+  buf.writeBigUInt64LE(totalFunded, off + 16);
+  buf.writeBigUInt64LE(lockedVested, off + 24);
+  buf.writeBigInt64LE(lastFundTs, off + 32);
+  buf.writeBigUInt64LE(vestingPeriodSecs, off + 40);
+  // epoch, is_active, bump left as 0
   return buf;
 }
 

@@ -283,6 +283,7 @@ describe('getMarketsSnapshot', () => {
     expect(snap.rwtVault).toEqual({
       navBookValue: 5_000_000n,
       totalRwtSupply: 1_000_000n,
+      totalInvestedCapital: 0n,
     });
   });
 
