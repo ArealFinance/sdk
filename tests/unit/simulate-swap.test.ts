@@ -174,12 +174,15 @@ describe('simulateSwap', () => {
 
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    // Same expected math as quote-swap.test QM-1 (selling RWT, fee on input).
-    // fee_total = 30, net_input = 9_970, amountOut = floor(1_000_000 * 9970 / 1_009_970)
-    const expected = (1_000_000n * 9_970n) / (1_000_000n + 9_970n);
+    // Same expected math as quote-swap.test QM-1 (selling RWT, fee-on-top).
+    // Post fee-on-top: netInput == amountIn (10_000), amountOut = curve(amountIn).
+    // Pre-fee-on-top behavior was: netInput = 9_970, amountOut = floor(1_000_000 * 9_970 / 1_009_970).
+    const expected = (1_000_000n * 10_000n) / (1_000_000n + 10_000n);
     expect(result.quote.fees.feeTotal).toBe(30n);
-    expect(result.quote.netInput).toBe(9_970n);
+    expect(result.quote.netInput).toBe(10_000n);
     expect(result.quote.amountOut).toBe(expected);
+    // userTotalDebit = amountIn + feeTotal + feeOtTreasury = 10_000 + 30 + 0 = 10_030.
+    expect(result.quote.userTotalDebit).toBe(10_030n);
 
     // Both accounts should have been fetched once.
     expect(conn.getAccountInfo).toHaveBeenCalledTimes(2);
@@ -222,8 +225,11 @@ describe('simulateSwap', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     // Same selling-RWT branch — symmetry sanity check.
+    // Post fee-on-top: netInput == amountIn.
+    // Pre-fee-on-top behavior was: netInput = 9_970.
     expect(result.quote.fees.feeTotal).toBe(30n);
-    expect(result.quote.netInput).toBe(9_970n);
+    expect(result.quote.netInput).toBe(10_000n);
+    expect(result.quote.userTotalDebit).toBe(10_030n);
   });
 
   it('throws "pool not found" when getAccountInfo returns null for the pool', async () => {

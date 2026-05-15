@@ -22,6 +22,15 @@
 //   min_amount_out  u64 LE
 //   a_to_b          bool (1 byte)
 //
+// Fee-on-top note (post-Layer-9 D29 compliance): on the sell-RWT branch
+// (input mint is the RWT mint), the contract debits
+// `amount_in + fee_total + fee_ot_treasury` from `user_token_in` — fees
+// are charged ON TOP of `amount_in`, not deducted from it. For UI
+// balance preflight on the input ATA use
+// `quoteSwap(...).quote.userTotalDebit` instead of `amount_in` alone.
+// On the buy-RWT branch (input is non-RWT) the user debit equals
+// `amount_in` because fees come off the gross output instead.
+//
 // Discriminator: codegen `SWAP_DISCRIMINATOR` (single source of truth).
 //
 // This is the second user write-path (after Phase 7 claim). Distinct from
