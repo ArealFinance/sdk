@@ -569,6 +569,26 @@ export function encodeUpdateDexConfigArgs(args: UpdateDexConfigArgs): Buffer {
 }
 
 // ============================================================
+// Instruction: update_areal_fee_destination
+// ============================================================
+
+export const UPDATE_AREAL_FEE_DESTINATION_DISCRIMINATOR: Uint8Array = new Uint8Array([0xb5, 0xca, 0x6b, 0x2e, 0x76, 0x31, 0x69, 0x62]);
+
+export interface UpdateArealFeeDestinationAccounts {
+  /** signer */
+  authority: PublicKey;
+  /** readonly */
+  dexConfig: PublicKey;
+  /** readonly */
+  newArealFeeAccount: PublicKey;
+}
+
+/** Encode (no args) for the `update_areal_fee_destination` instruction — discriminator only. */
+export function encodeUpdateArealFeeDestinationArgs(): Buffer {
+  return Buffer.from(UPDATE_AREAL_FEE_DESTINATION_DISCRIMINATOR);
+}
+
+// ============================================================
 // Instruction: update_pool_creators
 // ============================================================
 

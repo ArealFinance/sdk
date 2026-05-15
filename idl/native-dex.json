@@ -527,6 +527,27 @@
       ]
     },
     {
+      "name": "update_areal_fee_destination",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "dex_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "new_areal_fee_account",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "update_pool_creators",
       "accounts": [
         {
