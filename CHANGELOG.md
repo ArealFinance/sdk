@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.11.0 — 2026-05-15
+
+### Changed (BREAKING — additive required field on QuoteResult)
+- `quoteSwap()` mirrors contract fee-on-top compliance per docs/contracts/native-dex.mdx §Fee Architecture.
+  - Sell-RWT (`inputIsRwt == true`): full `amountIn` enters the constant-product curve (was `amountIn − fees`). `netInput` now equals `amountIn` on both branches.
+  - Buy-RWT: unchanged (fees still come off gross output).
+  - `QuoteResult` gained required `userTotalDebit: bigint` — total tokens debited from the user's `userTokenIn` ATA. For sell-RWT: `amountIn + feeTotal + feeOtTreasury`. For buy-RWT: `amountIn`. Use for UI balance preflight.
+  - Defense-in-depth: `amountIn > u64::MAX` now rejected with `MathOverflow` at the parameter boundary.
+- `simulateSwap` returns the new field via `QuoteOutcome` passthrough.
+
+### Migration
+- Any code constructing a `QuoteResult` literal (mocks, partial impls) must add `userTotalDebit`. Production callers of `quoteSwap()` and `simulateSwap()` get it for free.
+- UI: replace any "you pay = amountIn" rendering with `userTotalDebit`. The contract debits `amountIn + fees` from the wallet on the sell-RWT branch — the old UX understated the wallet debit by the fee amount.
+
 ## 0.9.0 — 2026-05-08
 
 - **feat(history)**: add typed clients for the Phase 12.2.1 backend

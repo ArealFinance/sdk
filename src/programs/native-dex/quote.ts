@@ -16,6 +16,14 @@
 //     the Nexus exclusively to standard pools), so this is the path that
 //     unblocks the Phase-8 user swap UI.
 //
+// Fee mechanics (post-Layer-9 D29 fee-on-top compliance):
+//   - sell-RWT (inputIsRwt): full amountIn enters the curve; user_total_debit =
+//     amountIn + fee_total + fee_ot_treasury. Mirrors contract swap_internal
+//     sell-RWT branch (swap.rs:205-244).
+//   - buy-RWT: amount_in enters the curve; fees deducted from gross output.
+//     `userTotalDebit == amountIn`.
+//   - `userTotalDebit` is exposed on QuoteResult for UI balance preflight.
+//
 // Output discriminated union:
 //   - `{ ok: true, quote }`        — quote is buildable, see QuoteResult
 //   - `{ ok: false, error: ... }`  — same error tags the on-chain code
@@ -77,9 +85,11 @@ export interface QuoteResult {
   /** Net tokens the user receives in `userTokenOut`, after slippage exposure. */
   amountOut: bigint;
   /**
-   * Net input that actually enters the constant-product curve. For RWT-input
-   * swaps this equals `amountIn - feeTotal - feeOtTreasury`; for RWT-output
-   * swaps `netInput == amountIn` (fees come off the gross output).
+   * Net input that actually enters the constant-product curve. Post
+   * fee-on-top compliance (D29) this equals `amountIn` for BOTH branches —
+   * the sell-RWT path no longer deducts fees from `amountIn` before the
+   * curve, and the buy-RWT path was already pumping `amountIn` directly
+   * into the curve.
    */
   netInput: bigint;
   /** Fee breakdown matching the on-chain accounting. */
@@ -100,6 +110,14 @@ export interface QuoteResult {
   reserveInAfter: bigint;
   /** Reserves the pool would hold post-swap. */
   reserveOutAfter: bigint;
+  /**
+   * Total tokens debited from the user's `userTokenIn` ATA. For RWT-input
+   * swaps (`inputIsRwt == true`) this is `amountIn + fees.feeTotal +
+   * fees.feeOtTreasury` (fees on top per docs §Fee Architecture). For
+   * buy-RWT swaps it equals `amountIn` (fees come off the gross output).
+   * Use this for balance preflight checks in UI.
+   */
+  userTotalDebit: bigint;
 }
 
 export interface QuoteSwapArgs {
@@ -162,6 +180,14 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
   if (!config.isActive) return err('PoolPaused');
   if (!pool.isActive) return err('PoolNotActive');
   if (amountIn === 0n) return err('ZeroAmount');
+  // Defense-in-depth (SDK-W1): reject `amountIn > u64::MAX` at the parameter
+  // boundary so callers see `MathOverflow` before any math runs. Downstream
+  // `calculateFees` and the sell-RWT overflow guard also catch this, but
+  // a u64 ceiling on a u64-typed contract argument belongs up front.
+  {
+    const u64Max = (1n << 64n) - 1n;
+    if (amountIn > u64Max) return err('MathOverflow');
+  }
 
   // Concentrated pools require a BinArray walk — refuse politely with
   // the same UI-visible error the contract uses for "no liquidity here".
@@ -187,14 +213,18 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
   let fees: QuoteFees;
 
   if (inputIsRwt) {
-    // Selling RWT: fee comes off the input BEFORE the curve.
+    // Selling RWT: fee-on-top — the full `amountIn` enters the curve,
+    // and the user pays `amountIn + feeTotal + feeOtTreasury` from
+    // their `userTokenIn` ATA. Mirrors contract swap.rs:205-244
+    // (docs §Fee Architecture Step 3).
     const f = calculateFees(amountIn, feeBps, lpFeeShareBps, hasOtTreasury);
     if (!f) return err('MathOverflow');
     fees = f;
-    const totalDeducted = fees.feeTotal + fees.feeOtTreasury;
-    if (totalDeducted > amountIn) return err('MathOverflow');
-    netInput = amountIn - totalDeducted;
-    const out = constantProductOutput(reserveIn, reserveOut, netInput);
+    netInput = amountIn; // Full amountIn into curve (docs §Fee Architecture Step 3)
+    // Overflow guard mirrors contract checked_add chain.
+    const u64Max = (1n << 64n) - 1n;
+    if (amountIn + fees.feeTotal + fees.feeOtTreasury > u64Max) return err('MathOverflow');
+    const out = constantProductOutput(reserveIn, reserveOut, amountIn);
     if (out === null) return err('MathOverflow');
     amountOut = out;
   } else {
@@ -224,7 +254,9 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
   let reserveInAfter: bigint;
   let reserveOutAfter: bigint;
   if (inputIsRwt) {
-    reserveInAfter = reserveIn + netInput;
+    // Fee-on-top: full amountIn enters the reserve (was reserveIn + netInput,
+    // equivalent now that netInput === amountIn, but spelled out explicitly).
+    reserveInAfter = reserveIn + amountIn;
     reserveOutAfter = reserveOut - amountOut;
   } else {
     reserveInAfter = reserveIn + netInput;
@@ -252,6 +284,10 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
     reserveOut,
   );
 
+  const userTotalDebit = inputIsRwt
+    ? amountIn + fees.feeTotal + fees.feeOtTreasury
+    : amountIn;
+
   return {
     ok: true,
     quote: {
@@ -263,6 +299,7 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
       reserveOutBefore: reserveOut,
       reserveInAfter,
       reserveOutAfter,
+      userTotalDebit,
     },
   };
 }
