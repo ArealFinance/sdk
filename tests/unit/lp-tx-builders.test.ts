@@ -461,15 +461,29 @@ describe('buildZapLiquidityIx', () => {
     expect(readU128LE(data, 24)).toBe(12345n);
   });
 
-  it('throws when amount_a == 0', () => {
+  // Zap supports single-sided deposits (unlike add_liquidity); the contract
+  // only rejects when BOTH sides are 0. See zap-liquidity.ts:198-205.
+  it('throws when amount_a == 0 AND amount_b == 0', () => {
     expect(() =>
       buildZapLiquidityIx({
         ctx: makeZapCtx(),
         amountA: 0n,
-        amountB: 1n,
+        amountB: 0n,
         minShares: 0n,
       }),
-    ).toThrow(/amount_a/);
+    ).toThrow(/amount_a \+ amount_b must be > 0/);
+  });
+
+  it('accepts single-sided zap (amount_a == 0, amount_b > 0)', () => {
+    const ix = buildZapLiquidityIx({
+      ctx: makeZapCtx(),
+      amountA: 0n,
+      amountB: 1n,
+      minShares: 0n,
+    });
+    const data = Buffer.from(ix.data);
+    expect(data.readBigUInt64LE(8)).toBe(0n);
+    expect(data.readBigUInt64LE(16)).toBe(1n);
   });
 
   it('throws when amount_b > u64::MAX', () => {
