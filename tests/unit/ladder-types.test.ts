@@ -32,11 +32,31 @@ describe('_ladder-types constants', () => {
   it('mirror contracts/native-dex/src/constants.rs', () => {
     expect(BPS_DENOMINATOR).toBe(10_000n);
     expect(CONCENTRATED_SCALE).toBe(1_000_000_000_000n);
-    expect(MAX_BINS).toBe(1000);
+    expect(MAX_BINS).toBe(630);
     expect(ACTIVE_ZONE_WIDTH).toBe(40);
     expect(MINT_ROUTE_PRICE_OFFSET_BPS).toBe(50n);
     expect(MIN_PERMANENT_TAIL_OFFSET_BPS).toBe(30);
     expect(PERMANENT_TAIL_BIN_COUNT).toBe(70);
+  });
+
+  it('MAX_BINS keeps BinArray account size under Solana CPI realloc limit', () => {
+    // Mirror of contracts/native-dex/src/state.rs::BinArray:
+    //   pool ([u8;32])           = 32
+    //   bins ([Bin; MAX_BINS])   = 16 × MAX_BINS    (Bin = 2 × u64 = 16 B)
+    //   lower_bin_id (i32)       = 4
+    //   bin_step_bps (u16)       = 2
+    //   active_bin_id (i32)      = 4
+    //   bump (u8)                = 1
+    //   discriminator (arlex)    = 8
+    // Total SPACE must stay ≤ 10_240 (MAX_PERMITTED_DATA_INCREASE).
+    const BIN_BYTES = 16;
+    const TRAILER_BYTES = 32 + 4 + 2 + 4 + 1; // 43
+    const DISCRIMINATOR = 8;
+    const SIZE = MAX_BINS * BIN_BYTES + TRAILER_BYTES;
+    const SPACE = DISCRIMINATOR + SIZE;
+    expect(SIZE).toBe(10_123);
+    expect(SPACE).toBe(10_131);
+    expect(SPACE).toBeLessThanOrEqual(10_240);
   });
 });
 

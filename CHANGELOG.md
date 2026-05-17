@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.12.2 — 2026-05-17
+
+### Fixed
+
+- Mirror native-dex hotfix: `MAX_BINS` 1000 → 630, `BinArray` SPACE
+  16_051 → 10_131 bytes. The original 1000-bin spec was sized before
+  Solana 3.x's CPI inner-instruction realloc limit (10_240 B) was
+  identified — `create_concentrated_pool` allocates `BinArray` PDA via
+  an inner `system::CreateAccount` CPI, capping single-ix size at
+  ~10_131 B. Coverage drops from "10+ years at 7% APY" to ~9.3 years.
+  Per docs/changelog/2026-04-17-monotonic-ladder.mdx Implementation
+  Status update.
+
+Non-breaking — types unchanged, constants and account-size literals
+shifted to match the on-chain contract.
+
 ## 0.12.1 — 2026-05-17
 
 ### Added

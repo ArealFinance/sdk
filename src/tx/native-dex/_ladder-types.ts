@@ -21,11 +21,20 @@ export const BPS_DENOMINATOR: bigint = 10_000n;
 export const CONCENTRATED_SCALE: bigint = 1_000_000_000_000n;
 
 /**
- * Mirror of `MAX_BINS` (= 1000) — CP-1 Monotonic Ladder rewrite.
- * The 16 KB `BinArray` account fits comfortably inside the 10 MB Solana
- * account ceiling and costs ~0.11 SOL of rent per master pool.
+ * Mirror of `MAX_BINS` (= 630) — CP-1 Monotonic Ladder rewrite, capped by
+ * the CP-1 hotfix (2026-05-17) to fit the Solana 3.x CPI realloc limit
+ * (`MAX_PERMITTED_DATA_INCREASE = 10_240` bytes per inner instruction).
+ *
+ * `create_concentrated_pool` allocates the `BinArray` PDA via an inner
+ * `system::CreateAccount` CPI, so the whole account (8-byte discriminator
+ * + 10_123 bytes of state = 10_131 bytes total) must fit under that cap.
+ * 630 bins leaves a ~109-byte buffer; lifting beyond 10_240 would require
+ * splitting `BinArray` creation into a 2-ix flow (tracked separately).
+ *
+ * Coverage at `bin_step_bps = 10` (0.1% per bin): NAV growth × (1.001)^630
+ * ≈ 1.877 — ~9.3 years at 7% APY, ~6.6 years at 10% APY.
  */
-export const MAX_BINS = 1000;
+export const MAX_BINS = 630;
 
 /**
  * Mirror of `ACTIVE_ZONE_WIDTH` (= 40) — geometric-density active bid wall

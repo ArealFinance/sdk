@@ -570,7 +570,7 @@ const IDL_BINARRAY_FIELDS: IdlField[] = [
         {
           "defined": "Bin"
         },
-        1000
+        630
       ]
     }
   },
