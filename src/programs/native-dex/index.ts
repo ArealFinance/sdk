@@ -14,7 +14,9 @@ export {
   type QuoteOutcome,
   type QuoteError,
   type QuoteFees,
+  type QuoteRoute,
   type QuoteSwapArgs,
+  type MasterPoolQuoteContext,
 } from './quote.js';
 
 // Ergonomic wrapper that fetches + parses PoolState/DexConfig and delegates

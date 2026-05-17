@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.12.1 — 2026-05-17
+
+### Added
+
+- Re-export `QuoteRoute` and `MasterPoolQuoteContext` types from the public
+  `programs/native-dex` entry. Downstream consumers (app, dashboard) need
+  them to type-narrow mint-route flows; the types existed in `quote.ts`
+  since 0.12.0 but were not surfaced on the index barrel.
+
+Non-breaking — additive type re-exports only.
+
 ## 0.12.0 — 2026-05-17
 
 ### BREAKING
