@@ -51,6 +51,12 @@ function makePool(o: PoolOverrides = {}): PoolState {
     bump: 255,
     cumulativeFeesPerShareA: 0n,
     cumulativeFeesPerShareB: 0n,
+    leftAnchorBin: 0,
+    permanentTailFloorBin: 0,
+    lastRebalanceNavBin: 0,
+    activeZoneLower: 0,
+    permanentTailOffsetBps: 0,
+    _padMonotonic: new Uint8Array(2),
   };
 }
 

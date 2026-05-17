@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.12.0 — 2026-05-17
+
+### BREAKING
+
+- `shift_liquidity` builder removed. Master pools use the new `grow_liquidity`
+  (Nexus-funded extension) and `compress_liquidity` (capital-neutral recenter)
+  builders, called by the Pool Rebalancer.
+- `create_concentrated_pool` requires new arg `permanent_tail_offset_bps`
+  (3rd position). Non-RWT side must be USDC or USDY mint.
+- `add_liquidity` / `zap_liquidity` fail with `MasterPoolUserLpDisabled` on
+  Monotonic Ladder pools. StandardCurve unaffected.
+
+### Added
+
+- `grow_liquidity` / `compress_liquidity` builders.
+- `swap` accepts `masterPoolMintRouteAccounts` for master-pool USDC→RWT
+  mint-routing via `rwt_engine::mint_rwt`. NO DEX fee on the mint path —
+  the 1% mint fee replaces it.
+- `getQuote` returns `route: 'binWalk' | 'mintRoute'` for master pools.
+- `priceAtBin`, `navToBin`, and other ladder math helpers in `_ladder-types`.
+
+### Migration
+
+- Replace `buildShiftLiquidityIx(...)` calls with either `buildGrowLiquidityIx`
+  or `buildCompressLiquidityIx`, depending on NAV direction.
+- Add the `permanent_tail_offset_bps` arg to `buildCreateConcentratedPoolIx`
+  calls — recommended default: 100 (= NAV − 1 %).
+- Stop calling `buildAddLiquidityIx` / `buildZapLiquidityIx` on master pools;
+  user LP is disabled there.
+
+Per docs/changelog/2026-04-17-monotonic-ladder.mdx.
+
 ## 0.11.0 — 2026-05-15
 
 ### Changed (BREAKING — additive required field on QuoteResult)

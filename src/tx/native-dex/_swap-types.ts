@@ -43,6 +43,40 @@ export interface SwapAccountContext {
    * contract gates the BinArray load on the pool type flag.
    */
   binArray?: PublicKey;
+  /**
+   * CP-6 — optional mint-route accounts for master-pool USDC → RWT swaps.
+   *
+   * When the pool is a Monotonic Ladder master pool AND the user is buying
+   * RWT with USDC (or USDY), the contract may reroute the swap through
+   * `rwt_engine::mint_rwt` (see `swap_internal` CP-6 gate). The decision
+   * is data-driven on-chain — the SDK always supplies these accounts when
+   * the caller knows the pool is a master pool; the contract picks the
+   * mint-route branch only when:
+   *   1. organic ask above the active bin is empty, OR
+   *   2. best ask price > `NAV × (1 + MINT_ROUTE_PRICE_OFFSET_BPS / 10_000)`.
+   *
+   * In the mint-route branch NO DEX fee is charged (the 1% mint fee inside
+   * `rwt_engine::mint_rwt` replaces it). Use `quote.ts::quoteSwap` ladder-
+   * aware branch to predict which path will fire and gate UX accordingly.
+   *
+   * Slot order appended after the existing remaining_accounts:
+   *   [+1] rwt_vault         (mut, owner = rwt_engine)
+   *   [+2] rwt_mint          (mut, owner = SPL Token)
+   *   [+3] capital_acc       (mut, owner = SPL Token == vault.capital_accumulator_ata)
+   *   [+4] dao_fee_account   (mut, owner = SPL Token == vault.areal_fee_destination)
+   *   [+5] rwt_engine_program (read, program-id slot)
+   *
+   * Omit on StandardCurve pools, OT pairs, RWT→USDC direction, or when
+   * the caller wants to force the bin-walk path; the on-chain gate will
+   * simply skip the mint-route branch when these slots are absent.
+   */
+  masterPoolMintRouteAccounts?: {
+    rwtVault: PublicKey;
+    rwtMint: PublicKey;
+    capitalAcc: PublicKey;
+    daoFeeAccount: PublicKey;
+    rwtEngineProgram: PublicKey;
+  };
 }
 
 /** Args for the pure `buildSwapIx` builder (no RPC, no PDA derivation). */

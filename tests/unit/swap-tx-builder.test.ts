@@ -236,6 +236,80 @@ describe('buildSwapIx', () => {
       }),
     ).toThrow(/u64::MAX/);
   });
+
+  // CP-6 — master-pool mint-route accounts (SDK 0.12.0).
+  //
+  // The 5 mint-route slots append AFTER the BinArray, in this fixed order:
+  //   [+1] rwt_vault, [+2] rwt_mint, [+3] capital_acc,
+  //   [+4] dao_fee_account, [+5] rwt_engine_program
+  // The on-chain gate fires only for master-pool USDC → RWT swaps; for
+  // any other case the slots sit unused and the bin-walk path runs.
+
+  it('appends 5 mint-route slots after BinArray when masterPoolMintRouteAccounts set', () => {
+    const ctx = makeCtx();
+    const binArray = k();
+    const mr = {
+      rwtVault: k(),
+      rwtMint: k(),
+      capitalAcc: k(),
+      daoFeeAccount: k(),
+      rwtEngineProgram: k(),
+    };
+    const ix = buildSwapIx({
+      ctx: { ...ctx, binArray, masterPoolMintRouteAccounts: mr },
+      userTokenIn: k(),
+      userTokenOut: k(),
+      aToB: false, // USDC → RWT direction
+      amountIn: 1_000_000n,
+      minAmountOut: 990_000n,
+    });
+    // 9 base + 1 binArray + 5 mint-route = 15 keys
+    expect(ix.keys.length).toBe(15);
+    // BinArray at index 9 (no OT treasury)
+    expect(ix.keys[9]!.pubkey.equals(binArray)).toBe(true);
+    expect(ix.keys[9]!.isWritable).toBe(true);
+
+    // [10] rwt_vault — mut
+    expect(ix.keys[10]!.pubkey.equals(mr.rwtVault)).toBe(true);
+    expect(ix.keys[10]!.isSigner).toBe(false);
+    expect(ix.keys[10]!.isWritable).toBe(true);
+    // [11] rwt_mint — mut
+    expect(ix.keys[11]!.pubkey.equals(mr.rwtMint)).toBe(true);
+    expect(ix.keys[11]!.isWritable).toBe(true);
+    // [12] capital_acc — mut
+    expect(ix.keys[12]!.pubkey.equals(mr.capitalAcc)).toBe(true);
+    expect(ix.keys[12]!.isWritable).toBe(true);
+    // [13] dao_fee_account — mut
+    expect(ix.keys[13]!.pubkey.equals(mr.daoFeeAccount)).toBe(true);
+    expect(ix.keys[13]!.isWritable).toBe(true);
+    // [14] rwt_engine_program — read
+    expect(ix.keys[14]!.pubkey.equals(mr.rwtEngineProgram)).toBe(true);
+    expect(ix.keys[14]!.isSigner).toBe(false);
+    expect(ix.keys[14]!.isWritable).toBe(false);
+  });
+
+  it('throws when mint-route accounts supplied without binArray', () => {
+    expect(() =>
+      buildSwapIx({
+        ctx: {
+          ...makeCtx(),
+          masterPoolMintRouteAccounts: {
+            rwtVault: k(),
+            rwtMint: k(),
+            capitalAcc: k(),
+            daoFeeAccount: k(),
+            rwtEngineProgram: k(),
+          },
+          // binArray intentionally omitted
+        },
+        userTokenIn: k(),
+        userTokenOut: k(),
+        aToB: false,
+        amountIn: 1_000n,
+        minAmountOut: 990n,
+      }),
+    ).toThrow(/binArray/);
+  });
 });
 
 // ─────────────────────────── buildSwapTx ──────────────────────────────────

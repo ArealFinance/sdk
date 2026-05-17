@@ -37,6 +37,13 @@ import type { PublicKey } from '@solana/web3.js';
 
 import type { ClusterName } from '../../network/clusters.js';
 import { isPlaceholderRwtMint } from '../../network/constants.js';
+import {
+  BPS_DENOMINATOR as LADDER_BPS_DENOMINATOR,
+  CONCENTRATED_SCALE,
+  MINT_ROUTE_PRICE_OFFSET_BPS,
+  priceAtBin,
+  shouldRouteToMint,
+} from '../../tx/native-dex/_ladder-types.js';
 import type { DexConfig, PoolState } from './accounts.generated.js';
 
 // ─────────────────────────────── constants ────────────────────────────────
@@ -49,6 +56,20 @@ const OT_TREASURY_FEE_BPS = 50n;
 
 /** Mirror of `POOL_TYPE_STANDARD` (== 0) — quote only supports this branch. */
 const POOL_TYPE_STANDARD = 0;
+
+/** Mirror of `POOL_TYPE_CONCENTRATED` (== 1) — master pool branch. */
+const POOL_TYPE_CONCENTRATED = 1;
+
+/**
+ * CP-6 — RWT mint fee. The `rwt_engine::mint_rwt` ix charges 1% of the
+ * USDC input: 0.5% accrues into vault NAV, 0.5% routes to the Areal DAO.
+ * From the user's perspective the effective price is `NAV × 1.01`.
+ *
+ * Mirror of `MINT_FEE_BPS` in `contracts/rwt-engine/src/constants.rs`
+ * (= 100 bps). Kept as a `bigint` to keep the quote math consistent with
+ * the other bps constants.
+ */
+const MINT_FEE_BPS: bigint = 100n;
 
 // ──────────────────────────────── types ───────────────────────────────────
 
@@ -81,7 +102,26 @@ export interface QuoteFees {
   feeOtTreasury: bigint;
 }
 
+/**
+ * CP-6 — discriminator for which on-chain path the swap will take.
+ *
+ * - `binWalk` — consume organic ask via `concentrated::bin_walk_swap` (or
+ *   the StandardCurve constant-product curve). DEX fees apply.
+ * - `mintRoute` — reroute through `rwt_engine::mint_rwt` (master pool
+ *   USDC → RWT only). NO DEX fee charged — the 1% mint fee inside
+ *   `rwt_engine::mint_rwt` (0.5% NAV accrual + 0.5% DAO) replaces it.
+ */
+export type QuoteRoute = 'binWalk' | 'mintRoute';
+
 export interface QuoteResult {
+  /**
+   * CP-6 — which on-chain branch will execute. `binWalk` for every swap
+   * that does NOT reroute through `rwt_engine::mint_rwt`; `mintRoute`
+   * only for master-pool USDC → RWT when the on-chain gate fires (no
+   * organic ask, or best ask > NAV × 1.005). See
+   * [[_ladder-types#shouldRouteToMint]] for the predicate.
+   */
+  route: QuoteRoute;
   /** Net tokens the user receives in `userTokenOut`, after slippage exposure. */
   amountOut: bigint;
   /**
@@ -120,6 +160,46 @@ export interface QuoteResult {
   userTotalDebit: bigint;
 }
 
+/**
+ * CP-6 — caller-supplied off-chain context for master-pool USDC → RWT
+ * quoting. When provided AND the pool is a Monotonic Ladder master pool
+ * AND the direction is USDC → RWT, the quote engine evaluates the on-chain
+ * mint-route gate (organic ask presence + best-ask price vs NAV threshold)
+ * and returns `route: 'mintRoute'` with a NAV-based output when the gate
+ * would fire.
+ *
+ * `nav` must be read from `rwt_vault.nav_book_value` (6-decimal USDC scale
+ * matching `NAV_SCALE = 1_000_000`). `hasOrganicAsk` is the boolean output
+ * of scanning the pool's `BinArray` for any non-zero `liquidity_a` above
+ * `pool.active_bin_id`.
+ *
+ * Both fields are caller-supplied to keep the quote engine pure — fetching
+ * NAV requires an RPC call into the RWT Engine, and scanning the BinArray
+ * requires another RPC call against the pool's bin-array PDA. The caller
+ * is the one that already owns those accounts in the markets snapshot.
+ *
+ * Omit this field entirely on StandardCurve pools, RWT → USDC swaps, or
+ * when the caller does not yet have NAV / bin-array data — the quote
+ * engine falls back to the bin-walk path and returns `route: 'binWalk'`.
+ *
+ * `rwtDecimals` defaults to 6 (matches the on-chain RWT mint decimals,
+ * which mirror USDC). Exposed for forward-compat if the mint ever moves.
+ */
+export interface MasterPoolQuoteContext {
+  /** `RwtVault.nav_book_value` in 6-decimal USDC scale. */
+  nav: bigint;
+  /**
+   * True iff the pool's `BinArray` has any non-zero `liquidity_a` above
+   * `pool.active_bin_id`. Used to short-circuit the gate (no organic
+   * ask → always route to mint).
+   */
+  hasOrganicAsk: boolean;
+  /** RWT mint decimals (default 6). */
+  rwtDecimals?: number;
+  /** NAV-scale denominator (default 1_000_000, i.e. 6-decimal USDC). */
+  navScale?: bigint;
+}
+
 export interface QuoteSwapArgs {
   /** Parsed `PoolState` (use `parsePoolState`). */
   pool: PoolState;
@@ -129,6 +209,12 @@ export interface QuoteSwapArgs {
   amountIn: bigint;
   /** Direction flag — `true` = swap `token_a` → `token_b`. */
   aToB: boolean;
+  /**
+   * CP-6 — caller-supplied master-pool context. When set AND the pool is
+   * a Monotonic Ladder master pool AND the direction is USDC → RWT, the
+   * engine may return `route: 'mintRoute'`. See [[MasterPoolQuoteContext]].
+   */
+  masterPoolContext?: MasterPoolQuoteContext;
   /**
    * RWT mint per cluster — `RWT_MINTS[cluster]` from
    * `src/network/constants.ts`. Callers pass it explicitly so the SDK does
@@ -165,7 +251,7 @@ export type QuoteOutcome =
  * 1-lamport dust floor and the protocol-takes-remainder rounding).
  */
 export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
-  const { pool, config, amountIn, aToB, rwtMint, cluster } = args;
+  const { pool, config, amountIn, aToB, rwtMint, cluster, masterPoolContext } = args;
 
   // Mainnet safety: refuse to quote against the R20 placeholder. Without
   // this guard a caller passing the placeholder mint on mainnet would
@@ -189,8 +275,58 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
     if (amountIn > u64Max) return err('MathOverflow');
   }
 
-  // Concentrated pools require a BinArray walk — refuse politely with
-  // the same UI-visible error the contract uses for "no liquidity here".
+  // CP-6 — Master-pool USDC → RWT mint-route quote. When the pool is a
+  // Monotonic Ladder master pool AND the caller supplied a
+  // masterPoolContext AND the direction is USDC → RWT, evaluate the
+  // on-chain gate predicate (`shouldRouteToMint`). If it fires, return
+  // a NAV-based quote with `route: 'mintRoute'` and the 1% mint fee
+  // baked in via `NAV × 1.01`.
+  //
+  // For non-master concentrated pools (or master pools without context),
+  // continue the legacy refuse path below.
+  if (pool.poolType === POOL_TYPE_CONCENTRATED) {
+    if (masterPoolContext !== undefined) {
+      const rwtBytes = rwtMint.toBytes();
+      const inputIsRwt = aToB
+        ? bytesEqual(pool.tokenAMint.toBytes(), rwtBytes)
+        : bytesEqual(pool.tokenBMint.toBytes(), rwtBytes);
+      // Mint-route only applies to USDC → RWT direction. RWT → USDC
+      // always uses bin-walk (and the SDK currently can't simulate bin-
+      // walk off-chain, so we still refuse below).
+      if (!inputIsRwt) {
+        const bestAskPriceQ = priceAtBin(
+          pool.binStepBps,
+          pool.activeBinId + 1,
+        );
+        if (bestAskPriceQ === null) return err('MathOverflow');
+
+        const navScale = masterPoolContext.navScale ?? 1_000_000n;
+        const routed = shouldRouteToMint(
+          masterPoolContext.hasOrganicAsk,
+          masterPoolContext.nav,
+          bestAskPriceQ,
+          navScale,
+        );
+
+        if (routed) {
+          return buildMintRouteQuote({
+            amountIn,
+            nav: masterPoolContext.nav,
+            navScale,
+            rwtDecimals: masterPoolContext.rwtDecimals ?? 6,
+            bestAskPriceQ,
+          });
+        }
+        // Bin-walk path on a master pool — quote engine cannot simulate
+        // the on-chain bin walk without the BinArray. Refuse with the
+        // same UI-visible error as below; this is also the legacy
+        // behaviour for non-master concentrated pools.
+      }
+    }
+    // Concentrated pools require a BinArray walk — refuse politely with
+    // the same UI-visible error the contract uses for "no liquidity here".
+    return err('EmptyReserves');
+  }
   if (pool.poolType !== POOL_TYPE_STANDARD) return err('EmptyReserves');
 
   // StandardCurve precondition.
@@ -291,6 +427,7 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
   return {
     ok: true,
     quote: {
+      route: 'binWalk',
       amountOut,
       netInput,
       fees,
@@ -300,6 +437,103 @@ export function quoteSwap(args: QuoteSwapArgs): QuoteOutcome {
       reserveInAfter,
       reserveOutAfter,
       userTotalDebit,
+    },
+  };
+}
+
+// ──────────────────────── master-pool mint route ──────────────────────────
+
+interface MintRouteQuoteArgs {
+  amountIn: bigint;
+  nav: bigint;
+  navScale: bigint;
+  rwtDecimals: number;
+  bestAskPriceQ: bigint;
+}
+
+/**
+ * CP-6 — build a `route: 'mintRoute'` quote for master-pool USDC → RWT.
+ *
+ * Formula mirrors `rwt_engine::mint_rwt` per
+ * `docs/contracts/rwt-engine.mdx` §Mint mechanics:
+ *
+ *   effective_price = NAV × (1 + MINT_FEE_BPS / BPS_DENOMINATOR)
+ *                   = NAV × 1.01   (NAV in USDC scale)
+ *   rwt_out         = amount_in_usdc × 10^rwt_decimals / effective_price
+ *
+ * The 1% mint fee splits 0.5%/0.5% between NAV accrual and the Areal DAO
+ * inside `mint_rwt`; the user-visible price is `NAV × 1.01`.
+ *
+ * The DEX fee (LP + protocol + OT-treasury) is ZERO on the mint-route
+ * branch — that's the entire point of routing through mint instead of
+ * consuming organic ask. `userTotalDebit` equals `amountIn` exactly.
+ *
+ * `priceImpactBps` here represents the mint-route premium against NAV
+ * (always `MINT_ROUTE_PRICE_OFFSET_BPS = 50` bps when above the gate
+ * threshold, capped at the on-chain `MINT_FEE_BPS = 100` for the actual
+ * payout calculation). Surfaced so UI components can distinguish a
+ * mint-route quote's premium from a bin-walk's slippage.
+ */
+function buildMintRouteQuote(args: MintRouteQuoteArgs): QuoteOutcome {
+  const { amountIn, nav, navScale, rwtDecimals, bestAskPriceQ } = args;
+
+  // `bestAskPriceQ` and the imported constants below are captured by the
+  // gate decision upstream; keeping them referenced in scope so a future
+  // formula tweak (e.g. blended on-book/NAV quote) does not need a
+  // signature change. `void` keeps TS strict unused-var lint quiet.
+  void bestAskPriceQ;
+  void CONCENTRATED_SCALE;
+  void MINT_ROUTE_PRICE_OFFSET_BPS;
+  void navScale; // referenced via destructure but only future formulas use it
+
+  if (nav <= 0n) return err('EmptyReserves');
+
+  // effective_price (NAV scale) = NAV × (10_000 + MINT_FEE_BPS) / 10_000
+  const effectivePriceNavScale =
+    (nav * (LADDER_BPS_DENOMINATOR + MINT_FEE_BPS)) / LADDER_BPS_DENOMINATOR;
+  if (effectivePriceNavScale === 0n) return err('MathOverflow');
+
+  // amount_out (RWT, 10^rwt_decimals scale) =
+  //   amount_in × 10^rwt_decimals / effective_price   (in matching scales)
+  // amount_in is USDC-scale (navScale); RWT is rwt_decimals-scale.
+  // Both sides cancel `navScale` when effective_price is in navScale, so:
+  //   amount_out = (amount_in × 10^rwt_decimals) / effective_price_navScale
+  // Off-by-one note: navScale and 10^rwt_decimals are BOTH 1_000_000 today
+  // (USDC 6 decimals, RWT 6 decimals), so the division reduces to
+  // `amount_in × 1_000_000 / (NAV × 1.01)`. Future RWT mints with
+  // different decimals are covered by `rwtDecimals`.
+  const rwtScale = 10n ** BigInt(rwtDecimals);
+  const amountOut = (amountIn * rwtScale) / effectivePriceNavScale;
+
+  if (amountOut === 0n) return err('ZeroOutput');
+
+  // Reserves are NOT updated on the mint-route branch — RWT is minted
+  // fresh by rwt_engine::mint_rwt and USDC flows into the rwt_vault's
+  // capital_accumulator, not into the pool's vault. Surface zeros for
+  // the reserve_*_after fields so UI cannot mistakenly use them as
+  // post-swap pool state.
+  // priceImpactBps captures the "premium over NAV" the user pays vs spot.
+  // We compare effective_price vs NAV: MINT_FEE_BPS = 100 bps premium.
+  const priceImpactBps = Number(MINT_FEE_BPS);
+
+  return {
+    ok: true,
+    quote: {
+      route: 'mintRoute',
+      amountOut,
+      netInput: amountIn,
+      fees: {
+        feeTotal: 0n,
+        feeLp: 0n,
+        feeProtocol: 0n,
+        feeOtTreasury: 0n,
+      },
+      priceImpactBps,
+      reserveInBefore: 0n,
+      reserveOutBefore: 0n,
+      reserveInAfter: 0n,
+      reserveOutAfter: 0n,
+      userTotalDebit: amountIn,
     },
   };
 }

@@ -172,6 +172,12 @@ export interface PoolState {
   bump: number;
   cumulativeFeesPerShareA: bigint;
   cumulativeFeesPerShareB: bigint;
+  leftAnchorBin: number;
+  permanentTailFloorBin: number;
+  lastRebalanceNavBin: number;
+  activeZoneLower: number;
+  permanentTailOffsetBps: number;
+  _padMonotonic: Uint8Array;
 }
 
 export const POOLSTATE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xf7, 0xed, 0xe3, 0xf5, 0xd7, 0xc3, 0xde, 0x46]);
@@ -195,6 +201,12 @@ export const WIRE_POOLSTATE_FIELDS: WireFieldMap = {
   "bump": "bump",
   "cumulative_fees_per_share_a": "cumulativeFeesPerShareA",
   "cumulative_fees_per_share_b": "cumulativeFeesPerShareB",
+  "left_anchor_bin": "leftAnchorBin",
+  "permanent_tail_floor_bin": "permanentTailFloorBin",
+  "last_rebalance_nav_bin": "lastRebalanceNavBin",
+  "active_zone_lower": "activeZoneLower",
+  "permanent_tail_offset_bps": "permanentTailOffsetBps",
+  "_pad_monotonic": "_padMonotonic",
 };
 
 /** Pubkey-classified [u8;32] fields for PoolState (heuristic + overrides). */
@@ -303,6 +315,35 @@ const IDL_POOLSTATE_FIELDS: IdlField[] = [
   {
     "name": "cumulative_fees_per_share_b",
     "type": "u128"
+  },
+  {
+    "name": "left_anchor_bin",
+    "type": "i32"
+  },
+  {
+    "name": "permanent_tail_floor_bin",
+    "type": "i32"
+  },
+  {
+    "name": "last_rebalance_nav_bin",
+    "type": "i32"
+  },
+  {
+    "name": "active_zone_lower",
+    "type": "i32"
+  },
+  {
+    "name": "permanent_tail_offset_bps",
+    "type": "u16"
+  },
+  {
+    "name": "_pad_monotonic",
+    "type": {
+      "array": [
+        "u8",
+        2
+      ]
+    }
   }
 ];
 
@@ -529,7 +570,7 @@ const IDL_BINARRAY_FIELDS: IdlField[] = [
         {
           "defined": "Bin"
         },
-        70
+        1000
       ]
     }
   },

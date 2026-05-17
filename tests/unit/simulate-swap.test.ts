@@ -29,12 +29,15 @@ const RWT_MINT = new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4');
 const NON_RWT_MINT = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
 
 /**
- * PoolState layout (252 bytes total) — same as markets-snapshot test fixture.
+ * PoolState layout (272 bytes total, post CP-1 Monotonic Ladder anchors).
  *   [8] disc | [1] pool_type | [32]×4 mints/vaults | [8]×2 reserves |
  *   [16] total_lp_shares | [2] fee_bps | [1] is_active |
  *   [8] total_fees_accumulated | [2] bin_step_bps | [4] active_bin_id |
  *   [32] ot_treasury_fee_destination | [1] has_ot_treasury | [1] bump |
- *   [16]×2 cumulative_fees_per_share
+ *   [16]×2 cumulative_fees_per_share |
+ *   [4]×4 left_anchor_bin / permanent_tail_floor_bin /
+ *         last_rebalance_nav_bin / active_zone_lower |
+ *   [2] permanent_tail_offset_bps | [2] _pad_monotonic
  */
 function buildPoolStateBytes(args: {
   tokenAMint: PublicKey;
@@ -44,7 +47,7 @@ function buildPoolStateBytes(args: {
   feeBps?: number;
   isActive?: boolean;
 }): Buffer {
-  const buf = Buffer.alloc(252);
+  const buf = Buffer.alloc(272);
   let off = 0;
   buf.set(POOLSTATE_DISCRIMINATOR, off); off += 8;
   buf.writeUInt8(0, off); off += 1; // pool_type = 0 (Standard)
@@ -65,6 +68,13 @@ function buildPoolStateBytes(args: {
   buf.writeUInt8(255, off); off += 1; // bump
   off += 16; // cumulative_fees_per_share_a
   off += 16; // cumulative_fees_per_share_b
+  // CP-1 Monotonic Ladder anchors — zero-default for StandardCurve pools.
+  off += 4; // left_anchor_bin
+  off += 4; // permanent_tail_floor_bin
+  off += 4; // last_rebalance_nav_bin
+  off += 4; // active_zone_lower
+  off += 2; // permanent_tail_offset_bps
+  off += 2; // _pad_monotonic
   return buf;
 }
 
@@ -296,7 +306,7 @@ describe('simulateSwap', () => {
 
     // Garbage bytes — first 8 bytes are the WRONG discriminator, rest is
     // zero. parsePoolState throws with a discriminator-mismatch error.
-    const malformed = Buffer.alloc(252);
+    const malformed = Buffer.alloc(272);
     // Write a clearly-bogus discriminator (all 0xFF).
     for (let i = 0; i < 8; i++) malformed.writeUInt8(0xff, i);
 

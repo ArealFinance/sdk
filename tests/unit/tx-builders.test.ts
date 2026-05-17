@@ -20,18 +20,20 @@ import { buildDistributeRevenueIx } from '../../src/tx/ownership-token/index.js'
 import { DISTRIBUTE_REVENUE_DISCRIMINATOR } from '../../src/programs/ownership-token/instructions.generated.js';
 import { PUBLISH_ROOT_DISCRIMINATOR } from '../../src/programs/yield-distribution/instructions.generated.js';
 import {
+  buildCompressLiquidityIx,
+  buildGrowLiquidityIx,
   buildNexusAddLiquidityIx,
   buildNexusRemoveLiquidityIx,
   buildNexusSwapIx,
-  buildShiftLiquidityIx,
   type NexusAccountContext,
   type PoolAccountContext,
 } from '../../src/tx/native-dex/index.js';
 import {
+  COMPRESS_LIQUIDITY_DISCRIMINATOR,
+  GROW_LIQUIDITY_DISCRIMINATOR,
   NEXUS_ADD_LIQUIDITY_DISCRIMINATOR,
   NEXUS_REMOVE_LIQUIDITY_DISCRIMINATOR,
   NEXUS_SWAP_DISCRIMINATOR,
-  SHIFT_LIQUIDITY_DISCRIMINATOR,
 } from '../../src/programs/native-dex/instructions.generated.js';
 import { SPL_TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID } from '../../src/network/constants.js';
 import {
@@ -651,40 +653,48 @@ describe('buildPublishRootIx', () => {
   });
 });
 
-// ────────────────────────── shift_liquidity ──────────────────
+// ────────────────────────── grow_liquidity ───────────────────
+//
+// CP-7 — Monotonic Ladder rebalancer ix. 9 accounts, args
+// `{ new_nav_bin: i32, active_zone_width: u16 }`. Replaces the legacy
+// `shift_liquidity` ix (deleted from contracts at commit f4d393e).
 
-describe('buildShiftLiquidityIx', () => {
+describe('buildGrowLiquidityIx', () => {
   const baseArgs = () => ({
     dexProgramId: NATIVE_DEX_PROGRAM_ID,
     rebalancer: k(),
     dexConfig: k(),
     poolState: k(),
     binArray: k(),
-    navBin: 100,
-    targetBinCount: 32,
+    liquidityNexus: k(),
+    nexusUsdcAta: k(),
+    poolVaultB: k(),
+    rwtVault: k(),
+    newNavBin: 100,
+    activeZoneWidth: 40,
   });
 
-  it('discriminator = codegen SHIFT_LIQUIDITY_DISCRIMINATOR', () => {
-    const ix = buildShiftLiquidityIx(baseArgs());
+  it('discriminator = codegen GROW_LIQUIDITY_DISCRIMINATOR', () => {
+    const ix = buildGrowLiquidityIx(baseArgs());
     expect(
       Buffer.from(ix.data)
         .subarray(0, 8)
-        .equals(Buffer.from(SHIFT_LIQUIDITY_DISCRIMINATOR)),
+        .equals(Buffer.from(GROW_LIQUIDITY_DISCRIMINATOR)),
     ).toBe(true);
   });
 
-  it('discriminator also matches sha256("global:shift_liquidity")[..8]', () => {
-    const ix = buildShiftLiquidityIx(baseArgs());
+  it('discriminator matches sha256("global:grow_liquidity")[..8]', () => {
+    const ix = buildGrowLiquidityIx(baseArgs());
     expect(
-      Buffer.from(ix.data).subarray(0, 8).equals(discFromName('shift_liquidity')),
+      Buffer.from(ix.data).subarray(0, 8).equals(discFromName('grow_liquidity')),
     ).toBe(true);
   });
 
-  it('data layout: [disc(8) | nav_bin(i32 LE) | target_bin_count(u16 LE)] = 14 bytes', () => {
-    const ix = buildShiftLiquidityIx({
+  it('data layout: [disc(8) | new_nav_bin(i32 LE) | active_zone_width(u16 LE)] = 14 bytes', () => {
+    const ix = buildGrowLiquidityIx({
       ...baseArgs(),
-      navBin: -12345,
-      targetBinCount: 0xbeef,
+      newNavBin: -12345,
+      activeZoneWidth: 0xbeef,
     });
     const data = Buffer.from(ix.data);
     expect(data.length).toBe(14);
@@ -692,65 +702,176 @@ describe('buildShiftLiquidityIx', () => {
     expect(data.readUInt16LE(12)).toBe(0xbeef);
   });
 
-  it('account list: 4 keys, programId = dexProgramId, signer/writable flags', () => {
+  it('account list: 9 keys in exact contract order, correct signer/writable flags', () => {
     const args = baseArgs();
-    const ix = buildShiftLiquidityIx(args);
-    expect(ix.keys.length).toBe(4);
+    const ix = buildGrowLiquidityIx(args);
+    expect(ix.keys.length).toBe(9);
     expect(ix.programId.equals(NATIVE_DEX_PROGRAM_ID)).toBe(true);
 
-    // 0. rebalancer — signer, read-only
+    // 0. rebalancer — signer, read
     expect(ix.keys[0]!.pubkey.equals(args.rebalancer)).toBe(true);
     expect(ix.keys[0]!.isSigner).toBe(true);
     expect(ix.keys[0]!.isWritable).toBe(false);
 
-    // 1. dex_config — read-only
+    // 1. dex_config — read
     expect(ix.keys[1]!.pubkey.equals(args.dexConfig)).toBe(true);
     expect(ix.keys[1]!.isSigner).toBe(false);
     expect(ix.keys[1]!.isWritable).toBe(false);
 
     // 2. pool_state — mut
     expect(ix.keys[2]!.pubkey.equals(args.poolState)).toBe(true);
-    expect(ix.keys[2]!.isSigner).toBe(false);
     expect(ix.keys[2]!.isWritable).toBe(true);
 
     // 3. bin_array — mut
     expect(ix.keys[3]!.pubkey.equals(args.binArray)).toBe(true);
-    expect(ix.keys[3]!.isSigner).toBe(false);
     expect(ix.keys[3]!.isWritable).toBe(true);
+
+    // 4. liquidity_nexus — mut (PDA signs the SPL Transfer)
+    expect(ix.keys[4]!.pubkey.equals(args.liquidityNexus)).toBe(true);
+    expect(ix.keys[4]!.isWritable).toBe(true);
+
+    // 5. nexus_usdc_ata — mut
+    expect(ix.keys[5]!.pubkey.equals(args.nexusUsdcAta)).toBe(true);
+    expect(ix.keys[5]!.isWritable).toBe(true);
+
+    // 6. pool_vault_b — mut
+    expect(ix.keys[6]!.pubkey.equals(args.poolVaultB)).toBe(true);
+    expect(ix.keys[6]!.isWritable).toBe(true);
+
+    // 7. rwt_vault — read
+    expect(ix.keys[7]!.pubkey.equals(args.rwtVault)).toBe(true);
+    expect(ix.keys[7]!.isWritable).toBe(false);
+
+    // 8. token_program — read (SPL Token program)
+    expect(ix.keys[8]!.pubkey.equals(SPL_TOKEN_PROGRAM_ID)).toBe(true);
+    expect(ix.keys[8]!.isWritable).toBe(false);
   });
 
-  it('encodes negative navBin (i32 two\'s-complement)', () => {
-    const ix = buildShiftLiquidityIx({ ...baseArgs(), navBin: -1 });
+  it('encodes negative newNavBin (i32 two\'s-complement)', () => {
+    const ix = buildGrowLiquidityIx({ ...baseArgs(), newNavBin: -1 });
     expect(Buffer.from(ix.data).readInt32LE(8)).toBe(-1);
   });
 
-  it('throws when navBin > i32::MAX', () => {
+  it('throws when newNavBin > i32::MAX', () => {
     expect(() =>
-      buildShiftLiquidityIx({ ...baseArgs(), navBin: 2 ** 31 }),
-    ).toThrow(/nav_bin/);
+      buildGrowLiquidityIx({ ...baseArgs(), newNavBin: 2 ** 31 }),
+    ).toThrow(/new_nav_bin/);
   });
 
-  it('throws when navBin < i32::MIN', () => {
+  it('throws when newNavBin < i32::MIN', () => {
     expect(() =>
-      buildShiftLiquidityIx({ ...baseArgs(), navBin: -(2 ** 31) - 1 }),
-    ).toThrow(/nav_bin/);
+      buildGrowLiquidityIx({ ...baseArgs(), newNavBin: -(2 ** 31) - 1 }),
+    ).toThrow(/new_nav_bin/);
   });
 
-  it('throws when navBin is not an integer', () => {
+  it('throws when newNavBin is not an integer', () => {
     expect(() =>
-      buildShiftLiquidityIx({ ...baseArgs(), navBin: 1.5 }),
-    ).toThrow(/nav_bin/);
+      buildGrowLiquidityIx({ ...baseArgs(), newNavBin: 1.5 }),
+    ).toThrow(/new_nav_bin/);
   });
 
-  it('throws when targetBinCount > u16::MAX', () => {
+  it('throws when activeZoneWidth > u16::MAX', () => {
     expect(() =>
-      buildShiftLiquidityIx({ ...baseArgs(), targetBinCount: 0x10000 }),
-    ).toThrow(/target_bin_count/);
+      buildGrowLiquidityIx({ ...baseArgs(), activeZoneWidth: 0x10000 }),
+    ).toThrow(/active_zone_width/);
   });
 
-  it('throws when targetBinCount is negative', () => {
+  it('throws when activeZoneWidth is negative', () => {
     expect(() =>
-      buildShiftLiquidityIx({ ...baseArgs(), targetBinCount: -1 }),
-    ).toThrow(/target_bin_count/);
+      buildGrowLiquidityIx({ ...baseArgs(), activeZoneWidth: -1 }),
+    ).toThrow(/active_zone_width/);
+  });
+});
+
+// ────────────────────────── compress_liquidity ───────────────
+//
+// CP-7 — capital-neutral recenter. 5 accounts, no Nexus / token vaults.
+// Args mirror grow_liquidity: `{ new_nav_bin: i32, active_zone_width: u16 }`.
+
+describe('buildCompressLiquidityIx', () => {
+  const baseArgs = () => ({
+    dexProgramId: NATIVE_DEX_PROGRAM_ID,
+    rebalancer: k(),
+    dexConfig: k(),
+    poolState: k(),
+    binArray: k(),
+    rwtVault: k(),
+    newNavBin: 95,
+    activeZoneWidth: 40,
+  });
+
+  it('discriminator = codegen COMPRESS_LIQUIDITY_DISCRIMINATOR', () => {
+    const ix = buildCompressLiquidityIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(Buffer.from(COMPRESS_LIQUIDITY_DISCRIMINATOR)),
+    ).toBe(true);
+  });
+
+  it('discriminator matches sha256("global:compress_liquidity")[..8]', () => {
+    const ix = buildCompressLiquidityIx(baseArgs());
+    expect(
+      Buffer.from(ix.data)
+        .subarray(0, 8)
+        .equals(discFromName('compress_liquidity')),
+    ).toBe(true);
+  });
+
+  it('data layout: [disc(8) | new_nav_bin(i32 LE) | active_zone_width(u16 LE)] = 14 bytes', () => {
+    const ix = buildCompressLiquidityIx({
+      ...baseArgs(),
+      newNavBin: -42,
+      activeZoneWidth: 0xcafe,
+    });
+    const data = Buffer.from(ix.data);
+    expect(data.length).toBe(14);
+    expect(data.readInt32LE(8)).toBe(-42);
+    expect(data.readUInt16LE(12)).toBe(0xcafe);
+  });
+
+  it('account list: 5 keys in exact contract order, correct signer/writable flags', () => {
+    const args = baseArgs();
+    const ix = buildCompressLiquidityIx(args);
+    expect(ix.keys.length).toBe(5);
+    expect(ix.programId.equals(NATIVE_DEX_PROGRAM_ID)).toBe(true);
+
+    // 0. rebalancer — signer, read
+    expect(ix.keys[0]!.pubkey.equals(args.rebalancer)).toBe(true);
+    expect(ix.keys[0]!.isSigner).toBe(true);
+    expect(ix.keys[0]!.isWritable).toBe(false);
+
+    // 1. dex_config — read
+    expect(ix.keys[1]!.pubkey.equals(args.dexConfig)).toBe(true);
+    expect(ix.keys[1]!.isSigner).toBe(false);
+    expect(ix.keys[1]!.isWritable).toBe(false);
+
+    // 2. pool_state — mut
+    expect(ix.keys[2]!.pubkey.equals(args.poolState)).toBe(true);
+    expect(ix.keys[2]!.isWritable).toBe(true);
+
+    // 3. bin_array — mut
+    expect(ix.keys[3]!.pubkey.equals(args.binArray)).toBe(true);
+    expect(ix.keys[3]!.isWritable).toBe(true);
+
+    // 4. rwt_vault — read (NAV source, owner-checked on-chain)
+    expect(ix.keys[4]!.pubkey.equals(args.rwtVault)).toBe(true);
+    expect(ix.keys[4]!.isSigner).toBe(false);
+    expect(ix.keys[4]!.isWritable).toBe(false);
+  });
+
+  it('throws when newNavBin is out of i32 range', () => {
+    expect(() =>
+      buildCompressLiquidityIx({ ...baseArgs(), newNavBin: 2 ** 31 }),
+    ).toThrow(/new_nav_bin/);
+    expect(() =>
+      buildCompressLiquidityIx({ ...baseArgs(), newNavBin: -(2 ** 31) - 1 }),
+    ).toThrow(/new_nav_bin/);
+  });
+
+  it('throws when activeZoneWidth > u16::MAX', () => {
+    expect(() =>
+      buildCompressLiquidityIx({ ...baseArgs(), activeZoneWidth: 0x10000 }),
+    ).toThrow(/active_zone_width/);
   });
 });

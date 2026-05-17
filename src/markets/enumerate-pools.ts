@@ -18,14 +18,17 @@ import type { EnumeratedPool } from './types.js';
 /**
  * Fixed on-chain size of a PoolState account.
  *
- * Verified against `contracts/native-dex/src/state.rs:65-67`:
- *   8 (disc) + 244 (data: PoolState repr(C) layout incl. Layer-9 D28
- *   `cumulative_fees_per_share_{a,b}` accumulators) = 252 bytes.
+ * Verified against `contracts/native-dex/src/state.rs`:
+ *   8 (disc) + 264 (data: PoolState repr(C) layout incl. Layer-9 D28
+ *   `cumulative_fees_per_share_{a,b}` accumulators + CP-1 Monotonic
+ *   Ladder anchors `left_anchor_bin`, `permanent_tail_floor_bin`,
+ *   `last_rebalance_nav_bin`, `active_zone_lower`,
+ *   `permanent_tail_offset_bps`, `_pad_monotonic[2]`) = 272 bytes.
  *
  * Used as a `dataSize` filter alongside the discriminator memcmp so the
  * RPC only returns accounts of exactly this type.
  */
-export const POOL_STATE_SIZE = 252;
+export const POOL_STATE_SIZE = 272;
 
 /**
  * Fetch every PoolState owned by `programId`.

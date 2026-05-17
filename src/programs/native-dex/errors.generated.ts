@@ -84,12 +84,6 @@ export enum ProgramErrorCode {
   InvalidBinRange = 6033,
   /** No liquidity in bins for swap */
   InsufficientBinLiquidity = 6034,
-  /** Shift distance exceeds MAX_SHIFT_DISTANCE */
-  ShiftTooLarge = 6035,
-  /** New range must differ from current range */
-  ShiftNoOp = 6036,
-  /** Conservation invariant violated after shift */
-  ConservationViolation = 6037,
   /** Pool type mismatch */
   InvalidPoolType = 6038,
   /** yd_program account does not match pinned YD_PROGRAM_ID */
@@ -122,6 +116,34 @@ export enum ProgramErrorCode {
   InvalidLiquidityHoldingPda = 6052,
   /** LpPosition.pool does not match the supplied pool_state */
   InvalidLpPosition = 6053,
+  /** grow_redistribute called with new_nav_bin <= last_rebalance_nav_bin */
+  NotGrowthDirection = 6054,
+  /** compress_redistribute called with new_nav_bin >= last_rebalance_nav_bin */
+  NotCompressionDirection = 6055,
+  /** Active zone lower edge would dip below left_anchor_bin (overlaps permanent tail) */
+  ActiveZoneOverlapsTail = 6056,
+  /** new_nav_bin too close to the BinArray upper edge — exceeds right-edge buffer */
+  ExceedsRightEdgeBuffer = 6057,
+  /** Non-RWT side of master pool must be USDC_MINT or USDY_MINT */
+  InvalidMintPair = 6058,
+  /** permanent_tail_offset_bps must be in [MIN_PERMANENT_TAIL_OFFSET_BPS, +∞) */
+  InvalidPermanentTailOffset = 6059,
+  /** Master pools cannot carry OT-treasury accounts */
+  OtTreasuryNotAllowedOnMasterPool = 6060,
+  /** Master (Monotonic Ladder) pools reject user LP — liquidity enters only via Nexus */
+  MasterPoolUserLpDisabled = 6061,
+  /** user_token_out.mint != RWT_MINT on mint-route swap */
+  InvalidRwtMint = 6062,
+  /** rwt_vault account is missing, has wrong owner, or wrong discriminator */
+  InvalidRwtVault = 6063,
+  /** price_at_bin overflow when computing best-ask threshold */
+  PriceOverflow = 6064,
+  /** Mint-route swap requires 4 remaining_accounts after the bin_array slot */
+  MissingMintRouteAccounts = 6065,
+  /** Signer is not the dex_config.rebalancer (Pool Rebalancer) */
+  InvalidRebalancer = 6066,
+  /** grow_liquidity called with empty Nexus USDC accumulator */
+  NexusAccumulatorEmpty = 6067,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -161,9 +183,6 @@ export const ProgramErrors: IdlError[] = [
   { code: 6032, name: "InvalidBinStep", msg: "bin_step_bps must be > 0 for concentrated pools" },
   { code: 6033, name: "InvalidBinRange", msg: "Bin range out of BinArray bounds" },
   { code: 6034, name: "InsufficientBinLiquidity", msg: "No liquidity in bins for swap" },
-  { code: 6035, name: "ShiftTooLarge", msg: "Shift distance exceeds MAX_SHIFT_DISTANCE" },
-  { code: 6036, name: "ShiftNoOp", msg: "New range must differ from current range" },
-  { code: 6037, name: "ConservationViolation", msg: "Conservation invariant violated after shift" },
   { code: 6038, name: "InvalidPoolType", msg: "Pool type mismatch" },
   { code: 6039, name: "InvalidYdProgram", msg: "yd_program account does not match pinned YD_PROGRAM_ID" },
   { code: 6040, name: "InvalidPoolPda", msg: "pool PDA does not match expected derivation" },
@@ -180,6 +199,20 @@ export const ProgramErrors: IdlError[] = [
   { code: 6051, name: "NexusRecordDepositOnlyFromYd", msg: "nexus_record_deposit may only be invoked via CPI from Yield Distribution" },
   { code: 6052, name: "InvalidLiquidityHoldingPda", msg: "LiquidityHolding PDA derivation does not match passed account" },
   { code: 6053, name: "InvalidLpPosition", msg: "LpPosition.pool does not match the supplied pool_state" },
+  { code: 6054, name: "NotGrowthDirection", msg: "grow_redistribute called with new_nav_bin <= last_rebalance_nav_bin" },
+  { code: 6055, name: "NotCompressionDirection", msg: "compress_redistribute called with new_nav_bin >= last_rebalance_nav_bin" },
+  { code: 6056, name: "ActiveZoneOverlapsTail", msg: "Active zone lower edge would dip below left_anchor_bin (overlaps permanent tail)" },
+  { code: 6057, name: "ExceedsRightEdgeBuffer", msg: "new_nav_bin too close to the BinArray upper edge — exceeds right-edge buffer" },
+  { code: 6058, name: "InvalidMintPair", msg: "Non-RWT side of master pool must be USDC_MINT or USDY_MINT" },
+  { code: 6059, name: "InvalidPermanentTailOffset", msg: "permanent_tail_offset_bps must be in [MIN_PERMANENT_TAIL_OFFSET_BPS, +∞)" },
+  { code: 6060, name: "OtTreasuryNotAllowedOnMasterPool", msg: "Master pools cannot carry OT-treasury accounts" },
+  { code: 6061, name: "MasterPoolUserLpDisabled", msg: "Master (Monotonic Ladder) pools reject user LP — liquidity enters only via Nexus" },
+  { code: 6062, name: "InvalidRwtMint", msg: "user_token_out.mint != RWT_MINT on mint-route swap" },
+  { code: 6063, name: "InvalidRwtVault", msg: "rwt_vault account is missing, has wrong owner, or wrong discriminator" },
+  { code: 6064, name: "PriceOverflow", msg: "price_at_bin overflow when computing best-ask threshold" },
+  { code: 6065, name: "MissingMintRouteAccounts", msg: "Mint-route swap requires 4 remaining_accounts after the bin_array slot" },
+  { code: 6066, name: "InvalidRebalancer", msg: "Signer is not the dex_config.rebalancer (Pool Rebalancer)" },
+  { code: 6067, name: "NexusAccumulatorEmpty", msg: "grow_liquidity called with empty Nexus USDC accumulator" },
 ];
 
 /**

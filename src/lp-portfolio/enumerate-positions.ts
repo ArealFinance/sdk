@@ -39,8 +39,10 @@ import {
  * `@arlex/client/codegen-runtime::deserializeAccount`), so the on-wire
  * size matches the field-sum exactly. Verified against:
  *   - the field list in `IDL_LPPOSITION_FIELDS` (accounts.generated.ts L430-L468)
- *   - the same arithmetic that gives PoolState=252 (verified in the
- *     existing `markets/enumerate-pools.ts` constant) and OtConfig=292.
+ *   - the same arithmetic that gives PoolState=272 (verified in the
+ *     existing `markets/enumerate-pools.ts` constant; CP-1 added 20 B
+ *     of Monotonic Ladder anchors on top of the post-D28 244 B baseline)
+ *     and OtConfig=292.
  */
 export const LP_POSITION_SIZE = 129;
 

@@ -93,15 +93,6 @@ const EVENTS: readonly IdlEvent[] = [
     { name: 'pool', type: { array: ['u8', 32] } },
     { name: 'timestamp', type: 'i64' },
   ] },
-  { name: 'LiquidityShifted', fields: [
-    { name: 'pool', type: { array: ['u8', 32] } },
-    { name: 'rebalancer', type: { array: ['u8', 32] } },
-    { name: 'old_lower', type: 'i32' },
-    { name: 'old_upper', type: 'i32' },
-    { name: 'new_lower', type: 'i32' },
-    { name: 'new_upper', type: 'i32' },
-    { name: 'timestamp', type: 'i64' },
-  ] },
   { name: 'CompoundYieldExecuted', fields: [
     { name: 'pool', type: { array: ['u8', 32] } },
     { name: 'ot_mint', type: { array: ['u8', 32] } },
@@ -143,6 +134,33 @@ const EVENTS: readonly IdlEvent[] = [
     { name: 'pool', type: { array: ['u8', 32] } },
     { name: 'claimable_a', type: 'u64' },
     { name: 'claimable_b', type: 'u64' },
+    { name: 'timestamp', type: 'i64' },
+  ] },
+  // CP-6 — emitted in place of SwapExecuted when a master-pool USDC → RWT
+  // swap reroutes through `rwt_engine::mint_rwt`. NO DEX fee on this path.
+  { name: 'SwapRoutedToMint', fields: [
+    { name: 'pool', type: { array: ['u8', 32] } },
+    { name: 'user', type: { array: ['u8', 32] } },
+    { name: 'amount_in', type: 'u64' },
+    { name: 'nav_at_route', type: 'u64' },
+    { name: 'best_ask_price_q', type: 'u128' },
+    { name: 'timestamp', type: 'i64' },
+  ] },
+  // CP-7 — Rebalancer extended the active bid wall rightward by draining
+  // fresh USDC from the Nexus accumulator.
+  { name: 'LiquidityGrew', fields: [
+    { name: 'pool', type: { array: ['u8', 32] } },
+    { name: 'new_nav_bin', type: 'i32' },
+    { name: 'fresh_usdc', type: 'u64' },
+    { name: 'new_active_zone_lower', type: 'i32' },
+    { name: 'timestamp', type: 'i64' },
+  ] },
+  // CP-7 — Rebalancer recentered the active bid wall on a lower NAV
+  // (capital-neutral; RWT above new NAV becomes the "frozen ask wall").
+  { name: 'LiquidityCompressed', fields: [
+    { name: 'pool', type: { array: ['u8', 32] } },
+    { name: 'new_nav_bin', type: 'i32' },
+    { name: 'new_active_zone_lower', type: 'i32' },
     { name: 'timestamp', type: 'i64' },
   ] },
 ];

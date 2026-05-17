@@ -158,6 +158,7 @@ export interface CreateConcentratedPoolAccounts {
 export interface CreateConcentratedPoolArgs {
   binStepBps: number;
   initialActiveBin: number;
+  permanentTailOffsetBps: number;
 }
 
 const IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS: IdlField[] = [
@@ -168,12 +169,17 @@ const IDL_CREATE_CONCENTRATED_POOL_ARG_FIELDS: IdlField[] = [
   {
     "name": "initial_active_bin",
     "type": "i32"
+  },
+  {
+    "name": "permanent_tail_offset_bps",
+    "type": "i32"
   }
 ];
 
 export const WIRE_CREATE_CONCENTRATED_POOL_ARG_FIELDS: WireFieldMap = {
   "bin_step_bps": "binStepBps",
   "initial_active_bin": "initialActiveBin",
+  "permanent_tail_offset_bps": "permanentTailOffsetBps",
 };
 
 /**
@@ -454,12 +460,12 @@ export function encodeSwapArgs(args: SwapArgs): Buffer {
 }
 
 // ============================================================
-// Instruction: shift_liquidity
+// Instruction: grow_liquidity
 // ============================================================
 
-export const SHIFT_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0x5a, 0x93, 0x3b, 0x6c, 0x08, 0x73, 0xe9, 0x05]);
+export const GROW_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0xf7, 0x5e, 0x3e, 0xc1, 0xac, 0x84, 0xc9, 0x34]);
 
-export interface ShiftLiquidityAccounts {
+export interface GrowLiquidityAccounts {
   /** signer */
   rebalancer: PublicKey;
   /** readonly */
@@ -468,40 +474,103 @@ export interface ShiftLiquidityAccounts {
   poolState: PublicKey;
   /** readonly, writable */
   binArray: PublicKey;
+  /** readonly, writable */
+  liquidityNexus: PublicKey;
+  /** readonly, writable */
+  nexusUsdcAta: PublicKey;
+  /** readonly, writable */
+  poolVaultB: PublicKey;
+  /** readonly */
+  rwtVault: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
 }
 
-export interface ShiftLiquidityArgs {
-  navBin: number;
-  targetBinCount: number;
+export interface GrowLiquidityArgs {
+  newNavBin: number;
+  activeZoneWidth: number;
 }
 
-const IDL_SHIFT_LIQUIDITY_ARG_FIELDS: IdlField[] = [
+const IDL_GROW_LIQUIDITY_ARG_FIELDS: IdlField[] = [
   {
-    "name": "nav_bin",
+    "name": "new_nav_bin",
     "type": "i32"
   },
   {
-    "name": "target_bin_count",
+    "name": "active_zone_width",
     "type": "u16"
   }
 ];
 
-export const WIRE_SHIFT_LIQUIDITY_ARG_FIELDS: WireFieldMap = {
-  "nav_bin": "navBin",
-  "target_bin_count": "targetBinCount",
+export const WIRE_GROW_LIQUIDITY_ARG_FIELDS: WireFieldMap = {
+  "new_nav_bin": "newNavBin",
+  "active_zone_width": "activeZoneWidth",
 };
 
 /**
- * Encode arguments for the `shift_liquidity` instruction.
+ * Encode arguments for the `grow_liquidity` instruction.
  * Returns a Buffer with discriminator + serialized args.
  */
-export function encodeShiftLiquidityArgs(args: ShiftLiquidityArgs): Buffer {
-  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_SHIFT_LIQUIDITY_ARG_FIELDS, {
+export function encodeGrowLiquidityArgs(args: GrowLiquidityArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_GROW_LIQUIDITY_ARG_FIELDS, {
     nestedMaps: {},
     arrayMaps: {},
   });
-  const argBuf = serializeArgs(IDL_SHIFT_LIQUIDITY_ARG_FIELDS, wire, TYPE_REGISTRY);
-  return Buffer.concat([Buffer.from(SHIFT_LIQUIDITY_DISCRIMINATOR), argBuf]);
+  const argBuf = serializeArgs(IDL_GROW_LIQUIDITY_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(GROW_LIQUIDITY_DISCRIMINATOR), argBuf]);
+}
+
+// ============================================================
+// Instruction: compress_liquidity
+// ============================================================
+
+export const COMPRESS_LIQUIDITY_DISCRIMINATOR: Uint8Array = new Uint8Array([0xaf, 0xb8, 0xa0, 0x09, 0x52, 0xe1, 0xf0, 0x7a]);
+
+export interface CompressLiquidityAccounts {
+  /** signer */
+  rebalancer: PublicKey;
+  /** readonly */
+  dexConfig: PublicKey;
+  /** readonly, writable */
+  poolState: PublicKey;
+  /** readonly, writable */
+  binArray: PublicKey;
+  /** readonly */
+  rwtVault: PublicKey;
+}
+
+export interface CompressLiquidityArgs {
+  newNavBin: number;
+  activeZoneWidth: number;
+}
+
+const IDL_COMPRESS_LIQUIDITY_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "new_nav_bin",
+    "type": "i32"
+  },
+  {
+    "name": "active_zone_width",
+    "type": "u16"
+  }
+];
+
+export const WIRE_COMPRESS_LIQUIDITY_ARG_FIELDS: WireFieldMap = {
+  "new_nav_bin": "newNavBin",
+  "active_zone_width": "activeZoneWidth",
+};
+
+/**
+ * Encode arguments for the `compress_liquidity` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeCompressLiquidityArgs(args: CompressLiquidityArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_COMPRESS_LIQUIDITY_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_COMPRESS_LIQUIDITY_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(COMPRESS_LIQUIDITY_DISCRIMINATOR), argBuf]);
 }
 
 // ============================================================

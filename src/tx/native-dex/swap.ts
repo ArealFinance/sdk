@@ -118,6 +118,37 @@ export function buildSwapIx(args: BuildSwapIxArgs): TransactionInstruction {
     });
   }
 
+  // CP-6 — master-pool USDC → RWT mint-route accounts. Append after the
+  // BinArray slot in fixed order: [rwt_vault, rwt_mint, capital_acc,
+  // dao_fee_account, rwt_engine_program]. The on-chain swap_internal
+  // gate (`is_master_pool_usdc_to_rwt`) only consumes these slots when
+  // the pool is a Monotonic Ladder pool AND `!input_is_rwt` AND the
+  // non-RWT side is USDC/USDY; otherwise they sit unused and the bin-
+  // walk path runs. The SDK supplies them whenever the caller knows
+  // routing is possible — this is forward-only (the contract never
+  // reads past slot 5 in the mint-route branch).
+  //
+  // Required: `binArray` MUST be set (mint-route branch indexes
+  // `remaining_accounts[0]` for the bin_array load). Throw early if
+  // the caller forgot — the on-chain error would otherwise be the
+  // less-helpful `MissingMintRouteAccounts`.
+  if (ctx.masterPoolMintRouteAccounts) {
+    if (!ctx.binArray) {
+      throw new Error(
+        'swap: masterPoolMintRouteAccounts requires binArray to be set ' +
+          '(mint-route gate reads remaining_accounts[0] as bin_array first)',
+      );
+    }
+    const mr = ctx.masterPoolMintRouteAccounts;
+    keys.push(
+      { pubkey: mr.rwtVault, isSigner: false, isWritable: true },
+      { pubkey: mr.rwtMint, isSigner: false, isWritable: true },
+      { pubkey: mr.capitalAcc, isSigner: false, isWritable: true },
+      { pubkey: mr.daoFeeAccount, isSigner: false, isWritable: true },
+      { pubkey: mr.rwtEngineProgram, isSigner: false, isWritable: false },
+    );
+  }
+
   return new TransactionInstruction({
     programId: ctx.dexProgramId,
     keys,

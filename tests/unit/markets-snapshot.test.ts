@@ -54,12 +54,15 @@ function buildOtConfigBytes(args: {
 }
 
 /**
- * PoolState layout (252 bytes total):
+ * PoolState layout (272 bytes total, post CP-1 Monotonic Ladder anchors):
  *   [8] disc | [1] pool_type | [32]×4 mints/vaults | [8]×2 reserves |
  *   [16] total_lp_shares | [2] fee_bps | [1] is_active |
  *   [8] total_fees_accumulated | [2] bin_step_bps | [4] active_bin_id |
  *   [32] ot_treasury_fee_destination | [1] has_ot_treasury | [1] bump |
- *   [16]×2 cumulative_fees_per_share
+ *   [16]×2 cumulative_fees_per_share |
+ *   [4]×4 left_anchor_bin / permanent_tail_floor_bin /
+ *         last_rebalance_nav_bin / active_zone_lower |
+ *   [2] permanent_tail_offset_bps | [2] _pad_monotonic
  */
 function buildPoolStateBytes(args: {
   tokenAMint: PublicKey;
@@ -69,7 +72,7 @@ function buildPoolStateBytes(args: {
   feeBps?: number;
   isActive?: boolean;
 }): Buffer {
-  const buf = Buffer.alloc(252);
+  const buf = Buffer.alloc(272);
   let off = 0;
   buf.set(POOLSTATE_DISCRIMINATOR, off); off += 8;
   buf.writeUInt8(0, off); off += 1; // pool_type = 0 (Standard)
@@ -90,6 +93,13 @@ function buildPoolStateBytes(args: {
   buf.writeUInt8(255, off); off += 1; // bump
   off += 16; // cumulative_fees_per_share_a
   off += 16; // cumulative_fees_per_share_b
+  // CP-1 Monotonic Ladder anchors — zero-default for StandardCurve pools.
+  off += 4; // left_anchor_bin
+  off += 4; // permanent_tail_floor_bin
+  off += 4; // last_rebalance_nav_bin
+  off += 4; // active_zone_lower
+  off += 2; // permanent_tail_offset_bps
+  off += 2; // _pad_monotonic
   return buf;
 }
 

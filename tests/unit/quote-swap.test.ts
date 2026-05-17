@@ -41,6 +41,8 @@ interface PoolOverrides {
   feeBps?: number;
   isActive?: boolean;
   hasOtTreasury?: boolean;
+  binStepBps?: number;
+  activeBinId?: number;
 }
 
 function makePool(o: PoolOverrides = {}): PoolState {
@@ -56,13 +58,20 @@ function makePool(o: PoolOverrides = {}): PoolState {
     feeBps: o.feeBps ?? 30, // 0.30%
     isActive: o.isActive ?? true,
     totalFeesAccumulated: 0n,
-    binStepBps: 0,
-    activeBinId: 0,
+    binStepBps: o.binStepBps ?? 0,
+    activeBinId: o.activeBinId ?? 0,
     otTreasuryFeeDestination: k(),
     hasOtTreasury: o.hasOtTreasury ?? false,
     bump: 255,
     cumulativeFeesPerShareA: 0n,
     cumulativeFeesPerShareB: 0n,
+    // CP-1 Monotonic Ladder anchors (zero-default for StandardCurve pools)
+    leftAnchorBin: 0,
+    permanentTailFloorBin: 0,
+    lastRebalanceNavBin: 0,
+    activeZoneLower: 0,
+    permanentTailOffsetBps: 0,
+    _padMonotonic: new Uint8Array(2),
   };
 }
 
@@ -700,3 +709,185 @@ describe('quoteSwap — QM-17: userTotalDebit field', () => {
     expect(result.error).toBe('MathOverflow');
   });
 });
+
+// ─────────────────────────── route field ────────────────────────────────
+//
+// CP-8 — every successful StandardCurve quote must declare
+// `route: 'binWalk'` so downstream consumers can switch on the path
+// without relying on indirect signals (presence of `fees`, etc).
+
+describe('quoteSwap — CP-8 route field on StandardCurve quotes', () => {
+  it("returns route: 'binWalk' for the canonical sell-RWT happy path", () => {
+    const pool = makePool({
+      tokenAMint: RWT_MINT,
+      tokenBMint: NON_RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+    });
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000n,
+      aToB: true,
+      rwtMint: RWT_MINT,
+    });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.quote.route).toBe('binWalk');
+  });
+
+  it("returns route: 'binWalk' for the canonical buy-RWT happy path too", () => {
+    const pool = makePool({
+      tokenAMint: RWT_MINT,
+      tokenBMint: NON_RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+    });
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000n,
+      aToB: false,
+      rwtMint: RWT_MINT,
+    });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.quote.route).toBe('binWalk');
+  });
+});
+
+// ─────────────────────────── mint-route quote ────────────────────────────
+//
+// CP-8 — when the caller supplies `masterPoolContext` AND the pool is a
+// Monotonic Ladder master pool AND the direction is USDC → RWT, the
+// engine evaluates `shouldRouteToMint` (gate predicate mirror of the
+// on-chain swap_internal CP-6 gate) and returns route: 'mintRoute' with
+// a NAV-based payout.
+
+describe('quoteSwap — CP-8 master-pool mint-route', () => {
+  function makeMasterPool(): PoolState {
+    return makePool({
+      poolType: 1, // CONCENTRATED
+      tokenAMint: NON_RWT_MINT, // USDC = canonical-order side A (lower bytes)
+      tokenBMint: RWT_MINT,
+      // Reserves are irrelevant for the mint-route branch.
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+      binStepBps: 10,
+      activeBinId: 0,
+    });
+  }
+
+  it("returns route: 'mintRoute' when organic ask is empty and gate fires", () => {
+    const pool = makeMasterPool();
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000_000n, // $1 USDC
+      aToB: true, // USDC → RWT
+      rwtMint: RWT_MINT,
+      masterPoolContext: {
+        nav: 1_000_000n, // $1.00 NAV
+        hasOrganicAsk: false, // forces routing
+      },
+    });
+    expect(out.ok).toBe(true);
+    if (!out.ok) return;
+    expect(out.quote.route).toBe('mintRoute');
+    // Effective price = NAV × 1.01 → amountOut = amountIn / 1.01 ≈ 990_099
+    expect(out.quote.amountOut).toBe(990_099n);
+    // No DEX fees on the mint path
+    expect(out.quote.fees.feeTotal).toBe(0n);
+    expect(out.quote.fees.feeLp).toBe(0n);
+    expect(out.quote.fees.feeProtocol).toBe(0n);
+    expect(out.quote.fees.feeOtTreasury).toBe(0n);
+    // userTotalDebit == amountIn (no fee-on-top on mint path)
+    expect(out.quote.userTotalDebit).toBe(1_000_000n);
+  });
+
+  it("returns route: 'binWalk' when organic ask present and price below threshold (refuses)", () => {
+    const pool = makeMasterPool();
+    const config = makeConfig();
+    // Best ask at NAV × 1.001 (below NAV × 1.005 threshold) → gate
+    // returns false → engine falls through to legacy refuse path on
+    // concentrated pools. We expect ok=false (cannot bin-walk off-chain).
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000_000n,
+      aToB: true,
+      rwtMint: RWT_MINT,
+      masterPoolContext: {
+        nav: 1_000_000n,
+        hasOrganicAsk: true, // organic ask present, gate decides on price
+      },
+    });
+    // bin_step_bps=10, active_bin+1=1: priceAtBin(10, 1) =
+    // 1e12 × (1 + 10/10_000) = 1.001 × 1e12 (below threshold).
+    // → gate returns false → legacy refuse with EmptyReserves.
+    expect(out.ok).toBe(false);
+    if (out.ok) return;
+    expect(out.error).toBe('EmptyReserves');
+  });
+
+  it('falls back to bin-walk refuse for RWT → USDC direction on master pool', () => {
+    const pool = makeMasterPool();
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000_000n,
+      aToB: false, // RWT → USDC (input_is_rwt=true)
+      rwtMint: RWT_MINT,
+      masterPoolContext: {
+        nav: 1_000_000n,
+        hasOrganicAsk: false,
+      },
+    });
+    // RWT → USDC direction never routes to mint. Engine cannot simulate
+    // bin-walk off-chain → refuses with EmptyReserves.
+    expect(out.ok).toBe(false);
+    if (out.ok) return;
+    expect(out.error).toBe('EmptyReserves');
+  });
+
+  it('refuses with ZeroOutput when amountIn × scale / effective_price truncates to 0', () => {
+    const pool = makeMasterPool();
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1n, // 1 micro-USDC against $1 NAV — output truncates
+      aToB: true,
+      rwtMint: RWT_MINT,
+      masterPoolContext: {
+        nav: 1_000_000n,
+        hasOrganicAsk: false,
+      },
+    });
+    expect(out.ok).toBe(false);
+    if (out.ok) return;
+    expect(out.error).toBe('ZeroOutput');
+  });
+});
+
+describe('quoteSwap — legacy concentrated pool without masterPoolContext', () => {
+  it('refuses with EmptyReserves (legacy refuse path)', () => {
+    const pool = makePool({ poolType: 1 });
+    const config = makeConfig();
+    const out = quoteSwap({
+      pool,
+      config,
+      amountIn: 1_000n,
+      aToB: true,
+      rwtMint: RWT_MINT,
+    });
+    expect(out.ok).toBe(false);
+    if (out.ok) return;
+    expect(out.error).toBe('EmptyReserves');
+  });
+});
+

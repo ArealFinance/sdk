@@ -55,8 +55,10 @@ describe('event registries', () => {
     expect(YIELD_DISTRIBUTION_EVENTS.programLabel).toBe('yield-distribution');
   });
 
-  it('native-dex exposes all 20 events', () => {
-    expect(Object.keys(NATIVE_DEX_EVENTS.byName)).toHaveLength(20);
+  it('native-dex exposes all 22 events', () => {
+    // 20 pre-CP-8 - 1 (LiquidityShifted removed) + 3 (SwapRoutedToMint,
+    // LiquidityGrew, LiquidityCompressed) = 22.
+    expect(Object.keys(NATIVE_DEX_EVENTS.byName)).toHaveLength(22);
     expect(NATIVE_DEX_EVENTS.programLabel).toBe('native-dex');
   });
 
@@ -75,12 +77,14 @@ describe('event registries', () => {
     expect(FUTARCHY_EVENTS.programLabel).toBe('futarchy');
   });
 
-  it('total event count across all programs is 60', () => {
+  it('total event count across all programs is 62', () => {
+    // Pre-CP-8 baseline 60 + native-dex net +2 = 62 (see native-dex
+    // describe above for breakdown).
     const total = getAllRegistries().reduce(
       (sum, r) => sum + Object.keys(r.byName).length,
       0,
     );
-    expect(total).toBe(60);
+    expect(total).toBe(62);
   });
 
   it('every event name uniquely maps to its discriminator', () => {
