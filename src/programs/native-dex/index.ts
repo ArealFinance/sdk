@@ -39,3 +39,9 @@ export {
   type LpRemoveInputs,
   type LpRemoveQuote,
 } from './lp-quote.js';
+
+// CP-12.5: typed kill-switch sentinels (mirrors contracts/native-dex/src/constants.rs).
+export {
+  REBALANCER_KILL_SWITCH,
+  NEXUS_MANAGER_KILL_SWITCH,
+} from './constants.js';

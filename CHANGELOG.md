@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.12.3 — 2026-05-17
+
+### Added
+
+- New IDL error `NavBinMismatch` (code 6068) — mirrors CP-12.5 step 2
+  contract change. Emitted by `grow_liquidity` / `compress_liquidity` when
+  the proposed `new_nav_bin` does not round-trip to `vault.nav_book_value`
+  within tolerance. Both `idl/native-dex.json` and
+  `programs/native-dex/errors.generated.ts` regenerated.
+- Typed kill-switch sentinels for CP-12.5 incident-response levers:
+  `REBALANCER_KILL_SWITCH` and `NEXUS_MANAGER_KILL_SWITCH` (both = zero
+  pubkey). Exported from `@areal/sdk/native-dex`. Callers wanting to
+  disable the rebalancer or Nexus manager programmatically can pass these
+  to `update_dex_config` / `update_nexus_manager` instead of constructing
+  raw `[0u8;32]` PublicKeys.
+- Cross-program discriminator parity test
+  (`tests/unit/cross-program-disc.test.ts`) — asserts SDK's
+  `RWTVAULT_DISCRIMINATOR` (rwt-engine codegen) matches native-dex
+  `DISC_RWT_VAULT` constant byte-for-byte. Tripwire for future
+  rwt_engine renames that would silently break
+  `read_rwt_vault_nav` on the DEX side. Also pins the five program-ID
+  vanity prefixes (DEX8, RWT9, oWn, YLD9, FUT).
+
+Non-breaking — additive only (new error code, new constants, new test).
+
+Per docs/changelog/2026-05-17-native-dex-rebalancer-hardening.mdx.
+
 ## 0.12.2 — 2026-05-17
 
 ### Fixed

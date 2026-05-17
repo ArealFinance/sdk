@@ -144,6 +144,8 @@ export enum ProgramErrorCode {
   InvalidRebalancer = 6066,
   /** grow_liquidity called with empty Nexus USDC accumulator */
   NexusAccumulatorEmpty = 6067,
+  /** new_nav_bin does not round-trip to vault.nav_book_value within tolerance */
+  NavBinMismatch = 6068,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -213,6 +215,7 @@ export const ProgramErrors: IdlError[] = [
   { code: 6065, name: "MissingMintRouteAccounts", msg: "Mint-route swap requires 4 remaining_accounts after the bin_array slot" },
   { code: 6066, name: "InvalidRebalancer", msg: "Signer is not the dex_config.rebalancer (Pool Rebalancer)" },
   { code: 6067, name: "NexusAccumulatorEmpty", msg: "grow_liquidity called with empty Nexus USDC accumulator" },
+  { code: 6068, name: "NavBinMismatch", msg: "new_nav_bin does not round-trip to vault.nav_book_value within tolerance" },
 ];
 
 /**

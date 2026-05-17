@@ -2720,6 +2720,11 @@
       "code": 6067,
       "name": "NexusAccumulatorEmpty",
       "msg": "grow_liquidity called with empty Nexus USDC accumulator"
+    },
+    {
+      "code": 6068,
+      "name": "NavBinMismatch",
+      "msg": "new_nav_bin does not round-trip to vault.nav_book_value within tolerance"
     }
   ]
 }
