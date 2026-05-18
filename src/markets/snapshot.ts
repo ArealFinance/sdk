@@ -28,6 +28,7 @@ import { parseRwtVault } from '../programs/rwt-engine/accounts.generated.js';
 import { enumeratePools } from './enumerate-pools.js';
 import { chainPriceToUsdc, poolTvlUsdc } from './pricing.js';
 import type {
+  ChainPriceResult,
   EnumeratedPool,
   MarketsSnapshot,
   PoolRow,
@@ -37,6 +38,13 @@ import type {
 /** USDC and RWT both use 6 decimals — verified via `network/constants.ts`. */
 const USDC_DECIMALS = 6;
 const RWT_DECIMALS = 6;
+/**
+ * 6-decimal fixed-point scale for `RwtVault.nav_book_value`. Mirrors
+ * `contracts/rwt-engine/src/constants.rs::NAV_SCALE`. NAV is stored as
+ * USDC-base-units per RWT (e.g. 1_000_000n → $1.00); dividing by this
+ * scale yields the floating-point USDC price the UI consumes.
+ */
+const NAV_SCALE = 1_000_000;
 /**
  * Authoritative on-chain RWT name + symbol surfaced to the UI when no
  * separate metadata source is configured. The RWT mint is contract-pinned
@@ -209,15 +217,39 @@ export async function getMarketsSnapshot(
   // OtConfig in the canonical layout, so we synthesise this row directly.
   // If a deploy DOES emit an OtConfig for the RWT mint, the OT loop
   // below will skip it (we check the dedupe set).
-  const rwtPriceRes = chainPriceToUsdc(
-    rwtMint,
-    RWT_DECIMALS,
-    poolStates,
-    usdcMint,
-    rwtMint,
-    RWT_DECIMALS,
-    USDC_DECIMALS,
-  );
+  //
+  // Price source preference for RWT:
+  //   1. `RwtVault.nav_book_value / NAV_SCALE` — canonical NAV. This is
+  //      the right answer per `docs/economics/rwt-real-world-token`: NAV
+  //      starts at $1.00 and grows from protocol yield, independent of
+  //      pool reserves.
+  //   2. Fallback to reserve-derived pricing when no vault is loaded
+  //      (e.g. `includeNav: false` or vault read failed).
+  //
+  // Why we do NOT use the master pool's reserve ratio: the Monotonic
+  // Ladder master pool is intentionally single-sided — Nexus funds a
+  // USDC bid wall, the RWT side fills only from organic user sells. So
+  // `reserveB / reserveA` is meaningless as a price (it can drift from
+  // $20 to $0.05 just from a single Smoke swap). See
+  // docs/economics/rwt-real-world-token.mdx and `nav.rs` for the
+  // canonical pricing rule.
+  let rwtPriceRes: ChainPriceResult;
+  if (rwtVault && rwtVault.navBookValue > 0n) {
+    rwtPriceRes = {
+      priceUsdc: Number(rwtVault.navBookValue) / NAV_SCALE,
+      source: 'nav',
+    };
+  } else {
+    rwtPriceRes = chainPriceToUsdc(
+      rwtMint,
+      RWT_DECIMALS,
+      poolStates,
+      usdcMint,
+      rwtMint,
+      RWT_DECIMALS,
+      USDC_DECIMALS,
+    );
+  }
   tokens.push({
     mint: rwtMint,
     symbol: RWT_SYMBOL,

@@ -271,14 +271,18 @@ describe('getMarketsSnapshot', () => {
     expect(snap.slot).toBe(9999);
     expect(typeof snap.fetchedAt).toBe('number');
 
-    // RWT row
+    // RWT row — priced from NAV (5_000_000n / NAV_SCALE = $5.00), not
+    // from the RWT-USDC pool's reserve ratio. See snapshot.ts comment
+    // on the master-pool single-sided design.
     const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
     expect(rwt).toBeDefined();
-    expect(rwt!.priceUsdc).toBe(1);
-    expect(rwt!.priceSource).toBe('direct-usdc');
+    expect(rwt!.priceUsdc).toBe(5);
+    expect(rwt!.priceSource).toBe('nav');
     expect(rwt!.nav).toBe(5_000_000n);
 
-    // OT row priced via RWT
+    // OT row priced via RWT. `chainPriceToUsdc` still uses reserve
+    // ratios internally (NAV preference is RWT-row-only), so the OT
+    // price is the OT-RWT product × RWT-USDC reserve price = 1 × 1 = 1.
     const ot = snap.tokens.find((t) => t.symbol === 'TST');
     expect(ot).toBeDefined();
     expect(ot!.priceSource).toBe('via-rwt');
@@ -359,5 +363,132 @@ describe('getMarketsSnapshot', () => {
     const snap = await getMarketsSnapshot(conn as any, 'mainnet', baseOpts);
     const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
     expect(rwt!.isPlaceholder).toBe(true);
+  });
+
+  // MS-7: NAV-priced RWT happy path. With the vault loaded, the RWT
+  // row's priceUsdc MUST come from `navBookValue / NAV_SCALE` and
+  // priceSource MUST be 'nav' — even when no RWT-USDC pool exists.
+  it('prices RWT from RwtVault.navBookValue when vault is loaded', async () => {
+    const conn = makeMockConnection();
+    conn.getProgramAccounts.mockResolvedValue([]); // no OTs, no pools
+
+    const [vaultPda] = findRwtVaultPda(RWT_ENGINE_PROGRAM_ID);
+    conn.getAccountInfo.mockImplementation(async (key: PublicKey) => {
+      if (key.equals(vaultPda)) {
+        return {
+          data: buildRwtVaultBytes({
+            // 1_500_000 base units = $1.50 NAV per RWT.
+            navBookValue: 1_500_000n,
+            totalRwtSupply: 1_000_000n,
+          }),
+          executable: false,
+          lamports: 0,
+          owner: RWT_ENGINE_PROGRAM_ID,
+          rentEpoch: 0,
+        };
+      }
+      return null;
+    });
+
+    const snap = await getMarketsSnapshot(conn as any, 'devnet', baseOpts);
+    const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
+    expect(rwt).toBeDefined();
+    expect(rwt!.priceUsdc).toBe(1.5);
+    expect(rwt!.priceSource).toBe('nav');
+    expect(rwt!.nav).toBe(1_500_000n);
+  });
+
+  // MS-8: fallback to reserve-derived pricing when the RwtVault read
+  // fails (e.g. vault PDA missing on a fresh deploy). Demonstrates the
+  // legacy `chainPriceToUsdc` path is preserved.
+  it('falls back to reserve-derived RWT price when RwtVault is missing', async () => {
+    const conn = makeMockConnection();
+    conn.getProgramAccounts.mockImplementation(async (programId: PublicKey) => {
+      if (programId.equals(NATIVE_DEX_PROGRAM_ID)) {
+        return [
+          {
+            pubkey: Keypair.generate().publicKey,
+            account: {
+              data: buildPoolStateBytes({
+                tokenAMint: DEVNET_RWT,
+                tokenBMint: DEVNET_USDC,
+                reserveA: 1_000_000n,
+                reserveB: 2_000_000n, // 2 USDC per 1 RWT
+              }),
+              executable: false,
+              lamports: 0,
+              owner: NATIVE_DEX_PROGRAM_ID,
+              rentEpoch: 0,
+            },
+          },
+        ];
+      }
+      return [];
+    });
+    // getAccountInfo defaults to returning null → vault read returns null.
+
+    const snap = await getMarketsSnapshot(conn as any, 'devnet', baseOpts);
+    expect(snap.rwtVault).toBeNull();
+    const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
+    expect(rwt).toBeDefined();
+    // Reserve-derived: reserveB / reserveA × 10^(decA-decB) → 2/1 = 2.
+    expect(rwt!.priceUsdc).toBe(2);
+    expect(rwt!.priceSource).toBe('direct-usdc');
+  });
+
+  // MS-9: the original bug — a master-pool with bizarre, imbalanced
+  // reserves (USDC bid wall + tiny organic RWT ask) MUST NOT contaminate
+  // the RWT price as long as NAV is present. This is the case that was
+  // showing $20 RWT on app.areal.finance/markets/rwt before the fix.
+  it('ignores master-pool reserve ratio for RWT price when NAV is loaded', async () => {
+    const conn = makeMockConnection();
+    conn.getProgramAccounts.mockImplementation(async (programId: PublicKey) => {
+      if (programId.equals(NATIVE_DEX_PROGRAM_ID)) {
+        return [
+          {
+            pubkey: Keypair.generate().publicKey,
+            account: {
+              // Realistic post-Smoke-4 state: 100 USDC bid wall vs
+              // 5 RWT organic ask. Naive ratio → $20/RWT. NAV is $1.00.
+              data: buildPoolStateBytes({
+                tokenAMint: DEVNET_RWT,
+                tokenBMint: DEVNET_USDC,
+                reserveA: 5_000_000n,     // 5 RWT
+                reserveB: 100_000_000n,   // 100 USDC
+              }),
+              executable: false,
+              lamports: 0,
+              owner: NATIVE_DEX_PROGRAM_ID,
+              rentEpoch: 0,
+            },
+          },
+        ];
+      }
+      return [];
+    });
+
+    const [vaultPda] = findRwtVaultPda(RWT_ENGINE_PROGRAM_ID);
+    conn.getAccountInfo.mockImplementation(async (key: PublicKey) => {
+      if (key.equals(vaultPda)) {
+        return {
+          data: buildRwtVaultBytes({
+            navBookValue: 1_000_000n, // $1.00 NAV
+            totalRwtSupply: 1_000_000n,
+          }),
+          executable: false,
+          lamports: 0,
+          owner: RWT_ENGINE_PROGRAM_ID,
+          rentEpoch: 0,
+        };
+      }
+      return null;
+    });
+
+    const snap = await getMarketsSnapshot(conn as any, 'devnet', baseOpts);
+    const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
+    expect(rwt).toBeDefined();
+    // NOT 20 (the broken-by-design reserve ratio), but 1 from NAV.
+    expect(rwt!.priceUsdc).toBe(1);
+    expect(rwt!.priceSource).toBe('nav');
   });
 });

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.6 — 2026-05-18
+
+### Fixed
+
+- RWT `priceUsdc` now derived from `rwt_vault.nav_book_value / NAV_SCALE`
+  when the vault is loaded, not from master-pool reserves. The
+  Monotonic Ladder master pool is intentionally single-sided (USDC bid
+  wall + organic RWT ask), so its reserve ratio doesn't yield a
+  meaningful USDC-per-RWT price. NAV is the canonical RWT price per
+  docs/economics/rwt-real-world-token. Adds `'nav'` to PriceSource.
+
+Non-breaking — additive new `PriceSource` value `'nav'`; fallback to
+reserve-derived pricing is preserved for snapshots that don't carry a
+vault read (e.g. `includeNav: false`).
+
 ## 0.12.5 — 2026-05-18
 
 ### Fixed

@@ -18,10 +18,17 @@ import type { PoolState } from '../programs/native-dex/accounts.generated.js';
  *     pool was found and its spot rate is used.
  *   - `via-rwt`     — no direct pool; the SDK chained
  *     `token → RWT → USDC` using the spot rates of the two pools.
+ *   - `nav`         — RWT row only. Price derived from
+ *     `RwtVault.nav_book_value / NAV_SCALE`. This is the canonical RWT
+ *     price per `docs/economics/rwt-real-world-token`: NAV is a book
+ *     value that starts at $1.00 and grows with protocol yield. The
+ *     Monotonic Ladder master pool's reserve ratio is intentionally
+ *     meaningless for RWT pricing because the pool is single-sided
+ *     (USDC bid wall + organic RWT ask only).
  *   - `unpriceable` — neither path resolved (no pools, or the chain hit a
  *     side with zero reserves). UI must render `—` rather than `$0`.
  */
-export type PriceSource = 'direct-usdc' | 'via-rwt' | 'unpriceable';
+export type PriceSource = 'direct-usdc' | 'via-rwt' | 'nav' | 'unpriceable';
 
 export interface ChainPriceResult {
   priceUsdc: number | null;
