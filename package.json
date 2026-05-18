@@ -1,31 +1,105 @@
 {
   "name": "@areal/sdk",
-  "version": "0.12.4",
-  "description": "Areal Finance product SDK (TypeScript) — typed bindings for the 5 on-chain programs, built on @arlex/client",
+  "version": "0.12.5",
+  "description": "Areal Finance product SDK (TypeScript) \u2014 typed bindings for the 5 on-chain programs, built on @arlex/client",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": ["dist", "idl", "overrides", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "idl",
+    "overrides",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.mjs", "require": "./dist/index.cjs" },
-    "./native-dex": { "types": "./dist/programs/native-dex/index.d.ts", "import": "./dist/programs/native-dex/index.mjs", "require": "./dist/programs/native-dex/index.cjs" },
-    "./ownership-token": { "types": "./dist/programs/ownership-token/index.d.ts", "import": "./dist/programs/ownership-token/index.mjs", "require": "./dist/programs/ownership-token/index.cjs" },
-    "./rwt-engine": { "types": "./dist/programs/rwt-engine/index.d.ts", "import": "./dist/programs/rwt-engine/index.mjs", "require": "./dist/programs/rwt-engine/index.cjs" },
-    "./yield-distribution": { "types": "./dist/programs/yield-distribution/index.d.ts", "import": "./dist/programs/yield-distribution/index.mjs", "require": "./dist/programs/yield-distribution/index.cjs" },
-    "./futarchy": { "types": "./dist/programs/futarchy/index.d.ts", "import": "./dist/programs/futarchy/index.mjs", "require": "./dist/programs/futarchy/index.cjs" },
-    "./pda": { "types": "./dist/pda/index.d.ts", "import": "./dist/pda/index.mjs", "require": "./dist/pda/index.cjs" },
-    "./tx": { "types": "./dist/tx/index.d.ts", "import": "./dist/tx/index.mjs", "require": "./dist/tx/index.cjs" },
-    "./network": { "types": "./dist/network/index.d.ts", "import": "./dist/network/index.mjs", "require": "./dist/network/index.cjs" },
-    "./errors": { "types": "./dist/errors/index.d.ts", "import": "./dist/errors/index.mjs", "require": "./dist/errors/index.cjs" },
-    "./portfolio": { "types": "./dist/portfolio/index.d.ts", "import": "./dist/portfolio/index.mjs", "require": "./dist/portfolio/index.cjs" },
-    "./lp-portfolio": { "types": "./dist/lp-portfolio/index.d.ts", "import": "./dist/lp-portfolio/index.mjs", "require": "./dist/lp-portfolio/index.cjs" },
-    "./markets": { "types": "./dist/markets/index.d.ts", "import": "./dist/markets/index.mjs", "require": "./dist/markets/index.cjs" },
-    "./events": { "types": "./dist/events/index.d.ts", "import": "./dist/events/index.mjs", "require": "./dist/events/index.cjs" },
-    "./history": { "types": "./dist/history/index.d.ts", "import": "./dist/history/index.mjs", "require": "./dist/history/index.cjs" },
-    "./markets-rest": { "types": "./dist/markets-rest/index.d.ts", "import": "./dist/markets-rest/index.mjs", "require": "./dist/markets-rest/index.cjs" },
-    "./realtime": { "types": "./dist/realtime/index.d.ts", "import": "./dist/realtime/index.mjs", "require": "./dist/realtime/index.cjs" },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./native-dex": {
+      "types": "./dist/programs/native-dex/index.d.ts",
+      "import": "./dist/programs/native-dex/index.mjs",
+      "require": "./dist/programs/native-dex/index.cjs"
+    },
+    "./ownership-token": {
+      "types": "./dist/programs/ownership-token/index.d.ts",
+      "import": "./dist/programs/ownership-token/index.mjs",
+      "require": "./dist/programs/ownership-token/index.cjs"
+    },
+    "./rwt-engine": {
+      "types": "./dist/programs/rwt-engine/index.d.ts",
+      "import": "./dist/programs/rwt-engine/index.mjs",
+      "require": "./dist/programs/rwt-engine/index.cjs"
+    },
+    "./yield-distribution": {
+      "types": "./dist/programs/yield-distribution/index.d.ts",
+      "import": "./dist/programs/yield-distribution/index.mjs",
+      "require": "./dist/programs/yield-distribution/index.cjs"
+    },
+    "./futarchy": {
+      "types": "./dist/programs/futarchy/index.d.ts",
+      "import": "./dist/programs/futarchy/index.mjs",
+      "require": "./dist/programs/futarchy/index.cjs"
+    },
+    "./pda": {
+      "types": "./dist/pda/index.d.ts",
+      "import": "./dist/pda/index.mjs",
+      "require": "./dist/pda/index.cjs"
+    },
+    "./tx": {
+      "types": "./dist/tx/index.d.ts",
+      "import": "./dist/tx/index.mjs",
+      "require": "./dist/tx/index.cjs"
+    },
+    "./network": {
+      "types": "./dist/network/index.d.ts",
+      "import": "./dist/network/index.mjs",
+      "require": "./dist/network/index.cjs"
+    },
+    "./errors": {
+      "types": "./dist/errors/index.d.ts",
+      "import": "./dist/errors/index.mjs",
+      "require": "./dist/errors/index.cjs"
+    },
+    "./portfolio": {
+      "types": "./dist/portfolio/index.d.ts",
+      "import": "./dist/portfolio/index.mjs",
+      "require": "./dist/portfolio/index.cjs"
+    },
+    "./lp-portfolio": {
+      "types": "./dist/lp-portfolio/index.d.ts",
+      "import": "./dist/lp-portfolio/index.mjs",
+      "require": "./dist/lp-portfolio/index.cjs"
+    },
+    "./markets": {
+      "types": "./dist/markets/index.d.ts",
+      "import": "./dist/markets/index.mjs",
+      "require": "./dist/markets/index.cjs"
+    },
+    "./events": {
+      "types": "./dist/events/index.d.ts",
+      "import": "./dist/events/index.mjs",
+      "require": "./dist/events/index.cjs"
+    },
+    "./history": {
+      "types": "./dist/history/index.d.ts",
+      "import": "./dist/history/index.mjs",
+      "require": "./dist/history/index.cjs"
+    },
+    "./markets-rest": {
+      "types": "./dist/markets-rest/index.d.ts",
+      "import": "./dist/markets-rest/index.mjs",
+      "require": "./dist/markets-rest/index.cjs"
+    },
+    "./realtime": {
+      "types": "./dist/realtime/index.d.ts",
+      "import": "./dist/realtime/index.mjs",
+      "require": "./dist/realtime/index.cjs"
+    },
     "./idl/*.json": "./idl/*.json"
   },
   "scripts": {

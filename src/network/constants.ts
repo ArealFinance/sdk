@@ -37,7 +37,7 @@ export const SYSTEM_PROGRAM_ID = new PublicKey('11111111111111111111111111111111
 export const USDC_MINTS: Record<ClusterName, PublicKey> = {
   mainnet: new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'),
   devnet: new PublicKey('4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU'),
-  localnet: new PublicKey('T5ZgdZfMqjcFFZwK1Wg9YYQFiziCZAXJTinFuLJr2GK'),
+  localnet: new PublicKey('7fU6MdnASj9ueLXBrhBEnXtrwqMFPq5gqSHy44JbtHCo'),
 };
 
 /**
@@ -65,7 +65,7 @@ export const USDC_MINTS: Record<ClusterName, PublicKey> = {
 export const RWT_MINTS: Record<ClusterName, PublicKey> = {
   mainnet: new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4'),
   devnet: new PublicKey('6YRfYtkZmqWgz8N3MDeqJRc4vSiJ5VGgiMv4ihYzJyY4'),
-  localnet: new PublicKey('RSuvkud2x4aj23fvhhF234E3BF3KpKeNaFyRfn28oaY'),
+  localnet: new PublicKey('5UunX3siy52sM3zA6PqTHs3zU4hwHmVCAZqEsbweR4P5'),
 };
 
 /**
