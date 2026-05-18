@@ -47,14 +47,19 @@ describe('isPlaceholderRwtMint', () => {
     expect(isPlaceholderRwtMint(RWT_MINTS.devnet)).toBe(true);
   });
 
-  it('returns true for the localnet RWT mint (same placeholder)', () => {
-    expect(isPlaceholderRwtMint(RWT_MINTS.localnet)).toBe(true);
+  // Localnet (Fornex VPS) carries a REAL on-chain RWT mint regenerated
+  // by every deploy-fornex.sh validator reset and pinned into the YD
+  // contract via the migrate-mints pipeline. The placeholder guard is
+  // intentionally orthogonal to localnet so RWT writes against the VPS
+  // validator are not blocked.
+  it('returns false for the localnet RWT mint (real Fornex VPS mint)', () => {
+    expect(isPlaceholderRwtMint(RWT_MINTS.localnet)).toBe(false);
   });
 
-  // EXPECTATION: mainnet still carries the same placeholder bytes as
-  // devnet/localnet until the production RWT mint is deployed and the
-  // YD contract is rebuilt with the new pin. Callers MUST treat a
-  // `true` here as "don't submit RWT writes on mainnet yet".
+  // Mainnet still carries the placeholder bytes until the production
+  // RWT mint is deployed and the YD contract is rebuilt with the new
+  // pin. Callers MUST treat a `true` here as "don't submit RWT writes
+  // on mainnet yet".
   it('returns true for mainnet today (RWT not yet deployed)', () => {
     expect(isPlaceholderRwtMint(RWT_MINTS.mainnet)).toBe(true);
   });
