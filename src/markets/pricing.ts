@@ -64,6 +64,20 @@ export function spotPriceA(
  * `pools` MUST be the parsed `PoolState` list (e.g. from
  * `enumeratePools`). Inactive pools are NOT pre-filtered here — callers
  * that want to ignore paused pools should filter the input list.
+ *
+ * `rwtPriceOverrideUsdc` (optional, default `null`): when non-null, the
+ * Case-3 chain (`token → RWT → USDC`) uses this value as the canonical
+ * USDC-per-RWT price instead of recursing into a Case-2 reserve-derived
+ * lookup. This is the hook the markets snapshot uses to feed in the
+ * NAV-derived RWT price (`RwtVault.nav_book_value / NAV_SCALE`) so that
+ * every OT priced via RWT lines up with the RWT row the UI displays.
+ * Without the override, the recursive call walks the imbalanced
+ * Monotonic Ladder master pool reserves and produces OT prices that
+ * track the bid-wall / organic-ask ratio rather than NAV (e.g. SPRK
+ * surfacing at $19 against RWT at $1). The override only intervenes
+ * when the chain falls through to Case 3 — Cases 1 and 2 are
+ * unaffected, so a token with its own USDC pool still prices off that
+ * pool's reserves regardless of the override value.
  */
 export function chainPriceToUsdc(
   mint: PublicKey,
@@ -73,6 +87,7 @@ export function chainPriceToUsdc(
   rwtMint: PublicKey,
   rwtDecimals: number,
   usdcDecimals: number,
+  rwtPriceOverrideUsdc: number | null = null,
 ): ChainPriceResult {
   // Case 1 — token IS USDC.
   if (mint.equals(usdcMint)) {
@@ -115,18 +130,26 @@ export function chainPriceToUsdc(
       return { priceUsdc: null, source: 'unpriceable' };
     }
 
-    // Resolve RWT price recursively. By the case-1/case-3 guard above,
-    // this hits case 2 (direct RWT-USDC pool) or returns unpriceable —
-    // it cannot loop back through this branch.
-    const rwtPrice = chainPriceToUsdc(
-      rwtMint,
-      rwtDecimals,
-      pools,
-      usdcMint,
-      rwtMint,
-      rwtDecimals,
-      usdcDecimals,
-    );
+    // Resolve RWT price. If the caller supplied an authoritative
+    // RWT/USDC price (typically NAV-derived in the markets snapshot),
+    // use it directly — that's the only way to keep OT prices aligned
+    // with the RWT row the UI surfaces when the master pool's reserves
+    // are intentionally single-sided. Otherwise fall back to a
+    // recursive Case-2 lookup. By the case-1/case-3 guard above, the
+    // recursive call hits case 2 (direct RWT-USDC pool) or returns
+    // unpriceable — it cannot loop back through this branch.
+    const rwtPrice: ChainPriceResult =
+      rwtPriceOverrideUsdc !== null
+        ? { priceUsdc: rwtPriceOverrideUsdc, source: 'via-rwt' }
+        : chainPriceToUsdc(
+            rwtMint,
+            rwtDecimals,
+            pools,
+            usdcMint,
+            rwtMint,
+            rwtDecimals,
+            usdcDecimals,
+          );
     if (rwtPrice.priceUsdc === null) {
       return { priceUsdc: null, source: 'unpriceable' };
     }

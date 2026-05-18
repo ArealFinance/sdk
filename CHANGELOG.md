@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.12.7 — 2026-05-18
+
+### Fixed
+
+- `chainPriceToUsdc` now accepts optional `rwtPriceOverrideUsdc` so OT
+  tokens priced through the `token → RWT → USDC` chain use the same
+  NAV-derived RWT price that `snapshot.ts` resolves for the top-level
+  RWT row. Previously the recursive call re-derived RWT from master-pool
+  reserves, surfacing OT prices that were proportional to the bid-wall /
+  organic-ask ratio of the imbalanced Monotonic Ladder pool (e.g. SPRK
+  showed $19 against RWT at $1).
+
+Non-breaking — additive optional parameter (default `null` keeps the
+pre-0.12.7 recursive Case-2 lookup); no API or type shape changes.
+
 ## 0.12.6 — 2026-05-18
 
 ### Fixed

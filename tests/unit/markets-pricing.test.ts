@@ -174,6 +174,70 @@ describe('chainPriceToUsdc', () => {
     );
     expect(res).toEqual({ priceUsdc: null, source: 'unpriceable' });
   });
+
+  // CP-6: rwtPriceOverrideUsdc takes precedence over master-pool reserves
+  // in the Case-3 chain. With a balanced OT/RWT pool and an imbalanced
+  // RWT-USDC master pool, the OT price MUST come from
+  // `OT/RWT_spot × override` and ignore the master-pool ratio entirely.
+  it('uses rwtPriceOverrideUsdc instead of master-pool ratio in Case-3', () => {
+    // Master pool intentionally lopsided (would give $20 / RWT).
+    const rwtUsdcPool = makePool({
+      tokenAMint: RWT_MINT,
+      tokenBMint: USDC_MINT,
+      reserveA: 5_000_000n,
+      reserveB: 100_000_000n,
+    });
+    // OT-RWT 1:1.
+    const otRwtPool = makePool({
+      tokenAMint: OT_MINT,
+      tokenBMint: RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+    });
+    const res = chainPriceToUsdc(
+      OT_MINT,
+      6,
+      [rwtUsdcPool, otRwtPool],
+      USDC_MINT,
+      RWT_MINT,
+      6,
+      6,
+      1.0, // NAV-derived $1.00 RWT
+    );
+    expect(res.source).toBe('via-rwt');
+    // NOT 20 (master-pool ratio path). 1 × 1 = 1.
+    expect(res.priceUsdc).toBe(1);
+  });
+
+  // CP-7: null/undefined override preserves the pre-0.12.7 reserve-derived
+  // behavior. Same fixture as CP-3 (default override is `null`).
+  it('falls back to recursive lookup when rwtPriceOverrideUsdc is null', () => {
+    const rwtUsdcPool = makePool({
+      tokenAMint: RWT_MINT,
+      tokenBMint: USDC_MINT,
+      reserveA: 500_000n,
+      reserveB: 1_000_000n,
+    });
+    const otRwtPool = makePool({
+      tokenAMint: OT_MINT,
+      tokenBMint: RWT_MINT,
+      reserveA: 1_000_000n,
+      reserveB: 1_000_000n,
+    });
+    const res = chainPriceToUsdc(
+      OT_MINT,
+      6,
+      [rwtUsdcPool, otRwtPool],
+      USDC_MINT,
+      RWT_MINT,
+      6,
+      6,
+      null,
+    );
+    expect(res.source).toBe('via-rwt');
+    // 1 × 2 = 2 — identical to CP-3 (no override supplied).
+    expect(res.priceUsdc).toBe(2);
+  });
 });
 
 // ────────────────────────── poolTvlUsdc ──────────────────────────

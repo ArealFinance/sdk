@@ -280,13 +280,16 @@ describe('getMarketsSnapshot', () => {
     expect(rwt!.priceSource).toBe('nav');
     expect(rwt!.nav).toBe(5_000_000n);
 
-    // OT row priced via RWT. `chainPriceToUsdc` still uses reserve
-    // ratios internally (NAV preference is RWT-row-only), so the OT
-    // price is the OT-RWT product × RWT-USDC reserve price = 1 × 1 = 1.
+    // OT row priced via RWT. Per SDK 0.12.7, the snapshot threads the
+    // NAV-derived RWT price into `chainPriceToUsdc` as an override, so
+    // OT price = OT/RWT spot × NAV-RWT-USDC = 1 × $5.00 = $5.00 (not
+    // the master-pool reserve product, which would also give $1 here
+    // but would drift to $20 under the realistic single-sided ladder
+    // imbalance — see MS-10 below).
     const ot = snap.tokens.find((t) => t.symbol === 'TST');
     expect(ot).toBeDefined();
     expect(ot!.priceSource).toBe('via-rwt');
-    expect(ot!.priceUsdc).toBe(1);
+    expect(ot!.priceUsdc).toBe(5);
 
     // Both pools have TVL
     expect(snap.pools.every((p) => p.tvlUsdc !== null)).toBe(true);
@@ -490,5 +493,99 @@ describe('getMarketsSnapshot', () => {
     // NOT 20 (the broken-by-design reserve ratio), but 1 from NAV.
     expect(rwt!.priceUsdc).toBe(1);
     expect(rwt!.priceSource).toBe('nav');
+  });
+
+  // MS-10: regression for the OT-priced-via-RWT chain. Same imbalanced
+  // master pool as MS-9, plus a balanced OT/RWT pool. Pre SDK 0.12.7
+  // the OT row inherited the master-pool ratio inside chainPriceToUsdc's
+  // recursive RWT lookup and surfaced at ~$20 (matching the bid wall /
+  // organic ask drift). With the NAV override threaded through, the OT
+  // price MUST equal `OT/RWT_spot × NAV_RWT_USDC` = 1 × $1.00 = $1.00.
+  it('ignores master-pool reserve ratio for OT-via-RWT prices when NAV is loaded', async () => {
+    const conn = makeMockConnection();
+    conn.getProgramAccounts.mockImplementation(async (programId: PublicKey) => {
+      if (programId.equals(OWNERSHIP_TOKEN_PROGRAM_ID)) {
+        return [
+          {
+            pubkey: Keypair.generate().publicKey,
+            account: {
+              data: buildOtConfigBytes({
+                otMint: OT_MINT,
+                name: 'Sparkles',
+                symbol: 'SPRK',
+                decimals: 6,
+              }),
+              executable: false,
+              lamports: 0,
+              owner: OWNERSHIP_TOKEN_PROGRAM_ID,
+              rentEpoch: 0,
+            },
+          },
+        ];
+      }
+      if (programId.equals(NATIVE_DEX_PROGRAM_ID)) {
+        return [
+          // Master pool: imbalanced (5 RWT vs 100 USDC → ratio $20/RWT).
+          {
+            pubkey: Keypair.generate().publicKey,
+            account: {
+              data: buildPoolStateBytes({
+                tokenAMint: DEVNET_RWT,
+                tokenBMint: DEVNET_USDC,
+                reserveA: 5_000_000n,
+                reserveB: 100_000_000n,
+              }),
+              executable: false,
+              lamports: 0,
+              owner: NATIVE_DEX_PROGRAM_ID,
+              rentEpoch: 0,
+            },
+          },
+          // SPRK/RWT pool: balanced 1:1 → 1 SPRK = 1 RWT.
+          {
+            pubkey: Keypair.generate().publicKey,
+            account: {
+              data: buildPoolStateBytes({
+                tokenAMint: OT_MINT,
+                tokenBMint: DEVNET_RWT,
+                reserveA: 1_000_000n,
+                reserveB: 1_000_000n,
+              }),
+              executable: false,
+              lamports: 0,
+              owner: NATIVE_DEX_PROGRAM_ID,
+              rentEpoch: 0,
+            },
+          },
+        ];
+      }
+      return [];
+    });
+
+    const [vaultPda] = findRwtVaultPda(RWT_ENGINE_PROGRAM_ID);
+    conn.getAccountInfo.mockImplementation(async (key: PublicKey) => {
+      if (key.equals(vaultPda)) {
+        return {
+          data: buildRwtVaultBytes({
+            navBookValue: 1_000_000n, // $1.00 NAV
+            totalRwtSupply: 1_000_000n,
+          }),
+          executable: false,
+          lamports: 0,
+          owner: RWT_ENGINE_PROGRAM_ID,
+          rentEpoch: 0,
+        };
+      }
+      return null;
+    });
+
+    const snap = await getMarketsSnapshot(conn as any, 'devnet', baseOpts);
+    const rwt = snap.tokens.find((t) => t.symbol === 'RWT');
+    const sprk = snap.tokens.find((t) => t.symbol === 'SPRK');
+    expect(rwt!.priceUsdc).toBe(1);
+    expect(sprk).toBeDefined();
+    expect(sprk!.priceSource).toBe('via-rwt');
+    // NOT $20 (the pre-fix bug), but $1 from the NAV override.
+    expect(sprk!.priceUsdc).toBe(1);
   });
 });

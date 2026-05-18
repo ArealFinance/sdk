@@ -269,6 +269,12 @@ export async function getMarketsSnapshot(
     if (seenMints.has(key)) continue;
     seenMints.add(key);
 
+    // Pass the RWT row's already-resolved USDC price (NAV-derived when
+    // the vault is loaded, reserve-derived otherwise) so OTs that price
+    // through the `token → RWT → USDC` chain reuse the canonical RWT
+    // value instead of re-deriving it from the imbalanced master pool.
+    // Without this, OT/RWT × master-pool-ratio surfaces e.g. SPRK at $19
+    // while the RWT row shows $1 — see SDK 0.12.7 CHANGELOG.
     const priceRes = chainPriceToUsdc(
       mint,
       config.decimals,
@@ -277,6 +283,7 @@ export async function getMarketsSnapshot(
       rwtMint,
       RWT_DECIMALS,
       USDC_DECIMALS,
+      rwtPriceRes.priceUsdc,
     );
 
     tokens.push({
