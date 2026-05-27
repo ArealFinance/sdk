@@ -270,7 +270,7 @@ describe('buildAddLiquidityTx', () => {
     ).rejects.toThrow(/placeholder; mainnet RWT mint not yet deployed/);
   });
 
-  it('cluster=devnet + placeholder rwtMint → does NOT throw', async () => {
+  it('cluster=devnet + devnet rwtMint → does NOT throw (mainnet-only guard)', async () => {
     const conn = makeMockConn({ ataExists: true });
     const tx = await buildAddLiquidityTx({
       connection: conn as any,

@@ -164,7 +164,9 @@ function makeMockConnection(): MockConnection {
   };
 }
 
-// Devnet uses the placeholder mint per RWT_MINTS table.
+// Devnet RWT/USDC mints come from the bootstrap pipeline (real on-chain
+// mints); the per-cluster table in network/constants.ts is the source of
+// truth and is consumed here for test fixtures.
 const DEVNET_RWT = RWT_MINTS.devnet;
 const DEVNET_USDC = USDC_MINTS.devnet;
 const OT_MINT = Keypair.generate().publicKey;

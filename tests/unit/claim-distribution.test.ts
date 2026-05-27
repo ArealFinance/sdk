@@ -339,7 +339,7 @@ describe('buildClaimTx', () => {
     expect(tx.instructions[0]!.programId.equals(YIELD_DISTRIBUTION_PROGRAM_ID)).toBe(true);
   });
 
-  it('cluster=devnet + placeholder rwtMint → does NOT throw (placeholder is expected on devnet)', async () => {
+  it('cluster=devnet + devnet rwtMint → does NOT throw (mainnet-only guard)', async () => {
     const { conn } = makeMockConn({ ataExists: true });
     const tx = await buildClaimTx(
       baseTxArgs(conn, { cluster: 'devnet', rwtMint: RWT_MINTS.devnet }),

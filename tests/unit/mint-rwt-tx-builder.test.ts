@@ -231,7 +231,7 @@ describe('buildMintRwtTx', () => {
   });
 
   // BM-9
-  it('cluster=devnet + placeholder rwtMint → does NOT throw (placeholder is expected on devnet)', async () => {
+  it('cluster=devnet + devnet rwtMint → does NOT throw (mainnet-only guard)', async () => {
     const conn = makeMockConn({ ataExists: true });
     const tx = await buildMintRwtTx({
       connection: conn as any,

@@ -3,10 +3,13 @@
 //
 // The RWT mint is pinned at compile time inside the Yield Distribution
 // program (`contracts/yield-distribution/src/constants.rs::RWT_MINT`). On
-// devnet/localnet that pin is the R20 placeholder bytes `"RWT" + 28*0x00
-// + 0x01`. Mainnet keeps the same bytes until the production mint is
-// deployed; until then `isPlaceholderRwtMint(mainnet)` MUST return true so
-// callers don't accidentally submit claims against a non-existent mint.
+// devnet/localnet that pin is the real on-chain mint created by the
+// bootstrap pipeline for the respective cluster (the YD contract is built
+// with the matching feature flag so its `RWT_MINT` matches the bootstrap
+// pubkey). Mainnet keeps the R20 placeholder bytes `"RWT" + 28*0x00 +
+// 0x01` until the production mint is deployed; until then
+// `isPlaceholderRwtMint(mainnet)` MUST return true so callers don't
+// accidentally submit claims against a non-existent mint.
 
 import { describe, expect, it } from 'vitest';
 import { PublicKey } from '@solana/web3.js';
@@ -43,8 +46,13 @@ describe('RWT_MINTS', () => {
 });
 
 describe('isPlaceholderRwtMint', () => {
-  it('returns true for the devnet RWT mint (placeholder bytes)', () => {
-    expect(isPlaceholderRwtMint(RWT_MINTS.devnet)).toBe(true);
+  // Devnet carries a REAL on-chain RWT mint created by
+  // `scripts/bootstrap-init.ts` against the Helius devnet RPC, with the
+  // YD contract built with `--features devnet` so its compiled-in
+  // `RWT_MINT` matches. The placeholder guard is intentionally orthogonal
+  // to devnet so RWT writes against the devnet cluster are not blocked.
+  it('returns false for the devnet RWT mint (real bootstrap mint)', () => {
+    expect(isPlaceholderRwtMint(RWT_MINTS.devnet)).toBe(false);
   });
 
   // Localnet (Fornex VPS) carries a REAL on-chain RWT mint regenerated
