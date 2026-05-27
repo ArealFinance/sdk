@@ -12,6 +12,10 @@
 import type { PublicKey } from '@solana/web3.js';
 import { extractErrorCode, type IdlError } from '@arlex/client';
 
+// TODO migrate to getProgramIds(): the registry below is built from the
+// mainnet shim, so devnet program-IDs in incoming errors won't be recognized
+// until this module accepts a `cluster` parameter (or registers both clusters
+// upfront). Tracked as part of the SDK devnet-bootstrap follow-ups.
 import {
   PROGRAM_IDS,
   type ProgramName,

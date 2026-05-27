@@ -9,6 +9,10 @@
 import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
+// TODO migrate to getProgramIds(): the registries below are keyed by the
+// mainnet shim's base58, so devnet log events won't decode until this module
+// accepts a `cluster` parameter (or registers both clusters upfront). Tracked
+// as part of the SDK devnet-bootstrap follow-ups.
 import { PROGRAM_IDS } from '../network/program-ids.js';
 import { YIELD_DISTRIBUTION_EVENTS } from './yield-distribution.js';
 import { NATIVE_DEX_EVENTS } from './native-dex.js';
