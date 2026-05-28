@@ -27,6 +27,7 @@ import {
   FUTARCHY_PROGRAM_ID,
   NATIVE_DEX_PROGRAM_ID,
   OWNERSHIP_TOKEN_PROGRAM_ID,
+  PROGRAM_IDS_BY_CLUSTER,
   RWT_ENGINE_PROGRAM_ID,
   YIELD_DISTRIBUTION_PROGRAM_ID,
 } from '../../src/network/program-ids.js';
@@ -126,5 +127,47 @@ describe('mapAnchorError — extractErrorCode integration', () => {
     const result = mapAnchorError(fakeRpcError, YIELD_DISTRIBUTION_PROGRAM_ID);
     expect(result?.name).toBe('Unauthorized');
     expect(result?.code).toBe(6000);
+  });
+});
+
+describe('mapAnchorError — cluster-aware (M4 fix)', () => {
+  // Pre-fix the error registry was keyed solely by mainnet pubkeys (via the
+  // PROGRAM_IDS shim), so devnet program-IDs in incoming errors didn't
+  // resolve. Post-fix the registry covers every cluster in
+  // PROGRAM_IDS_BY_CLUSTER — devnet errors map the same as mainnet.
+  it('resolves errors emitted by devnet yield-distribution program ID', () => {
+    const devnetYd = PROGRAM_IDS_BY_CLUSTER.devnet.yieldDistribution;
+    expect(devnetYd.equals(PROGRAM_IDS_BY_CLUSTER.mainnet.yieldDistribution)).toBe(false);
+
+    const result = mapAnchorError(YieldDistributionErrorCode.Unauthorized, devnetYd);
+    expect(result).not.toBeNull();
+    expect(result?.program).toBe('yieldDistribution');
+    expect(result?.code).toBe(6000);
+    expect(result?.name).toBe('Unauthorized');
+  });
+
+  it('resolves errors emitted by every devnet program ID', () => {
+    const devnet = PROGRAM_IDS_BY_CLUSTER.devnet;
+    const probes: Array<{ pid: typeof devnet.nativeDex; expected: string; codes: number[] }> = [
+      { pid: devnet.nativeDex, expected: 'nativeDex', codes: NativeDexErrors.map(e => e.code) },
+      {
+        pid: devnet.ownershipToken,
+        expected: 'ownershipToken',
+        codes: OwnershipTokenErrors.map(e => e.code),
+      },
+      { pid: devnet.rwtEngine, expected: 'rwtEngine', codes: RwtEngineErrors.map(e => e.code) },
+      {
+        pid: devnet.yieldDistribution,
+        expected: 'yieldDistribution',
+        codes: YieldDistributionErrors.map(e => e.code),
+      },
+      { pid: devnet.futarchy, expected: 'futarchy', codes: FutarchyErrors.map(e => e.code) },
+    ];
+    for (const { pid, expected, codes } of probes) {
+      if (codes.length === 0) continue; // program with empty IDL errors
+      const result = mapAnchorError(codes[0]!, pid);
+      expect(result).not.toBeNull();
+      expect(result?.program).toBe(expected);
+    }
   });
 });

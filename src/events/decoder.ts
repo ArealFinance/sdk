@@ -9,11 +9,14 @@
 import { Buffer } from 'buffer';
 import { PublicKey } from '@solana/web3.js';
 
-// TODO migrate to getProgramIds(): the registries below are keyed by the
-// mainnet shim's base58, so devnet log events won't decode until this module
-// accepts a `cluster` parameter (or registers both clusters upfront). Tracked
-// as part of the SDK devnet-bootstrap follow-ups.
-import { PROGRAM_IDS } from '../network/program-ids.js';
+// Cluster-aware registry: the lookup tables below are built by walking ALL
+// clusters in `PROGRAM_IDS_BY_CLUSTER` so a devnet log decodes against the
+// devnet program-ID just as readily as a mainnet log decodes against the
+// mainnet one. Each program's discriminator table (`*_EVENTS`) is shared
+// across clusters because the wire format is identical — only the program-ID
+// changes per-cluster.
+import { PROGRAM_IDS_BY_CLUSTER } from '../network/program-ids.js';
+import type { ClusterName } from '../network/clusters.js';
 import { YIELD_DISTRIBUTION_EVENTS } from './yield-distribution.js';
 import { NATIVE_DEX_EVENTS } from './native-dex.js';
 import { OWNERSHIP_TOKEN_EVENTS } from './ownership-token.js';
@@ -22,24 +25,64 @@ import { FUTARCHY_EVENTS } from './futarchy.js';
 import type { DecodedEvent, ProgramEventRegistry, ProgramLabel } from './types.js';
 
 /**
- * base58(programId) → registry lookup. Built once at module load. Adding a
- * new program means a new entry here AND a new per-program module.
+ * base58(programId) → registry lookup. Built once at module load by iterating
+ * over every cluster in `PROGRAM_IDS_BY_CLUSTER` so mainnet AND devnet (and
+ * localnet) program IDs all resolve to the same per-program event registry.
+ * Adding a new program means a new entry inside the loop AND a new
+ * per-program module.
  */
-const PROGRAM_REGISTRIES: Record<string, ProgramEventRegistry> = {
-  [PROGRAM_IDS.yieldDistribution.toBase58()]: YIELD_DISTRIBUTION_EVENTS,
-  [PROGRAM_IDS.nativeDex.toBase58()]: NATIVE_DEX_EVENTS,
-  [PROGRAM_IDS.ownershipToken.toBase58()]: OWNERSHIP_TOKEN_EVENTS,
-  [PROGRAM_IDS.rwtEngine.toBase58()]: RWT_ENGINE_EVENTS,
-  [PROGRAM_IDS.futarchy.toBase58()]: FUTARCHY_EVENTS,
-};
+const PROGRAM_REGISTRIES: Readonly<Record<string, ProgramEventRegistry>> = (() => {
+  const acc: Record<string, ProgramEventRegistry> = {};
+  for (const cluster of Object.keys(PROGRAM_IDS_BY_CLUSTER) as ClusterName[]) {
+    const ids = PROGRAM_IDS_BY_CLUSTER[cluster];
+    acc[ids.yieldDistribution.toBase58()] = YIELD_DISTRIBUTION_EVENTS;
+    acc[ids.nativeDex.toBase58()] = NATIVE_DEX_EVENTS;
+    acc[ids.ownershipToken.toBase58()] = OWNERSHIP_TOKEN_EVENTS;
+    acc[ids.rwtEngine.toBase58()] = RWT_ENGINE_EVENTS;
+    acc[ids.futarchy.toBase58()] = FUTARCHY_EVENTS;
+  }
+  return acc;
+})();
 
-const PROGRAM_NAME_BY_ID: Record<string, ProgramLabel> = {
-  [PROGRAM_IDS.yieldDistribution.toBase58()]: 'yield-distribution',
-  [PROGRAM_IDS.nativeDex.toBase58()]: 'native-dex',
-  [PROGRAM_IDS.ownershipToken.toBase58()]: 'ownership-token',
-  [PROGRAM_IDS.rwtEngine.toBase58()]: 'rwt-engine',
-  [PROGRAM_IDS.futarchy.toBase58()]: 'futarchy',
-};
+const PROGRAM_NAME_BY_ID: Readonly<Record<string, ProgramLabel>> = (() => {
+  const acc: Record<string, ProgramLabel> = {};
+  for (const cluster of Object.keys(PROGRAM_IDS_BY_CLUSTER) as ClusterName[]) {
+    const ids = PROGRAM_IDS_BY_CLUSTER[cluster];
+    acc[ids.yieldDistribution.toBase58()] = 'yield-distribution';
+    acc[ids.nativeDex.toBase58()] = 'native-dex';
+    acc[ids.ownershipToken.toBase58()] = 'ownership-token';
+    acc[ids.rwtEngine.toBase58()] = 'rwt-engine';
+    acc[ids.futarchy.toBase58()] = 'futarchy';
+  }
+  return acc;
+})();
+
+/**
+ * Union of every known Areal program-ID across all clusters, used as the
+ * default filter for `decodeTransactionEvents` when the caller doesn't pass
+ * an explicit `programIds` list. Computed once at module load.
+ */
+const ALL_KNOWN_PROGRAM_IDS: readonly PublicKey[] = (() => {
+  const seen = new Set<string>();
+  const out: PublicKey[] = [];
+  for (const cluster of Object.keys(PROGRAM_IDS_BY_CLUSTER) as ClusterName[]) {
+    const ids = PROGRAM_IDS_BY_CLUSTER[cluster];
+    for (const pid of [
+      ids.yieldDistribution,
+      ids.nativeDex,
+      ids.ownershipToken,
+      ids.rwtEngine,
+      ids.futarchy,
+    ]) {
+      const key = pid.toBase58();
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(pid);
+      }
+    }
+  }
+  return out;
+})();
 
 /**
  * Decode a single base64-encoded event payload.
@@ -163,7 +206,7 @@ const EXIT_RE = /^Program [1-9A-HJ-NP-Za-km-z]+ (?:success|failed:.*)$/;
  */
 export function decodeTransactionEvents(
   logs: readonly string[],
-  programIds: readonly PublicKey[] = Object.values(PROGRAM_IDS),
+  programIds: readonly PublicKey[] = ALL_KNOWN_PROGRAM_IDS,
 ): DecodedEvent[] {
   const allowed = new Set(programIds.map((p) => p.toBase58()));
   const stack: PublicKey[] = [];
@@ -177,8 +220,10 @@ export function decodeTransactionEvents(
       } catch {
         // Push a sentinel so the matching success/failed pops cleanly even
         // when the pubkey parse fails (defensive — should never happen on
-        // well-formed Solana logs).
-        stack.push(PROGRAM_IDS.yieldDistribution); // unused — discriminated by allowed-set
+        // well-formed Solana logs). The first known program-ID we have is
+        // fine as a sentinel — it's never read because the `allowed` set
+        // discriminates legitimate events from this push.
+        stack.push(ALL_KNOWN_PROGRAM_IDS[0]!);
       }
       continue;
     }

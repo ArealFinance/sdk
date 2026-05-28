@@ -25,7 +25,10 @@ import {
   decodeTransactionEvents,
   getAllRegistries,
 } from '../../src/events/index.js';
-import { PROGRAM_IDS } from '../../src/network/program-ids.js';
+import {
+  PROGRAM_IDS,
+  PROGRAM_IDS_BY_CLUSTER,
+} from '../../src/network/program-ids.js';
 
 // Random non-Areal program — used to assert events emitted by foreign
 // programs are silently skipped.
@@ -208,6 +211,22 @@ describe('decodeEvent', () => {
     ).toBeNull();
   });
 
+  it('decodes events emitted by devnet program IDs (M4 cluster-aware fix)', () => {
+    // Same RewardsClaimed payload, but the emitting program is the DEVNET
+    // yield-distribution pubkey — distinct from mainnet. Pre-fix the decoder's
+    // registry was keyed solely by mainnet pubkeys (via the PROGRAM_IDS
+    // shim), so devnet events returned null. Post-fix the registry covers
+    // every cluster in PROGRAM_IDS_BY_CLUSTER.
+    const devnetYd = PROGRAM_IDS_BY_CLUSTER.devnet.yieldDistribution;
+    expect(devnetYd.equals(PROGRAM_IDS_BY_CLUSTER.mainnet.yieldDistribution)).toBe(false);
+
+    const decoded = decodeEvent(devnetYd, buildRewardsClaimedLog());
+    expect(decoded).not.toBeNull();
+    expect(decoded!.eventName).toBe('RewardsClaimed');
+    expect(decoded!.programName).toBe('yield-distribution');
+    expect(decoded!.programId.equals(devnetYd)).toBe(true);
+  });
+
   it('decodes Arlex two-chunk emit format (disc + payload space-separated)', () => {
     // Arlex's `emit!` macro writes the 8-byte discriminator and the borsh
     // payload as TWO independent base64 strings, joined by a space:
@@ -369,6 +388,26 @@ describe('decodeTransactionEvents', () => {
     expect(events).toHaveLength(1);
     expect(events[0]!.programName).toBe('native-dex');
     expect(events[0]!.eventName).toBe('SwapExecuted');
+  });
+
+  it('decodeTransactionEvents resolves devnet program IDs via the default filter (M4 fix)', () => {
+    // No explicit programIds passed — the default filter must include the
+    // devnet native-dex program ID, otherwise the devnet indexer is blind.
+    // Pre-fix the default was `Object.values(PROGRAM_IDS)` (mainnet only).
+    const devnetDex = PROGRAM_IDS_BY_CLUSTER.devnet.nativeDex;
+    expect(devnetDex.equals(PROGRAM_IDS_BY_CLUSTER.mainnet.nativeDex)).toBe(false);
+    const devnetDexId = devnetDex.toBase58();
+    const swapDecoder = NATIVE_DEX_EVENTS.byName['SwapExecuted']!;
+    const logs = [
+      `Program ${devnetDexId} invoke [1]`,
+      logFor(devnetDex, swapDecoder, buildSwapPayload()),
+      `Program ${devnetDexId} success`,
+    ];
+    const events = decodeTransactionEvents(logs);
+    expect(events).toHaveLength(1);
+    expect(events[0]!.eventName).toBe('SwapExecuted');
+    expect(events[0]!.programName).toBe('native-dex');
+    expect(events[0]!.programId.equals(devnetDex)).toBe(true);
   });
 
   it('does NOT mis-route `Program data: success` payloads as EXIT lines', () => {

@@ -12,14 +12,16 @@
 import type { PublicKey } from '@solana/web3.js';
 import { extractErrorCode, type IdlError } from '@arlex/client';
 
-// TODO migrate to getProgramIds(): the registry below is built from the
-// mainnet shim, so devnet program-IDs in incoming errors won't be recognized
-// until this module accepts a `cluster` parameter (or registers both clusters
-// upfront). Tracked as part of the SDK devnet-bootstrap follow-ups.
+// Cluster-aware registry: the lookup table below is built by walking ALL
+// clusters in `PROGRAM_IDS_BY_CLUSTER` so a devnet program-ID in an incoming
+// error resolves to the same IDL error array as the mainnet one. Each
+// program's `*Errors` table is shared across clusters — only the program-ID
+// changes per-cluster.
 import {
-  PROGRAM_IDS,
+  PROGRAM_IDS_BY_CLUSTER,
   type ProgramName,
 } from '../network/program-ids.js';
+import type { ClusterName } from '../network/clusters.js';
 import {
   FutarchyErrors,
   NativeDexErrors,
@@ -43,35 +45,38 @@ export interface MappedAnchorError {
 /**
  * Lookup table: program ID (base58) → IDL error array.
  *
- * Built once at module load. Programs whose IDL declares zero errors are
- * still registered with an empty array so the mapper can distinguish
- * "unknown program" from "known program, unknown code".
+ * Built once at module load by iterating over every cluster in
+ * `PROGRAM_IDS_BY_CLUSTER` so mainnet AND devnet (and localnet) program IDs
+ * all resolve to the same per-program error table. Programs whose IDL
+ * declares zero errors are still registered with an empty array so the
+ * mapper can distinguish "unknown program" from "known program, unknown
+ * code".
  */
 const PROGRAM_ERROR_REGISTRY: ReadonlyMap<
   string,
   { name: ProgramName; errors: IdlError[] }
-> = new Map([
-  [
-    PROGRAM_IDS.nativeDex.toBase58(),
-    { name: 'nativeDex' as ProgramName, errors: NativeDexErrors },
-  ],
-  [
-    PROGRAM_IDS.ownershipToken.toBase58(),
-    { name: 'ownershipToken' as ProgramName, errors: OwnershipTokenErrors },
-  ],
-  [
-    PROGRAM_IDS.rwtEngine.toBase58(),
-    { name: 'rwtEngine' as ProgramName, errors: RwtEngineErrors },
-  ],
-  [
-    PROGRAM_IDS.yieldDistribution.toBase58(),
-    { name: 'yieldDistribution' as ProgramName, errors: YieldDistributionErrors },
-  ],
-  [
-    PROGRAM_IDS.futarchy.toBase58(),
-    { name: 'futarchy' as ProgramName, errors: FutarchyErrors },
-  ],
-]);
+> = (() => {
+  const entries: Array<[string, { name: ProgramName; errors: IdlError[] }]> = [];
+  for (const cluster of Object.keys(PROGRAM_IDS_BY_CLUSTER) as ClusterName[]) {
+    const ids = PROGRAM_IDS_BY_CLUSTER[cluster];
+    entries.push(
+      [ids.nativeDex.toBase58(), { name: 'nativeDex' as ProgramName, errors: NativeDexErrors }],
+      [
+        ids.ownershipToken.toBase58(),
+        { name: 'ownershipToken' as ProgramName, errors: OwnershipTokenErrors },
+      ],
+      [ids.rwtEngine.toBase58(), { name: 'rwtEngine' as ProgramName, errors: RwtEngineErrors }],
+      [
+        ids.yieldDistribution.toBase58(),
+        { name: 'yieldDistribution' as ProgramName, errors: YieldDistributionErrors },
+      ],
+      [ids.futarchy.toBase58(), { name: 'futarchy' as ProgramName, errors: FutarchyErrors }],
+    );
+  }
+  // Map() naturally dedupes by key — clusters that share pubkeys (e.g.
+  // mainnet/localnet) collapse into a single entry, last-write-wins.
+  return new Map(entries);
+})();
 
 /**
  * Decode an error against the program that emitted it.
