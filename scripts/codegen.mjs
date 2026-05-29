@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const sdkRoot = resolve(__dirname, '..');
-const programs = ['futarchy', 'native-dex', 'ownership-token', 'rwt-engine', 'yield-distribution'];
+const programs = ['earn', 'futarchy', 'native-dex', 'ownership-token', 'rwt-engine', 'staking', 'yield-distribution'];
 
 const overridesPath = join(sdkRoot, 'overrides', 'pubkey-overrides.json');
 const overrides = JSON.parse(readFileSync(overridesPath, 'utf8'));

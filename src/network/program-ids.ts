@@ -12,14 +12,23 @@
 import { PublicKey } from '@solana/web3.js';
 import type { ClusterName } from './clusters.js';
 
-/** Bundle of all 5 Areal on-chain program IDs for a single cluster. */
+/** Bundle of all Areal on-chain program IDs for a single cluster. */
 export interface ProgramIdMap {
   nativeDex: PublicKey;
   ownershipToken: PublicKey;
   rwtEngine: PublicKey;
   yieldDistribution: PublicKey;
   futarchy: PublicKey;
+  earn: PublicKey;
+  staking: PublicKey;
 }
+
+// Placeholder for programs that only have a devnet deployment so far. Mirrors
+// the `declare_id!("11111111111111111111111111111111")` non-devnet placeholder
+// in `contracts/earn/src/lib.rs` and `contracts/staking/src/lib.rs` (pending a
+// mainnet vanity grind). Building a tx against this ID on mainnet/localnet is
+// intentionally non-functional until those programs are deployed there.
+const PLACEHOLDER_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
 
 /**
  * Per-cluster program IDs.
@@ -39,6 +48,9 @@ export const PROGRAM_IDS_BY_CLUSTER: Record<ClusterName, ProgramIdMap> = {
     rwtEngine:         new PublicKey('RWT9hgbjHQDj98xP7FYsT5QYp5X32XyK6QfMRmFtARL'),
     yieldDistribution: new PublicKey('YLD9EBikcTmVCnVzdx6vuNajrDkp8tyCAgZrqTwmMXF'),
     futarchy:          new PublicKey('FUTsbsdyJmEWa5LSYHWXMr9hQFyVsrJ1agGvRQGR1ARL'),
+    // earn + staking have no mainnet vanity address yet (devnet-only deploy).
+    earn:              PLACEHOLDER_PROGRAM_ID,
+    staking:           PLACEHOLDER_PROGRAM_ID,
   },
   devnet: {
     nativeDex:         new PublicKey('F9PaTy8SxmrLeheGycdGVAZBEB6FETMhoBfTUeSQLJ9u'),
@@ -46,6 +58,8 @@ export const PROGRAM_IDS_BY_CLUSTER: Record<ClusterName, ProgramIdMap> = {
     rwtEngine:         new PublicKey('G5zE57v3fBdWuxPvMmpwTPxATdnR99u6j5U9YfU4kABw'),
     yieldDistribution: new PublicKey('DaJvfRk5m6bWYBNMw4CujmBSjni1U4mzhpBLEmN2Lwro'),
     futarchy:          new PublicKey('25PqXCUXetwG19HunKEYJ1GE3YKBZkCo5KwWK4VdUTEQ'),
+    earn:              new PublicKey('HMBZu87F9zTt4JGbQwaL5V6tFXdLBUyLtgeYTsVh1Rzu'),
+    staking:           new PublicKey('3WFdgqHFUnqtZoKQLpj8pQPd3ecitBGG9M2eBmaup8JL'),
   },
   // Localnet uses mainnet pubkeys today (test-validator deploys with the same
   // vanity keypairs). If/when localnet needs distinct IDs, replace these.
@@ -55,6 +69,9 @@ export const PROGRAM_IDS_BY_CLUSTER: Record<ClusterName, ProgramIdMap> = {
     rwtEngine:         new PublicKey('RWT9hgbjHQDj98xP7FYsT5QYp5X32XyK6QfMRmFtARL'),
     yieldDistribution: new PublicKey('YLD9EBikcTmVCnVzdx6vuNajrDkp8tyCAgZrqTwmMXF'),
     futarchy:          new PublicKey('FUTsbsdyJmEWa5LSYHWXMr9hQFyVsrJ1agGvRQGR1ARL'),
+    // No localnet deploy of earn/staking yet; placeholder until needed.
+    earn:              PLACEHOLDER_PROGRAM_ID,
+    staking:           PLACEHOLDER_PROGRAM_ID,
   },
 };
 

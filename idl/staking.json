@@ -1,0 +1,870 @@
+{
+  "version": "0.1.0",
+  "name": "staking",
+  "metadata": {
+    "address": "3WFdgqHFUnqtZoKQLpj8pQPd3ecitBGG9M2eBmaup8JL"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "strwt_mint",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "pool_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "ata_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "pause_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "reward_depositor",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "strwt_mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_rwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_strwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "rwt_amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_strwt_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "deposit_rewards",
+      "accounts": [
+        {
+          "name": "depositor",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "strwt_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "depositor_rwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "rwt_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initiate_unstake",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "strwt_mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_strwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "strwt_amount",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "complete_unstake",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "ticket",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "pool_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_rwt_ata",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "nonce",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "accounts": [
+        {
+          "name": "pause_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unpause",
+      "accounts": [
+        {
+          "name": "pause_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "reward_depositor",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "min_stake_amount",
+          "type": "u64"
+        },
+        {
+          "name": "cooldown_seconds",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "propose_authority_transfer",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "accept_authority_transfer",
+      "accounts": [
+        {
+          "name": "new_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "staking_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "StakingConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "has_pending",
+            "type": "bool"
+          },
+          {
+            "name": "pause_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "is_paused",
+            "type": "bool"
+          },
+          {
+            "name": "rwt_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "strwt_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "reward_depositor",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pool_vault",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "total_rwt_active",
+            "type": "u64"
+          },
+          {
+            "name": "total_rwt_reserved",
+            "type": "u64"
+          },
+          {
+            "name": "cooldown_seconds",
+            "type": "i64"
+          },
+          {
+            "name": "min_stake_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnstakeTicket",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "amount_rwt",
+            "type": "u64"
+          },
+          {
+            "name": "unlock_ts",
+            "type": "i64"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [],
+  "events": [
+    {
+      "name": "StakingInitialized",
+      "fields": [
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "strwt_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pool_vault",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "cooldown_seconds",
+          "type": "i64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "Staked",
+      "fields": [
+        {
+          "name": "user",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_in",
+          "type": "u64"
+        },
+        {
+          "name": "strwt_out",
+          "type": "u64"
+        },
+        {
+          "name": "rate_after",
+          "type": "u64"
+        },
+        {
+          "name": "active_after",
+          "type": "u64"
+        },
+        {
+          "name": "strwt_supply_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "RewardsDeposited",
+      "fields": [
+        {
+          "name": "depositor",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_in",
+          "type": "u64"
+        },
+        {
+          "name": "rate_after",
+          "type": "u64"
+        },
+        {
+          "name": "active_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "UnstakeInitiated",
+      "fields": [
+        {
+          "name": "user",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "strwt_burned",
+          "type": "u64"
+        },
+        {
+          "name": "rwt_out",
+          "type": "u64"
+        },
+        {
+          "name": "unlock_ts",
+          "type": "i64"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "active_after",
+          "type": "u64"
+        },
+        {
+          "name": "reserved_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "UnstakeCompleted",
+      "fields": [
+        {
+          "name": "user",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_out",
+          "type": "u64"
+        },
+        {
+          "name": "nonce",
+          "type": "u64"
+        },
+        {
+          "name": "reserved_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "StakingPauseToggled",
+      "fields": [
+        {
+          "name": "is_paused",
+          "type": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "StakingConfigUpdated",
+      "fields": [
+        {
+          "name": "reward_depositor",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "min_stake_amount",
+          "type": "u64"
+        },
+        {
+          "name": "cooldown_seconds",
+          "type": "i64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the authority"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedPause",
+      "msg": "Signer is not the pause authority"
+    },
+    {
+      "code": 6002,
+      "name": "UnauthorizedRewardDepositor",
+      "msg": "Signer is not the reward depositor"
+    },
+    {
+      "code": 6003,
+      "name": "StakingPaused",
+      "msg": "Staking is paused"
+    },
+    {
+      "code": 6004,
+      "name": "BelowMinStake",
+      "msg": "Stake below minimum"
+    },
+    {
+      "code": 6005,
+      "name": "ZeroStrwtOutput",
+      "msg": "Stake would mint 0 stRWT"
+    },
+    {
+      "code": 6006,
+      "name": "ZeroRwtOutput",
+      "msg": "Unstake would release 0 RWT"
+    },
+    {
+      "code": 6007,
+      "name": "SlippageExceeded",
+      "msg": "Output below minimum (slippage protection)"
+    },
+    {
+      "code": 6008,
+      "name": "CooldownNotElapsed",
+      "msg": "Cooldown has not elapsed"
+    },
+    {
+      "code": 6009,
+      "name": "TicketOwnerMismatch",
+      "msg": "Ticket owner does not match signer"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidRwtMint",
+      "msg": "rwt_mint does not match the canonical earn-RWT mint"
+    },
+    {
+      "code": 6011,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6012,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not the pending authority"
+    },
+    {
+      "code": 6013,
+      "name": "SelfTransfer",
+      "msg": "Cannot transfer authority to self"
+    },
+    {
+      "code": 6014,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6015,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6016,
+      "name": "ZeroAddress",
+      "msg": "Address cannot be zero"
+    }
+  ]
+}

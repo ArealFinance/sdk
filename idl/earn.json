@@ -1,0 +1,721 @@
+{
+  "version": "0.1.0",
+  "name": "earn",
+  "metadata": {
+    "address": "HMBZu87F9zTt4JGbQwaL5V6tFXdLBUyLtgeYTsVh1Rzu"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        {
+          "name": "deployer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "usdc_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "basket_vault",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "dao_fee_destination",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "system_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pause_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "mint_rwt",
+      "accounts": [
+        {
+          "name": "user",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_usdc",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "user_rwt",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basket_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "dao_fee_destination",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "usdc_amount",
+          "type": "u64"
+        },
+        {
+          "name": "min_rwt_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "add_to_basket",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority_source",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "basket_vault",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "token_program",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "writedown_capital",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rwt_mint",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "reason_code",
+          "type": "u8"
+        }
+      ]
+    },
+    {
+      "name": "pause",
+      "accounts": [
+        {
+          "name": "pause_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "unpause",
+      "accounts": [
+        {
+          "name": "pause_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "mint_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_mint_amount",
+          "type": "u64"
+        },
+        {
+          "name": "dao_fee_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "propose_authority_transfer",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "accept_authority_transfer",
+      "accounts": [
+        {
+          "name": "new_authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "earn_config",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "EarnConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_invested_capital",
+            "type": "u128"
+          },
+          {
+            "name": "authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pending_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "has_pending",
+            "type": "bool"
+          },
+          {
+            "name": "pause_authority",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "is_paused",
+            "type": "bool"
+          },
+          {
+            "name": "mint_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "basket_vault",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "dao_fee_destination",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "rwt_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "usdc_mint",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "min_mint_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ],
+  "types": [],
+  "events": [
+    {
+      "name": "EarnInitialized",
+      "fields": [
+        {
+          "name": "authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "rwt_mint",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "basket_vault",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "dao_fee_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "initial_nav",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "RwtMinted",
+      "fields": [
+        {
+          "name": "minter",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "deposit_body",
+          "type": "u64"
+        },
+        {
+          "name": "fee",
+          "type": "u64"
+        },
+        {
+          "name": "rwt_out",
+          "type": "u64"
+        },
+        {
+          "name": "nav_after",
+          "type": "u64"
+        },
+        {
+          "name": "source",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "BasketGrew",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nav_before",
+          "type": "u64"
+        },
+        {
+          "name": "nav_after",
+          "type": "u64"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "CapitalWrittenDown",
+      "fields": [
+        {
+          "name": "amount",
+          "type": "u64"
+        },
+        {
+          "name": "nav_before",
+          "type": "u64"
+        },
+        {
+          "name": "nav_after",
+          "type": "u64"
+        },
+        {
+          "name": "reason_code",
+          "type": "u8"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "EarnPauseToggled",
+      "fields": [
+        {
+          "name": "is_paused",
+          "type": "bool"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "EarnConfigUpdated",
+      "fields": [
+        {
+          "name": "mint_fee_bps",
+          "type": "u16"
+        },
+        {
+          "name": "min_mint_amount",
+          "type": "u64"
+        },
+        {
+          "name": "dao_fee_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferProposed",
+      "fields": [
+        {
+          "name": "current_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pending_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "AuthorityTransferAccepted",
+      "fields": [
+        {
+          "name": "old_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "new_authority",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "Unauthorized",
+      "msg": "Signer is not the authority"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedPause",
+      "msg": "Signer is not the pause authority"
+    },
+    {
+      "code": 6002,
+      "name": "EarnPaused",
+      "msg": "Earn program is paused"
+    },
+    {
+      "code": 6003,
+      "name": "ZeroAmount",
+      "msg": "Amount must be > 0"
+    },
+    {
+      "code": 6004,
+      "name": "BelowMinMint",
+      "msg": "Deposit below minimum"
+    },
+    {
+      "code": 6005,
+      "name": "ZeroSlippage",
+      "msg": "min_rwt_out must be > 0"
+    },
+    {
+      "code": 6006,
+      "name": "SlippageExceeded",
+      "msg": "Output below min_rwt_out (slippage protection)"
+    },
+    {
+      "code": 6007,
+      "name": "ZeroRwtOutput",
+      "msg": "Mint would produce 0 RWT (deposit too small for current NAV)"
+    },
+    {
+      "code": 6008,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientCapital",
+      "msg": "Writedown would reduce capital below floor"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidRwtMint",
+      "msg": "RWT mint does not match config.rwt_mint"
+    },
+    {
+      "code": 6012,
+      "name": "ZeroDestination",
+      "msg": "Destination address cannot be zero"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidPauseAuthority",
+      "msg": "Pause authority cannot be zero address"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidFeeDestination",
+      "msg": "Fee destination cannot be zero address"
+    },
+    {
+      "code": 6015,
+      "name": "NoPendingAuthority",
+      "msg": "No pending authority transfer"
+    },
+    {
+      "code": 6016,
+      "name": "InvalidPendingAuthority",
+      "msg": "Signer is not the pending authority"
+    },
+    {
+      "code": 6017,
+      "name": "SelfTransfer",
+      "msg": "Cannot transfer authority to yourself"
+    }
+  ]
+}
