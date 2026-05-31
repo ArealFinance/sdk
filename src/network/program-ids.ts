@@ -58,8 +58,8 @@ export const PROGRAM_IDS_BY_CLUSTER: Record<ClusterName, ProgramIdMap> = {
     rwtEngine:         new PublicKey('G5zE57v3fBdWuxPvMmpwTPxATdnR99u6j5U9YfU4kABw'),
     yieldDistribution: new PublicKey('DaJvfRk5m6bWYBNMw4CujmBSjni1U4mzhpBLEmN2Lwro'),
     futarchy:          new PublicKey('25PqXCUXetwG19HunKEYJ1GE3YKBZkCo5KwWK4VdUTEQ'),
-    earn:              new PublicKey('HMBZu87F9zTt4JGbQwaL5V6tFXdLBUyLtgeYTsVh1Rzu'),
-    staking:           new PublicKey('3WFdgqHFUnqtZoKQLpj8pQPd3ecitBGG9M2eBmaup8JL'),
+    earn:              new PublicKey('HGh7TcuqUbTRrFTYBUtsTctAEEmsANWnDxeWcbgqMg8b'),
+    staking:           new PublicKey('CmKXHk3u6pDUC6Q11Le6gmhCgENQSFvduisXb7guUGoL'),
   },
   // Localnet uses mainnet pubkeys today (test-validator deploys with the same
   // vanity keypairs). If/when localnet needs distinct IDs, replace these.
