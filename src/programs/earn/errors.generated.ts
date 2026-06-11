@@ -64,6 +64,10 @@ export enum ProgramErrorCode {
   SelfTransfer = 6023,
   /** Fee destination cannot be the basket vault */
   FeeDestinationIsBasketVault = 6024,
+  /** Basket vault is not configured */
+  BasketVaultNotSet = 6025,
+  /** Basket vault cannot be the zero address */
+  ZeroBasketVault = 6026,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -93,6 +97,8 @@ export const ProgramErrors: IdlError[] = [
   { code: 6022, name: "InvalidPendingAuthority", msg: "Signer is not the pending authority" },
   { code: 6023, name: "SelfTransfer", msg: "Cannot transfer authority to yourself" },
   { code: 6024, name: "FeeDestinationIsBasketVault", msg: "Fee destination cannot be the basket vault" },
+  { code: 6025, name: "BasketVaultNotSet", msg: "Basket vault is not configured" },
+  { code: 6026, name: "ZeroBasketVault", msg: "Basket vault cannot be the zero address" },
 ];
 
 /**

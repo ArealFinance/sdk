@@ -34,8 +34,6 @@ export interface InitializeAccounts {
   /** readonly */
   usdcMint: PublicKey;
   /** readonly */
-  basketVault: PublicKey;
-  /** readonly */
   daoFeeDestination: PublicKey;
   /** readonly */
   systemProgram: PublicKey;
@@ -248,6 +246,7 @@ export interface UpdateConfigArgs {
   mintFeeBps: number;
   minMintAmount: bigint;
   daoFeeDestination: PublicKey;
+  basketVault: Bytes32;
 }
 
 const IDL_UPDATE_CONFIG_ARG_FIELDS: IdlField[] = [
@@ -267,6 +266,15 @@ const IDL_UPDATE_CONFIG_ARG_FIELDS: IdlField[] = [
         32
       ]
     }
+  },
+  {
+    "name": "basket_vault",
+    "type": {
+      "array": [
+        "u8",
+        32
+      ]
+    }
   }
 ];
 
@@ -274,6 +282,7 @@ export const WIRE_UPDATE_CONFIG_ARG_FIELDS: WireFieldMap = {
   "mint_fee_bps": "mintFeeBps",
   "min_mint_amount": "minMintAmount",
   "dao_fee_destination": "daoFeeDestination",
+  "basket_vault": "basketVault",
 };
 
 /**

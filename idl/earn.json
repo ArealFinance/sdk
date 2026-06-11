@@ -39,11 +39,6 @@
           "isSigner": false
         },
         {
-          "name": "basket_vault",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "dao_fee_destination",
           "isMut": false,
           "isSigner": false
@@ -257,6 +252,15 @@
         },
         {
           "name": "dao_fee_destination",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "basket_vault",
           "type": {
             "array": [
               "u8",
@@ -642,6 +646,15 @@
           }
         },
         {
+          "name": "basket_vault",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
           "name": "timestamp",
           "type": "i64"
         }
@@ -847,6 +860,16 @@
       "code": 6024,
       "name": "FeeDestinationIsBasketVault",
       "msg": "Fee destination cannot be the basket vault"
+    },
+    {
+      "code": 6025,
+      "name": "BasketVaultNotSet",
+      "msg": "Basket vault is not configured"
+    },
+    {
+      "code": 6026,
+      "name": "ZeroBasketVault",
+      "msg": "Basket vault cannot be the zero address"
     }
   ]
 }
