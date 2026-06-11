@@ -1,11 +1,21 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.2",
   "name": "staking",
   "metadata": {
     "address": "CmKXHk3u6pDUC6Q11Le6gmhCgENQSFvduisXb7guUGoL"
   },
   "instructions": [
     {
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "name": "initialize",
       "accounts": [
         {
@@ -51,33 +61,6 @@
       ],
       "args": [
         {
-          "name": "pause_authority_1",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "pause_authority_2",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "pause_authority_3",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
           "name": "reward_depositor",
           "type": {
             "array": [
@@ -89,6 +72,16 @@
       ]
     },
     {
+      "discriminator": [
+        206,
+        176,
+        202,
+        18,
+        200,
+        209,
+        179,
+        108
+      ],
       "name": "stake",
       "accounts": [
         {
@@ -139,6 +132,16 @@
       ]
     },
     {
+      "discriminator": [
+        52,
+        249,
+        112,
+        72,
+        206,
+        161,
+        196,
+        1
+      ],
       "name": "deposit_rewards",
       "accounts": [
         {
@@ -180,6 +183,16 @@
       ]
     },
     {
+      "discriminator": [
+        229,
+        79,
+        19,
+        159,
+        232,
+        206,
+        96,
+        210
+      ],
       "name": "initiate_unstake",
       "accounts": [
         {
@@ -230,6 +243,16 @@
       ]
     },
     {
+      "discriminator": [
+        79,
+        98,
+        40,
+        241,
+        100,
+        30,
+        25,
+        234
+      ],
       "name": "complete_unstake",
       "accounts": [
         {
@@ -271,38 +294,16 @@
       ]
     },
     {
-      "name": "pause",
-      "accounts": [
-        {
-          "name": "pause_authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "staking_config",
-          "isMut": true,
-          "isSigner": false
-        }
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
       ],
-      "args": []
-    },
-    {
-      "name": "unpause",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "staking_config",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "update_config",
       "accounts": [
         {
@@ -337,6 +338,16 @@
       ]
     },
     {
+      "discriminator": [
+        57,
+        206,
+        225,
+        129,
+        35,
+        111,
+        174,
+        145
+      ],
       "name": "propose_authority_transfer",
       "accounts": [
         {
@@ -363,6 +374,16 @@
       ]
     },
     {
+      "discriminator": [
+        239,
+        248,
+        177,
+        2,
+        206,
+        97,
+        46,
+        255
+      ],
       "name": "accept_authority_transfer",
       "accounts": [
         {
@@ -381,6 +402,16 @@
   ],
   "accounts": [
     {
+      "discriminator": [
+        45,
+        134,
+        252,
+        82,
+        37,
+        57,
+        84,
+        25
+      ],
       "name": "StakingConfig",
       "type": {
         "kind": "struct",
@@ -405,24 +436,6 @@
           },
           {
             "name": "has_pending",
-            "type": "bool"
-          },
-          {
-            "name": "pause_authorities",
-            "type": {
-              "array": [
-                {
-                  "array": [
-                    "u8",
-                    32
-                  ]
-                },
-                3
-              ]
-            }
-          },
-          {
-            "name": "is_paused",
             "type": "bool"
           },
           {
@@ -485,6 +498,16 @@
       }
     },
     {
+      "discriminator": [
+        131,
+        84,
+        209,
+        38,
+        145,
+        157,
+        181,
+        127
+      ],
       "name": "UnstakeTicket",
       "type": {
         "kind": "struct",
@@ -521,6 +544,16 @@
   "types": [],
   "events": [
     {
+      "discriminator": [
+        22,
+        155,
+        230,
+        163,
+        100,
+        9,
+        62,
+        165
+      ],
       "name": "StakingInitialized",
       "fields": [
         {
@@ -570,6 +603,16 @@
       ]
     },
     {
+      "discriminator": [
+        11,
+        146,
+        45,
+        205,
+        230,
+        58,
+        213,
+        240
+      ],
       "name": "Staked",
       "fields": [
         {
@@ -608,6 +651,16 @@
       ]
     },
     {
+      "discriminator": [
+        120,
+        19,
+        149,
+        33,
+        111,
+        163,
+        248,
+        156
+      ],
       "name": "RewardsDeposited",
       "fields": [
         {
@@ -638,6 +691,16 @@
       ]
     },
     {
+      "discriminator": [
+        191,
+        228,
+        210,
+        9,
+        181,
+        214,
+        12,
+        7
+      ],
       "name": "UnstakeInitiated",
       "fields": [
         {
@@ -680,6 +743,16 @@
       ]
     },
     {
+      "discriminator": [
+        168,
+        210,
+        26,
+        167,
+        221,
+        114,
+        99,
+        125
+      ],
       "name": "UnstakeCompleted",
       "fields": [
         {
@@ -710,19 +783,16 @@
       ]
     },
     {
-      "name": "StakingPauseToggled",
-      "fields": [
-        {
-          "name": "is_paused",
-          "type": "bool"
-        },
-        {
-          "name": "timestamp",
-          "type": "i64"
-        }
-      ]
-    },
-    {
+      "discriminator": [
+        64,
+        87,
+        60,
+        0,
+        196,
+        208,
+        241,
+        29
+      ],
       "name": "StakingConfigUpdated",
       "fields": [
         {
@@ -749,6 +819,16 @@
       ]
     },
     {
+      "discriminator": [
+        103,
+        244,
+        27,
+        116,
+        177,
+        4,
+        100,
+        119
+      ],
       "name": "AuthorityTransferProposed",
       "fields": [
         {
@@ -776,6 +856,16 @@
       ]
     },
     {
+      "discriminator": [
+        149,
+        165,
+        140,
+        221,
+        104,
+        203,
+        239,
+        121
+      ],
       "name": "AuthorityTransferAccepted",
       "fields": [
         {
@@ -811,93 +901,78 @@
     },
     {
       "code": 6001,
-      "name": "UnauthorizedPause",
-      "msg": "Signer is not the pause authority"
-    },
-    {
-      "code": 6002,
       "name": "UnauthorizedRewardDepositor",
       "msg": "Signer is not the reward depositor"
     },
     {
-      "code": 6003,
-      "name": "StakingPaused",
-      "msg": "Staking is paused"
-    },
-    {
-      "code": 6004,
+      "code": 6002,
       "name": "BelowMinStake",
       "msg": "Stake below minimum"
     },
     {
-      "code": 6005,
+      "code": 6003,
       "name": "ZeroStrwtOutput",
       "msg": "Stake would mint 0 stRWT"
     },
     {
-      "code": 6006,
+      "code": 6004,
       "name": "ZeroRwtOutput",
       "msg": "Unstake would release 0 RWT"
     },
     {
-      "code": 6007,
+      "code": 6005,
       "name": "SlippageExceeded",
       "msg": "Output below minimum (slippage protection)"
     },
     {
-      "code": 6008,
+      "code": 6006,
       "name": "CooldownNotElapsed",
       "msg": "Cooldown has not elapsed"
     },
     {
-      "code": 6009,
+      "code": 6007,
       "name": "TicketOwnerMismatch",
       "msg": "Ticket owner does not match signer"
     },
     {
-      "code": 6010,
+      "code": 6008,
       "name": "InvalidRwtMint",
       "msg": "rwt_mint does not match the canonical earn-RWT mint"
     },
     {
-      "code": 6011,
+      "code": 6009,
       "name": "NoPendingAuthority",
       "msg": "No pending authority transfer"
     },
     {
-      "code": 6012,
+      "code": 6010,
       "name": "InvalidPendingAuthority",
       "msg": "Signer is not the pending authority"
     },
     {
-      "code": 6013,
+      "code": 6011,
       "name": "SelfTransfer",
       "msg": "Cannot transfer authority to self"
     },
     {
-      "code": 6014,
+      "code": 6012,
       "name": "MathOverflow",
       "msg": "Arithmetic overflow"
     },
     {
-      "code": 6015,
+      "code": 6013,
       "name": "InvalidTokenAccount",
       "msg": "Invalid token account"
     },
     {
-      "code": 6016,
+      "code": 6014,
       "name": "ZeroAddress",
       "msg": "Address cannot be zero"
     },
     {
-      "code": 6017,
+      "code": 6015,
       "name": "UnauthorizedBootstrap",
       "msg": "Signer is not the bootstrap authority"
-    },
-    {
-      "code": 6018,
-      "name": "DuplicatePauseAuthority",
-      "msg": "Duplicate pause authority"
     }
   ]
 }

@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: staking v0.1.0
+// IDL: staking v0.1.2
 // Generator: @arlex/client codegen v1
 
 import {
@@ -16,65 +16,56 @@ import {
 export enum ProgramErrorCode {
   /** Signer is not the authority */
   Unauthorized = 6000,
-  /** Signer is not the pause authority */
-  UnauthorizedPause = 6001,
   /** Signer is not the reward depositor */
-  UnauthorizedRewardDepositor = 6002,
-  /** Staking is paused */
-  StakingPaused = 6003,
+  UnauthorizedRewardDepositor = 6001,
   /** Stake below minimum */
-  BelowMinStake = 6004,
+  BelowMinStake = 6002,
   /** Stake would mint 0 stRWT */
-  ZeroStrwtOutput = 6005,
+  ZeroStrwtOutput = 6003,
   /** Unstake would release 0 RWT */
-  ZeroRwtOutput = 6006,
+  ZeroRwtOutput = 6004,
   /** Output below minimum (slippage protection) */
-  SlippageExceeded = 6007,
+  SlippageExceeded = 6005,
   /** Cooldown has not elapsed */
-  CooldownNotElapsed = 6008,
+  CooldownNotElapsed = 6006,
   /** Ticket owner does not match signer */
-  TicketOwnerMismatch = 6009,
+  TicketOwnerMismatch = 6007,
   /** rwt_mint does not match the canonical earn-RWT mint */
-  InvalidRwtMint = 6010,
+  InvalidRwtMint = 6008,
   /** No pending authority transfer */
-  NoPendingAuthority = 6011,
+  NoPendingAuthority = 6009,
   /** Signer is not the pending authority */
-  InvalidPendingAuthority = 6012,
+  InvalidPendingAuthority = 6010,
   /** Cannot transfer authority to self */
-  SelfTransfer = 6013,
+  SelfTransfer = 6011,
   /** Arithmetic overflow */
-  MathOverflow = 6014,
+  MathOverflow = 6012,
   /** Invalid token account */
-  InvalidTokenAccount = 6015,
+  InvalidTokenAccount = 6013,
   /** Address cannot be zero */
-  ZeroAddress = 6016,
+  ZeroAddress = 6014,
   /** Signer is not the bootstrap authority */
-  UnauthorizedBootstrap = 6017,
-  /** Duplicate pause authority */
-  DuplicatePauseAuthority = 6018,
+  UnauthorizedBootstrap = 6015,
 }
 
 /** Full IDL error list — code, name, message. */
 export const ProgramErrors: IdlError[] = [
   { code: 6000, name: "Unauthorized", msg: "Signer is not the authority" },
-  { code: 6001, name: "UnauthorizedPause", msg: "Signer is not the pause authority" },
-  { code: 6002, name: "UnauthorizedRewardDepositor", msg: "Signer is not the reward depositor" },
-  { code: 6003, name: "StakingPaused", msg: "Staking is paused" },
-  { code: 6004, name: "BelowMinStake", msg: "Stake below minimum" },
-  { code: 6005, name: "ZeroStrwtOutput", msg: "Stake would mint 0 stRWT" },
-  { code: 6006, name: "ZeroRwtOutput", msg: "Unstake would release 0 RWT" },
-  { code: 6007, name: "SlippageExceeded", msg: "Output below minimum (slippage protection)" },
-  { code: 6008, name: "CooldownNotElapsed", msg: "Cooldown has not elapsed" },
-  { code: 6009, name: "TicketOwnerMismatch", msg: "Ticket owner does not match signer" },
-  { code: 6010, name: "InvalidRwtMint", msg: "rwt_mint does not match the canonical earn-RWT mint" },
-  { code: 6011, name: "NoPendingAuthority", msg: "No pending authority transfer" },
-  { code: 6012, name: "InvalidPendingAuthority", msg: "Signer is not the pending authority" },
-  { code: 6013, name: "SelfTransfer", msg: "Cannot transfer authority to self" },
-  { code: 6014, name: "MathOverflow", msg: "Arithmetic overflow" },
-  { code: 6015, name: "InvalidTokenAccount", msg: "Invalid token account" },
-  { code: 6016, name: "ZeroAddress", msg: "Address cannot be zero" },
-  { code: 6017, name: "UnauthorizedBootstrap", msg: "Signer is not the bootstrap authority" },
-  { code: 6018, name: "DuplicatePauseAuthority", msg: "Duplicate pause authority" },
+  { code: 6001, name: "UnauthorizedRewardDepositor", msg: "Signer is not the reward depositor" },
+  { code: 6002, name: "BelowMinStake", msg: "Stake below minimum" },
+  { code: 6003, name: "ZeroStrwtOutput", msg: "Stake would mint 0 stRWT" },
+  { code: 6004, name: "ZeroRwtOutput", msg: "Unstake would release 0 RWT" },
+  { code: 6005, name: "SlippageExceeded", msg: "Output below minimum (slippage protection)" },
+  { code: 6006, name: "CooldownNotElapsed", msg: "Cooldown has not elapsed" },
+  { code: 6007, name: "TicketOwnerMismatch", msg: "Ticket owner does not match signer" },
+  { code: 6008, name: "InvalidRwtMint", msg: "rwt_mint does not match the canonical earn-RWT mint" },
+  { code: 6009, name: "NoPendingAuthority", msg: "No pending authority transfer" },
+  { code: 6010, name: "InvalidPendingAuthority", msg: "Signer is not the pending authority" },
+  { code: 6011, name: "SelfTransfer", msg: "Cannot transfer authority to self" },
+  { code: 6012, name: "MathOverflow", msg: "Arithmetic overflow" },
+  { code: 6013, name: "InvalidTokenAccount", msg: "Invalid token account" },
+  { code: 6014, name: "ZeroAddress", msg: "Address cannot be zero" },
+  { code: 6015, name: "UnauthorizedBootstrap", msg: "Signer is not the bootstrap authority" },
 ];
 
 /**

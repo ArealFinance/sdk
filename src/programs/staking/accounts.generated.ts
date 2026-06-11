@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: staking v0.1.0
+// IDL: staking v0.1.2
 // Generator: @arlex/client codegen v1
 
 import { Buffer } from 'buffer';
@@ -27,8 +27,6 @@ export interface StakingConfig {
   authority: PublicKey;
   pendingAuthority: PublicKey;
   hasPending: boolean;
-  pauseAuthorities: Bytes32[];
-  isPaused: boolean;
   rwtMint: PublicKey;
   strwtMint: PublicKey;
   rewardDepositor: Bytes32;
@@ -46,8 +44,6 @@ export const WIRE_STAKINGCONFIG_FIELDS: WireFieldMap = {
   "authority": "authority",
   "pending_authority": "pendingAuthority",
   "has_pending": "hasPending",
-  "pause_authorities": "pauseAuthorities",
-  "is_paused": "isPaused",
   "rwt_mint": "rwtMint",
   "strwt_mint": "strwtMint",
   "reward_depositor": "rewardDepositor",
@@ -88,24 +84,6 @@ const IDL_STAKINGCONFIG_FIELDS: IdlField[] = [
   },
   {
     "name": "has_pending",
-    "type": "bool"
-  },
-  {
-    "name": "pause_authorities",
-    "type": {
-      "array": [
-        {
-          "array": [
-            "u8",
-            32
-          ]
-        },
-        3
-      ]
-    }
-  },
-  {
-    "name": "is_paused",
     "type": "bool"
   },
   {

@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: earn v0.1.0
+// IDL: earn v0.1.2
 // Generator: @arlex/client codegen v1
 
 import { Buffer } from 'buffer';
@@ -43,9 +43,6 @@ export interface InitializeAccounts {
 
 export interface InitializeArgs {
   authority: PublicKey;
-  pauseAuthority1: Bytes32;
-  pauseAuthority2: Bytes32;
-  pauseAuthority3: Bytes32;
 }
 
 const IDL_INITIALIZE_ARG_FIELDS: IdlField[] = [
@@ -57,41 +54,11 @@ const IDL_INITIALIZE_ARG_FIELDS: IdlField[] = [
         32
       ]
     }
-  },
-  {
-    "name": "pause_authority_1",
-    "type": {
-      "array": [
-        "u8",
-        32
-      ]
-    }
-  },
-  {
-    "name": "pause_authority_2",
-    "type": {
-      "array": [
-        "u8",
-        32
-      ]
-    }
-  },
-  {
-    "name": "pause_authority_3",
-    "type": {
-      "array": [
-        "u8",
-        32
-      ]
-    }
   }
 ];
 
 export const WIRE_INITIALIZE_ARG_FIELDS: WireFieldMap = {
   "authority": "authority",
-  "pause_authority_1": "pauseAuthority1",
-  "pause_authority_2": "pauseAuthority2",
-  "pause_authority_3": "pauseAuthority3",
 };
 
 /**
@@ -262,42 +229,6 @@ export function encodeWritedownCapitalArgs(args: WritedownCapitalArgs): Buffer {
   });
   const argBuf = serializeArgs(IDL_WRITEDOWN_CAPITAL_ARG_FIELDS, wire, TYPE_REGISTRY);
   return Buffer.concat([Buffer.from(WRITEDOWN_CAPITAL_DISCRIMINATOR), argBuf]);
-}
-
-// ============================================================
-// Instruction: pause
-// ============================================================
-
-export const PAUSE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xd3, 0x16, 0xdd, 0xfb, 0x4a, 0x79, 0xc1, 0x2f]);
-
-export interface PauseAccounts {
-  /** signer */
-  pauseAuthority: PublicKey;
-  /** readonly, writable */
-  earnConfig: PublicKey;
-}
-
-/** Encode (no args) for the `pause` instruction — discriminator only. */
-export function encodePauseArgs(): Buffer {
-  return Buffer.from(PAUSE_DISCRIMINATOR);
-}
-
-// ============================================================
-// Instruction: unpause
-// ============================================================
-
-export const UNPAUSE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xa9, 0x90, 0x04, 0x26, 0x0a, 0x8d, 0xbc, 0xff]);
-
-export interface UnpauseAccounts {
-  /** signer */
-  authority: PublicKey;
-  /** readonly, writable */
-  earnConfig: PublicKey;
-}
-
-/** Encode (no args) for the `unpause` instruction — discriminator only. */
-export function encodeUnpauseArgs(): Buffer {
-  return Buffer.from(UNPAUSE_DISCRIMINATOR);
 }
 
 // ============================================================

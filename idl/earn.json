@@ -1,11 +1,21 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.2",
   "name": "earn",
   "metadata": {
     "address": "HGh7TcuqUbTRrFTYBUtsTctAEEmsANWnDxeWcbgqMg8b"
   },
   "instructions": [
     {
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "name": "initialize",
       "accounts": [
         {
@@ -53,37 +63,20 @@
               32
             ]
           }
-        },
-        {
-          "name": "pause_authority_1",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "pause_authority_2",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
-        },
-        {
-          "name": "pause_authority_3",
-          "type": {
-            "array": [
-              "u8",
-              32
-            ]
-          }
         }
       ]
     },
     {
+      "discriminator": [
+        98,
+        32,
+        115,
+        222,
+        68,
+        12,
+        161,
+        162
+      ],
       "name": "mint_rwt",
       "accounts": [
         {
@@ -139,6 +132,16 @@
       ]
     },
     {
+      "discriminator": [
+        130,
+        155,
+        208,
+        146,
+        254,
+        20,
+        135,
+        56
+      ],
       "name": "add_to_basket",
       "accounts": [
         {
@@ -180,6 +183,16 @@
       ]
     },
     {
+      "discriminator": [
+        222,
+        11,
+        189,
+        124,
+        167,
+        70,
+        78,
+        143
+      ],
       "name": "writedown_capital",
       "accounts": [
         {
@@ -210,38 +223,16 @@
       ]
     },
     {
-      "name": "pause",
-      "accounts": [
-        {
-          "name": "pause_authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "earn_config",
-          "isMut": true,
-          "isSigner": false
-        }
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
       ],
-      "args": []
-    },
-    {
-      "name": "unpause",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "earn_config",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "update_config",
       "accounts": [
         {
@@ -276,6 +267,16 @@
       ]
     },
     {
+      "discriminator": [
+        57,
+        206,
+        225,
+        129,
+        35,
+        111,
+        174,
+        145
+      ],
       "name": "propose_authority_transfer",
       "accounts": [
         {
@@ -302,6 +303,16 @@
       ]
     },
     {
+      "discriminator": [
+        239,
+        248,
+        177,
+        2,
+        206,
+        97,
+        46,
+        255
+      ],
       "name": "accept_authority_transfer",
       "accounts": [
         {
@@ -320,6 +331,16 @@
   ],
   "accounts": [
     {
+      "discriminator": [
+        143,
+        110,
+        63,
+        181,
+        149,
+        140,
+        190,
+        144
+      ],
       "name": "EarnConfig",
       "type": {
         "kind": "struct",
@@ -348,24 +369,6 @@
           },
           {
             "name": "has_pending",
-            "type": "bool"
-          },
-          {
-            "name": "pause_authorities",
-            "type": {
-              "array": [
-                {
-                  "array": [
-                    "u8",
-                    32
-                  ]
-                },
-                3
-              ]
-            }
-          },
-          {
-            "name": "is_paused",
             "type": "bool"
           },
           {
@@ -423,6 +426,16 @@
   "types": [],
   "events": [
     {
+      "discriminator": [
+        33,
+        176,
+        53,
+        202,
+        90,
+        207,
+        120,
+        72
+      ],
       "name": "EarnInitialized",
       "fields": [
         {
@@ -472,6 +485,16 @@
       ]
     },
     {
+      "discriminator": [
+        18,
+        31,
+        251,
+        96,
+        226,
+        200,
+        171,
+        97
+      ],
       "name": "RwtMinted",
       "fields": [
         {
@@ -510,6 +533,16 @@
       ]
     },
     {
+      "discriminator": [
+        66,
+        158,
+        176,
+        239,
+        69,
+        229,
+        128,
+        225
+      ],
       "name": "BasketGrew",
       "fields": [
         {
@@ -531,6 +564,16 @@
       ]
     },
     {
+      "discriminator": [
+        188,
+        243,
+        51,
+        107,
+        123,
+        220,
+        12,
+        200
+      ],
       "name": "CapitalWrittenDown",
       "fields": [
         {
@@ -556,19 +599,16 @@
       ]
     },
     {
-      "name": "EarnPauseToggled",
-      "fields": [
-        {
-          "name": "is_paused",
-          "type": "bool"
-        },
-        {
-          "name": "timestamp",
-          "type": "i64"
-        }
-      ]
-    },
-    {
+      "discriminator": [
+        150,
+        38,
+        175,
+        60,
+        165,
+        144,
+        116,
+        121
+      ],
       "name": "EarnConfigUpdated",
       "fields": [
         {
@@ -595,6 +635,16 @@
       ]
     },
     {
+      "discriminator": [
+        103,
+        244,
+        27,
+        116,
+        177,
+        4,
+        100,
+        119
+      ],
       "name": "AuthorityTransferProposed",
       "fields": [
         {
@@ -622,6 +672,16 @@
       ]
     },
     {
+      "discriminator": [
+        149,
+        165,
+        140,
+        221,
+        104,
+        203,
+        239,
+        121
+      ],
       "name": "AuthorityTransferAccepted",
       "fields": [
         {
@@ -657,143 +717,123 @@
     },
     {
       "code": 6001,
-      "name": "UnauthorizedPause",
-      "msg": "Signer is not the pause authority"
-    },
-    {
-      "code": 6002,
       "name": "UnauthorizedBootstrap",
       "msg": "Signer is not the bootstrap authority"
     },
     {
-      "code": 6003,
-      "name": "EarnPaused",
-      "msg": "Earn program is paused"
-    },
-    {
-      "code": 6004,
+      "code": 6002,
       "name": "NoRwtSupply",
       "msg": "RWT supply must be non-zero"
     },
     {
-      "code": 6005,
+      "code": 6003,
       "name": "ZeroAmount",
       "msg": "Amount must be > 0"
     },
     {
-      "code": 6006,
+      "code": 6004,
       "name": "BelowMinMint",
       "msg": "Deposit below minimum"
     },
     {
-      "code": 6007,
+      "code": 6005,
       "name": "FeeTooHigh",
       "msg": "mint_fee_bps exceeds the maximum"
     },
     {
-      "code": 6008,
+      "code": 6006,
       "name": "MinMintTooHigh",
       "msg": "min_mint_amount exceeds the maximum"
     },
     {
-      "code": 6009,
+      "code": 6007,
       "name": "ZeroSlippage",
       "msg": "min_rwt_out must be > 0"
     },
     {
-      "code": 6010,
+      "code": 6008,
       "name": "SlippageExceeded",
       "msg": "Output below min_rwt_out (slippage protection)"
     },
     {
-      "code": 6011,
+      "code": 6009,
       "name": "ZeroRwtOutput",
       "msg": "Mint would produce 0 RWT (deposit too small for current NAV)"
     },
     {
-      "code": 6012,
+      "code": 6010,
       "name": "MathOverflow",
       "msg": "Arithmetic overflow"
     },
     {
-      "code": 6013,
+      "code": 6011,
       "name": "InsufficientCapital",
       "msg": "Writedown would reduce capital below floor"
     },
     {
-      "code": 6014,
+      "code": 6012,
       "name": "InvalidTokenAccount",
       "msg": "Invalid token account"
     },
     {
-      "code": 6015,
+      "code": 6013,
       "name": "InvalidRwtMint",
       "msg": "RWT mint does not match config.rwt_mint"
     },
     {
-      "code": 6016,
+      "code": 6014,
       "name": "InvalidMintAuthority",
       "msg": "RWT mint authority must be the EarnConfig PDA"
     },
     {
-      "code": 6017,
+      "code": 6015,
       "name": "InvalidMintSupply",
       "msg": "RWT mint supply must be zero at initialize"
     },
     {
-      "code": 6018,
+      "code": 6016,
       "name": "InvalidMintDecimals",
       "msg": "RWT mint decimals mismatch"
     },
     {
-      "code": 6019,
+      "code": 6017,
       "name": "InvalidFreezeAuthority",
       "msg": "RWT mint freeze authority must be unset"
     },
     {
-      "code": 6020,
+      "code": 6018,
       "name": "InvalidTokenOwner",
       "msg": "Token account owner mismatch"
     },
     {
-      "code": 6021,
+      "code": 6019,
       "name": "ZeroDestination",
       "msg": "Destination address cannot be zero"
     },
     {
-      "code": 6022,
-      "name": "InvalidPauseAuthority",
-      "msg": "Pause authority cannot be zero address"
-    },
-    {
-      "code": 6023,
+      "code": 6020,
       "name": "InvalidFeeDestination",
       "msg": "Fee destination cannot be zero address"
     },
     {
-      "code": 6024,
+      "code": 6021,
       "name": "NoPendingAuthority",
       "msg": "No pending authority transfer"
     },
     {
-      "code": 6025,
+      "code": 6022,
       "name": "InvalidPendingAuthority",
       "msg": "Signer is not the pending authority"
     },
     {
-      "code": 6026,
+      "code": 6023,
       "name": "SelfTransfer",
       "msg": "Cannot transfer authority to yourself"
     },
     {
-      "code": 6027,
+      "code": 6024,
       "name": "FeeDestinationIsBasketVault",
       "msg": "Fee destination cannot be the basket vault"
-    },
-    {
-      "code": 6028,
-      "name": "DuplicatePauseAuthority",
-      "msg": "Duplicate pause authority"
     }
   ]
 }

@@ -1,5 +1,5 @@
 // AUTO-GENERATED — DO NOT EDIT
-// IDL: earn v0.1.0
+// IDL: earn v0.1.2
 // Generator: @arlex/client codegen v1
 
 import { Buffer } from 'buffer';
@@ -28,8 +28,6 @@ export interface EarnConfig {
   authority: PublicKey;
   pendingAuthority: PublicKey;
   hasPending: boolean;
-  pauseAuthorities: Bytes32[];
-  isPaused: boolean;
   mintFeeBps: number;
   basketVault: Bytes32;
   daoFeeDestination: PublicKey;
@@ -46,8 +44,6 @@ export const WIRE_EARNCONFIG_FIELDS: WireFieldMap = {
   "authority": "authority",
   "pending_authority": "pendingAuthority",
   "has_pending": "hasPending",
-  "pause_authorities": "pauseAuthorities",
-  "is_paused": "isPaused",
   "mint_fee_bps": "mintFeeBps",
   "basket_vault": "basketVault",
   "dao_fee_destination": "daoFeeDestination",
@@ -91,24 +87,6 @@ const IDL_EARNCONFIG_FIELDS: IdlField[] = [
   },
   {
     "name": "has_pending",
-    "type": "bool"
-  },
-  {
-    "name": "pause_authorities",
-    "type": {
-      "array": [
-        {
-          "array": [
-            "u8",
-            32
-          ]
-        },
-        3
-      ]
-    }
-  },
-  {
-    "name": "is_paused",
     "type": "bool"
   },
   {
