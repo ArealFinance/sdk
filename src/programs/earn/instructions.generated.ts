@@ -132,6 +132,53 @@ export function encodeMintRwtArgs(args: MintRwtArgs): Buffer {
 }
 
 // ============================================================
+// Instruction: seed_genesis
+// ============================================================
+
+export const SEED_GENESIS_DISCRIMINATOR: Uint8Array = new Uint8Array([0xb8, 0x20, 0x6c, 0x56, 0x9a, 0x4e, 0xbc, 0xa0]);
+
+export interface SeedGenesisAccounts {
+  /** signer */
+  bootstrapAuthority: PublicKey;
+  /** readonly, writable */
+  earnConfig: PublicKey;
+  /** readonly, writable */
+  rwtMint: PublicKey;
+  /** readonly, writable */
+  recipientRwt: PublicKey;
+  /** readonly */
+  tokenProgram: PublicKey;
+}
+
+export interface SeedGenesisArgs {
+  amount: bigint;
+}
+
+const IDL_SEED_GENESIS_ARG_FIELDS: IdlField[] = [
+  {
+    "name": "amount",
+    "type": "u64"
+  }
+];
+
+export const WIRE_SEED_GENESIS_ARG_FIELDS: WireFieldMap = {
+  "amount": "amount",
+};
+
+/**
+ * Encode arguments for the `seed_genesis` instruction.
+ * Returns a Buffer with discriminator + serialized args.
+ */
+export function encodeSeedGenesisArgs(args: SeedGenesisArgs): Buffer {
+  const wire = remapTsToWire(args as unknown as Record<string, unknown>, WIRE_SEED_GENESIS_ARG_FIELDS, {
+    nestedMaps: {},
+    arrayMaps: {},
+  });
+  const argBuf = serializeArgs(IDL_SEED_GENESIS_ARG_FIELDS, wire, TYPE_REGISTRY);
+  return Buffer.concat([Buffer.from(SEED_GENESIS_DISCRIMINATOR), argBuf]);
+}
+
+// ============================================================
 // Instruction: add_to_basket
 // ============================================================
 

@@ -68,6 +68,8 @@ export enum ProgramErrorCode {
   BasketVaultNotSet = 6025,
   /** Basket vault cannot be the zero address */
   ZeroBasketVault = 6026,
+  /** Genesis seed already complete (supply is non-zero) */
+  GenesisAlreadyComplete = 6027,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -99,6 +101,7 @@ export const ProgramErrors: IdlError[] = [
   { code: 6024, name: "FeeDestinationIsBasketVault", msg: "Fee destination cannot be the basket vault" },
   { code: 6025, name: "BasketVaultNotSet", msg: "Basket vault is not configured" },
   { code: 6026, name: "ZeroBasketVault", msg: "Basket vault cannot be the zero address" },
+  { code: 6027, name: "GenesisAlreadyComplete", msg: "Genesis seed already complete (supply is non-zero)" },
 ];
 
 /**
