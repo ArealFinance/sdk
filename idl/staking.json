@@ -2,7 +2,7 @@
   "version": "0.1.0",
   "name": "staking",
   "metadata": {
-    "address": "3WFdgqHFUnqtZoKQLpj8pQPd3ecitBGG9M2eBmaup8JL"
+    "address": "CmKXHk3u6pDUC6Q11Le6gmhCgENQSFvduisXb7guUGoL"
   },
   "instructions": [
     {
@@ -15,7 +15,7 @@
         },
         {
           "name": "staking_config",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -51,7 +51,25 @@
       ],
       "args": [
         {
-          "name": "pause_authority",
+          "name": "pause_authority_1",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pause_authority_2",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "pause_authority_3",
           "type": {
             "array": [
               "u8",
@@ -272,7 +290,7 @@
       "name": "unpause",
       "accounts": [
         {
-          "name": "pause_authority",
+          "name": "authority",
           "isMut": false,
           "isSigner": true
         },
@@ -390,11 +408,16 @@
             "type": "bool"
           },
           {
-            "name": "pause_authority",
+            "name": "pause_authorities",
             "type": {
               "array": [
-                "u8",
-                32
+                {
+                  "array": [
+                    "u8",
+                    32
+                  ]
+                },
+                3
               ]
             }
           },
@@ -865,6 +888,16 @@
       "code": 6016,
       "name": "ZeroAddress",
       "msg": "Address cannot be zero"
+    },
+    {
+      "code": 6017,
+      "name": "UnauthorizedBootstrap",
+      "msg": "Signer is not the bootstrap authority"
+    },
+    {
+      "code": 6018,
+      "name": "DuplicatePauseAuthority",
+      "msg": "Duplicate pause authority"
     }
   ]
 }

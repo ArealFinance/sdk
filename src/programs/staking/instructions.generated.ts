@@ -27,7 +27,7 @@ export const INITIALIZE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xaf, 0xaf, 
 export interface InitializeAccounts {
   /** signer, writable */
   authority: PublicKey;
-  /** readonly */
+  /** readonly, writable */
   stakingConfig: PublicKey;
   /** readonly */
   rwtMint: PublicKey;
@@ -44,13 +44,33 @@ export interface InitializeAccounts {
 }
 
 export interface InitializeArgs {
-  pauseAuthority: PublicKey;
+  pauseAuthority1: Bytes32;
+  pauseAuthority2: Bytes32;
+  pauseAuthority3: Bytes32;
   rewardDepositor: Bytes32;
 }
 
 const IDL_INITIALIZE_ARG_FIELDS: IdlField[] = [
   {
-    "name": "pause_authority",
+    "name": "pause_authority_1",
+    "type": {
+      "array": [
+        "u8",
+        32
+      ]
+    }
+  },
+  {
+    "name": "pause_authority_2",
+    "type": {
+      "array": [
+        "u8",
+        32
+      ]
+    }
+  },
+  {
+    "name": "pause_authority_3",
     "type": {
       "array": [
         "u8",
@@ -70,7 +90,9 @@ const IDL_INITIALIZE_ARG_FIELDS: IdlField[] = [
 ];
 
 export const WIRE_INITIALIZE_ARG_FIELDS: WireFieldMap = {
-  "pause_authority": "pauseAuthority",
+  "pause_authority_1": "pauseAuthority1",
+  "pause_authority_2": "pauseAuthority2",
+  "pause_authority_3": "pauseAuthority3",
   "reward_depositor": "rewardDepositor",
 };
 
@@ -325,7 +347,7 @@ export const UNPAUSE_DISCRIMINATOR: Uint8Array = new Uint8Array([0xa9, 0x90, 0x0
 
 export interface UnpauseAccounts {
   /** signer */
-  pauseAuthority: PublicKey;
+  authority: PublicKey;
   /** readonly, writable */
   stakingConfig: PublicKey;
 }

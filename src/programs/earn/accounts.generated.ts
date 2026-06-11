@@ -28,7 +28,7 @@ export interface EarnConfig {
   authority: PublicKey;
   pendingAuthority: PublicKey;
   hasPending: boolean;
-  pauseAuthority: PublicKey;
+  pauseAuthorities: Bytes32[];
   isPaused: boolean;
   mintFeeBps: number;
   basketVault: Bytes32;
@@ -46,7 +46,7 @@ export const WIRE_EARNCONFIG_FIELDS: WireFieldMap = {
   "authority": "authority",
   "pending_authority": "pendingAuthority",
   "has_pending": "hasPending",
-  "pause_authority": "pauseAuthority",
+  "pause_authorities": "pauseAuthorities",
   "is_paused": "isPaused",
   "mint_fee_bps": "mintFeeBps",
   "basket_vault": "basketVault",
@@ -61,7 +61,6 @@ export const WIRE_EARNCONFIG_FIELDS: WireFieldMap = {
 export const PUBKEY_EARNCONFIG_FIELDS = [
   "authority",
   "pendingAuthority",
-  "pauseAuthority",
   "daoFeeDestination",
   "rwtMint",
   "usdcMint",
@@ -95,11 +94,16 @@ const IDL_EARNCONFIG_FIELDS: IdlField[] = [
     "type": "bool"
   },
   {
-    "name": "pause_authority",
+    "name": "pause_authorities",
     "type": {
       "array": [
-        "u8",
-        32
+        {
+          "array": [
+            "u8",
+            32
+          ]
+        },
+        3
       ]
     }
   },

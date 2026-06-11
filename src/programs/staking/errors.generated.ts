@@ -48,6 +48,10 @@ export enum ProgramErrorCode {
   InvalidTokenAccount = 6015,
   /** Address cannot be zero */
   ZeroAddress = 6016,
+  /** Signer is not the bootstrap authority */
+  UnauthorizedBootstrap = 6017,
+  /** Duplicate pause authority */
+  DuplicatePauseAuthority = 6018,
 }
 
 /** Full IDL error list — code, name, message. */
@@ -69,6 +73,8 @@ export const ProgramErrors: IdlError[] = [
   { code: 6014, name: "MathOverflow", msg: "Arithmetic overflow" },
   { code: 6015, name: "InvalidTokenAccount", msg: "Invalid token account" },
   { code: 6016, name: "ZeroAddress", msg: "Address cannot be zero" },
+  { code: 6017, name: "UnauthorizedBootstrap", msg: "Signer is not the bootstrap authority" },
+  { code: 6018, name: "DuplicatePauseAuthority", msg: "Duplicate pause authority" },
 ];
 
 /**

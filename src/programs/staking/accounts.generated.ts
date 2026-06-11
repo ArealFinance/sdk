@@ -27,7 +27,7 @@ export interface StakingConfig {
   authority: PublicKey;
   pendingAuthority: PublicKey;
   hasPending: boolean;
-  pauseAuthority: PublicKey;
+  pauseAuthorities: Bytes32[];
   isPaused: boolean;
   rwtMint: PublicKey;
   strwtMint: PublicKey;
@@ -46,7 +46,7 @@ export const WIRE_STAKINGCONFIG_FIELDS: WireFieldMap = {
   "authority": "authority",
   "pending_authority": "pendingAuthority",
   "has_pending": "hasPending",
-  "pause_authority": "pauseAuthority",
+  "pause_authorities": "pauseAuthorities",
   "is_paused": "isPaused",
   "rwt_mint": "rwtMint",
   "strwt_mint": "strwtMint",
@@ -63,7 +63,6 @@ export const WIRE_STAKINGCONFIG_FIELDS: WireFieldMap = {
 export const PUBKEY_STAKINGCONFIG_FIELDS = [
   "authority",
   "pendingAuthority",
-  "pauseAuthority",
   "rwtMint",
   "strwtMint",
 ] as const;
@@ -92,11 +91,16 @@ const IDL_STAKINGCONFIG_FIELDS: IdlField[] = [
     "type": "bool"
   },
   {
-    "name": "pause_authority",
+    "name": "pause_authorities",
     "type": {
       "array": [
-        "u8",
-        32
+        {
+          "array": [
+            "u8",
+            32
+          ]
+        },
+        3
       ]
     }
   },
