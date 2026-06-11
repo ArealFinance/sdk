@@ -13,6 +13,8 @@ import { Keypair } from '@solana/web3.js';
 
 import { mapAnchorError } from '../../src/errors/mapper.js';
 import {
+  EarnErrorCode,
+  EarnErrors,
   FutarchyErrorCode,
   FutarchyErrors,
   NativeDexErrors,
@@ -20,6 +22,8 @@ import {
   OwnershipTokenErrors,
   RwtEngineErrorCode,
   RwtEngineErrors,
+  StakingErrorCode,
+  StakingErrors,
   YieldDistributionErrorCode,
   YieldDistributionErrors,
 } from '../../src/errors/error-codes.js';
@@ -39,6 +43,8 @@ describe('mapAnchorError — coverage across all programs', () => {
     { name: 'rwtEngine', programId: RWT_ENGINE_PROGRAM_ID, errors: RwtEngineErrors },
     { name: 'futarchy', programId: FUTARCHY_PROGRAM_ID, errors: FutarchyErrors },
     { name: 'nativeDex', programId: NATIVE_DEX_PROGRAM_ID, errors: NativeDexErrors },
+    { name: 'earn', programId: PROGRAM_IDS_BY_CLUSTER.devnet.earn, errors: EarnErrors },
+    { name: 'staking', programId: PROGRAM_IDS_BY_CLUSTER.devnet.staking, errors: StakingErrors },
   ];
 
   for (const c of cases) {
@@ -93,6 +99,29 @@ describe('mapAnchorError — known-name spot checks', () => {
     if (futFirst !== undefined) {
       expect(mapAnchorError(futFirst, FUTARCHY_PROGRAM_ID)?.program).toBe('futarchy');
     }
+  });
+
+  it('Earn: UnauthorizedBootstrap (6002)', () => {
+    const result = mapAnchorError(EarnErrorCode.UnauthorizedBootstrap, PROGRAM_IDS_BY_CLUSTER.devnet.earn);
+    expect(result?.program).toBe('earn');
+    expect(result?.code).toBe(6002);
+    expect(result?.name).toBe('UnauthorizedBootstrap');
+    expect(result?.message).toBe('Signer is not the bootstrap authority');
+  });
+
+  it('Staking: UnauthorizedBootstrap (6017)', () => {
+    const result = mapAnchorError(StakingErrorCode.UnauthorizedBootstrap, PROGRAM_IDS_BY_CLUSTER.devnet.staking);
+    expect(result?.program).toBe('staking');
+    expect(result?.code).toBe(6017);
+    expect(result?.name).toBe('UnauthorizedBootstrap');
+    expect(result?.message).toBe('Signer is not the bootstrap authority');
+  });
+
+  it('Staking: InvalidRwtMint (6010)', () => {
+    const result = mapAnchorError(StakingErrorCode.InvalidRwtMint, PROGRAM_IDS_BY_CLUSTER.devnet.staking);
+    expect(result?.program).toBe('staking');
+    expect(result?.code).toBe(6010);
+    expect(result?.name).toBe('InvalidRwtMint');
   });
 });
 
@@ -156,6 +185,8 @@ describe('mapAnchorError — cluster-aware (M4 fix)', () => {
         codes: OwnershipTokenErrors.map(e => e.code),
       },
       { pid: devnet.rwtEngine, expected: 'rwtEngine', codes: RwtEngineErrors.map(e => e.code) },
+      { pid: devnet.earn, expected: 'earn', codes: EarnErrors.map(e => e.code) },
+      { pid: devnet.staking, expected: 'staking', codes: StakingErrors.map(e => e.code) },
       {
         pid: devnet.yieldDistribution,
         expected: 'yieldDistribution',

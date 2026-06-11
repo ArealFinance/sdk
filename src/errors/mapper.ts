@@ -1,4 +1,4 @@
-// Aggregated error mapper across the 5 Areal programs.
+// Aggregated error mapper across the Areal programs.
 //
 // Given a Solana RPC error or a raw error code + the program ID that
 // produced it, returns a structured `MappedAnchorError` with the program
@@ -6,7 +6,7 @@
 // `null` when:
 //   - the input has no recognizable program error code (network error,
 //     simulation error before any program ran, etc.)
-//   - the program ID is not one of the 5 Areal programs
+//   - the program ID is not one of the registered Areal programs
 //   - the program ID is recognized but the code is not in its IDL
 
 import type { PublicKey } from '@solana/web3.js';
@@ -24,11 +24,15 @@ import {
 import type { ClusterName } from '../network/clusters.js';
 import {
   FutarchyErrors,
+  EarnErrors,
   NativeDexErrors,
   OwnershipTokenErrors,
   RwtEngineErrors,
+  StakingErrors,
   YieldDistributionErrors,
 } from './error-codes.js';
+
+const PLACEHOLDER_PROGRAM_ID = '11111111111111111111111111111111';
 
 /** Result of a successful error decode. */
 export interface MappedAnchorError {
@@ -57,21 +61,21 @@ const PROGRAM_ERROR_REGISTRY: ReadonlyMap<
   { name: ProgramName; errors: IdlError[] }
 > = (() => {
   const entries: Array<[string, { name: ProgramName; errors: IdlError[] }]> = [];
+  const push = (programId: PublicKey, name: ProgramName, errors: IdlError[]) => {
+    const base58 = programId.toBase58();
+    if (base58 === PLACEHOLDER_PROGRAM_ID) return;
+    entries.push([base58, { name, errors }]);
+  };
+
   for (const cluster of Object.keys(PROGRAM_IDS_BY_CLUSTER) as ClusterName[]) {
     const ids = PROGRAM_IDS_BY_CLUSTER[cluster];
-    entries.push(
-      [ids.nativeDex.toBase58(), { name: 'nativeDex' as ProgramName, errors: NativeDexErrors }],
-      [
-        ids.ownershipToken.toBase58(),
-        { name: 'ownershipToken' as ProgramName, errors: OwnershipTokenErrors },
-      ],
-      [ids.rwtEngine.toBase58(), { name: 'rwtEngine' as ProgramName, errors: RwtEngineErrors }],
-      [
-        ids.yieldDistribution.toBase58(),
-        { name: 'yieldDistribution' as ProgramName, errors: YieldDistributionErrors },
-      ],
-      [ids.futarchy.toBase58(), { name: 'futarchy' as ProgramName, errors: FutarchyErrors }],
-    );
+    push(ids.nativeDex, 'nativeDex', NativeDexErrors);
+    push(ids.ownershipToken, 'ownershipToken', OwnershipTokenErrors);
+    push(ids.rwtEngine, 'rwtEngine', RwtEngineErrors);
+    push(ids.yieldDistribution, 'yieldDistribution', YieldDistributionErrors);
+    push(ids.futarchy, 'futarchy', FutarchyErrors);
+    push(ids.earn, 'earn', EarnErrors);
+    push(ids.staking, 'staking', StakingErrors);
   }
   // Map() naturally dedupes by key — clusters that share pubkeys (e.g.
   // mainnet/localnet) collapse into a single entry, last-write-wins.

@@ -8,6 +8,8 @@ import { ProgramErrors as OwnershipTokenErrors } from '../programs/ownership-tok
 import { ProgramErrors as RwtEngineErrors } from '../programs/rwt-engine/errors.generated.js';
 import { ProgramErrors as YieldDistributionErrors } from '../programs/yield-distribution/errors.generated.js';
 import { ProgramErrors as FutarchyErrors } from '../programs/futarchy/errors.generated.js';
+import { ProgramErrors as EarnErrors } from '../programs/earn/errors.generated.js';
+import { ProgramErrors as StakingErrors } from '../programs/staking/errors.generated.js';
 
 export {
   NativeDexErrors,
@@ -15,6 +17,8 @@ export {
   RwtEngineErrors,
   YieldDistributionErrors,
   FutarchyErrors,
+  EarnErrors,
+  StakingErrors,
 };
 
 // Per-program enum re-exports. Renamed to avoid the `ProgramErrorCode`
@@ -24,3 +28,5 @@ export { ProgramErrorCode as OwnershipTokenErrorCode } from '../programs/ownersh
 export { ProgramErrorCode as RwtEngineErrorCode } from '../programs/rwt-engine/errors.generated.js';
 export { ProgramErrorCode as YieldDistributionErrorCode } from '../programs/yield-distribution/errors.generated.js';
 export { ProgramErrorCode as FutarchyErrorCode } from '../programs/futarchy/errors.generated.js';
+export { ProgramErrorCode as EarnErrorCode } from '../programs/earn/errors.generated.js';
+export { ProgramErrorCode as StakingErrorCode } from '../programs/staking/errors.generated.js';

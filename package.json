@@ -45,6 +45,16 @@
       "import": "./dist/programs/futarchy/index.mjs",
       "require": "./dist/programs/futarchy/index.cjs"
     },
+    "./earn": {
+      "types": "./dist/programs/earn/index.d.ts",
+      "import": "./dist/programs/earn/index.mjs",
+      "require": "./dist/programs/earn/index.cjs"
+    },
+    "./staking": {
+      "types": "./dist/programs/staking/index.d.ts",
+      "import": "./dist/programs/staking/index.mjs",
+      "require": "./dist/programs/staking/index.cjs"
+    },
     "./pda": {
       "types": "./dist/pda/index.d.ts",
       "import": "./dist/pda/index.mjs",
@@ -119,7 +129,7 @@
     "socket.io-client": "4.7.5"
   },
   "devDependencies": {
-    "@arlex/client": "file:../vendor/arlex-client-0.3.1.tgz",
+    "@arlex/client": "file:../vendor/arlex-client-0.3.2.tgz",
     "@solana/web3.js": "^1.98.0",
     "@types/node": "^20.11.0",
     "tsup": "^8.0.0",

@@ -8,6 +8,8 @@ export default defineConfig({
     'src/programs/rwt-engine/index.ts',
     'src/programs/yield-distribution/index.ts',
     'src/programs/futarchy/index.ts',
+    'src/programs/earn/index.ts',
+    'src/programs/staking/index.ts',
     'src/pda/index.ts',
     'src/tx/index.ts',
     'src/network/index.ts',
