@@ -35,6 +35,8 @@ export interface EarnConfig {
   usdcMint: PublicKey;
   minMintAmount: bigint;
   bump: number;
+  schemaVersion: number;
+  _reserved: Uint8Array;
 }
 
 export const EARNCONFIG_DISCRIMINATOR: Uint8Array = new Uint8Array([0x8f, 0x6e, 0x3f, 0xb5, 0x95, 0x8c, 0xbe, 0x90]);
@@ -51,6 +53,8 @@ export const WIRE_EARNCONFIG_FIELDS: WireFieldMap = {
   "usdc_mint": "usdcMint",
   "min_mint_amount": "minMintAmount",
   "bump": "bump",
+  "schema_version": "schemaVersion",
+  "_reserved": "_reserved",
 };
 
 /** Pubkey-classified [u8;32] fields for EarnConfig (heuristic + overrides). */
@@ -136,6 +140,19 @@ const IDL_EARNCONFIG_FIELDS: IdlField[] = [
   {
     "name": "bump",
     "type": "u8"
+  },
+  {
+    "name": "schema_version",
+    "type": "u8"
+  },
+  {
+    "name": "_reserved",
+    "type": {
+      "array": [
+        "u8",
+        128
+      ]
+    }
   }
 ];
 

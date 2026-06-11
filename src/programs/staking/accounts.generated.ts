@@ -36,6 +36,8 @@ export interface StakingConfig {
   cooldownSeconds: bigint;
   minStakeAmount: bigint;
   bump: number;
+  schemaVersion: number;
+  _reserved: Uint8Array;
 }
 
 export const STAKINGCONFIG_DISCRIMINATOR: Uint8Array = new Uint8Array([0x2d, 0x86, 0xfc, 0x52, 0x25, 0x39, 0x54, 0x19]);
@@ -53,6 +55,8 @@ export const WIRE_STAKINGCONFIG_FIELDS: WireFieldMap = {
   "cooldown_seconds": "cooldownSeconds",
   "min_stake_amount": "minStakeAmount",
   "bump": "bump",
+  "schema_version": "schemaVersion",
+  "_reserved": "_reserved",
 };
 
 /** Pubkey-classified [u8;32] fields for StakingConfig (heuristic + overrides). */
@@ -141,6 +145,19 @@ const IDL_STAKINGCONFIG_FIELDS: IdlField[] = [
   {
     "name": "bump",
     "type": "u8"
+  },
+  {
+    "name": "schema_version",
+    "type": "u8"
+  },
+  {
+    "name": "_reserved",
+    "type": {
+      "array": [
+        "u8",
+        128
+      ]
+    }
   }
 ];
 
